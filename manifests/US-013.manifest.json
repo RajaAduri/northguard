@@ -1,0 +1,38 @@
+{
+  "id": "US-013",
+  "title": "Append-only hash-chained ledger entry writer",
+  "created": "2026-09-13T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/lib/types.ts", "reason": "Shared LedgerEntry type (and contract types) — single source of truth", "sf_id": "shared", "template": "specs/EP-01-gateway-adapter/EPIC.md" },
+    { "file": "core/src/features/ledger/append/loadChainTail.ts", "reason": "Read chain tail; ignore torn last line", "sf_id": "SF-4011", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/append/loadChainTail.test.ts", "reason": "TDD stub", "sf_id": "SF-4011" },
+    { "file": "core/src/features/ledger/append/computeEntryHash.ts", "reason": "Canonical sha256 over entry sans hash", "sf_id": "SF-4012" },
+    { "file": "core/src/features/ledger/append/computeEntryHash.test.ts", "reason": "TDD stub", "sf_id": "SF-4012" },
+    { "file": "core/src/features/ledger/append/appendAtomic.ts", "reason": "Atomic, fsync'd, single-writer append", "sf_id": "SF-4013" },
+    { "file": "core/src/features/ledger/append/appendAtomic.test.ts", "reason": "TDD stub", "sf_id": "SF-4013" },
+    { "file": "core/src/features/ledger/append/appendLedgerEntry.ts", "reason": "Compose: chain + hash + append", "sf_id": "SF-4014" },
+    { "file": "core/src/features/ledger/append/appendLedgerEntry.test.ts", "reason": "TDD stub", "sf_id": "SF-4014" },
+    { "file": "core/src/features/ledger/append/index.ts", "reason": "App Function entry point composing SF-4011..4014", "sf_id": "AF-401" }
+  ],
+  "protected": [
+    { "file": "core/src/features/policy/**", "reason": "Not in scope for this story" },
+    { "file": "core/src/features/inspection/**", "reason": "Not in scope for this story" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/append/loadChainTail.test.ts",
+    "core/src/features/ledger/append/computeEntryHash.test.ts",
+    "core/src/features/ledger/append/appendAtomic.test.ts",
+    "core/src/features/ledger/append/appendLedgerEntry.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.1", "app_functions": ["AF-401"], "sw_functions": ["SF-4011", "SF-4012", "SF-4013", "SF-4014"], "acceptance_criteria": ["US-013 AC-1"] },
+  "chain_order": [
+    { "sf_id": "SF-4012", "reason": "pure hash, no deps" },
+    { "sf_id": "SF-4011", "reason": "reads existing chain" },
+    { "sf_id": "SF-4013", "reason": "atomic write primitive" },
+    { "sf_id": "SF-4014", "reason": "composes the above" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard — LLM prompt governance gateway (audit-grade evidence ledger).\n- Tech: TypeScript, Node 20 ESM, strict; Vitest. See DECISION-REGISTER.md and AGENT-RULES.md.\n- Current state: fresh core package; this is the first ledger story. Nothing depends on it yet, but everything will.\n\nTASK:\nImplement US-013: the append-only, hash-chained JSONL ledger writer (AF-401).\n\nCREATE THESE FILES (see manifest.create): core/lib/types.ts (LedgerEntry + the contract types from specs/EP-01-gateway-adapter/EPIC.md), then SF-4011..4014 under core/src/features/ledger/append/, each with an adjacent .test.ts, plus index.ts.\n\nFUNCTION SIGNATURES: exactly as in specs/EP-04-audit-ledger/APP-FUNCTIONS.md (AF-401 section) — loadChainTail, computeEntryHash, appendAtomic, appendLedgerEntry.\n\nCHAIN ORDER: computeEntryHash → loadChainTail → appendAtomic → appendLedgerEntry.\n\nRULES:\n1. TDD: write the test first, watch it fail, then implement.\n2. ONLY create files in this manifest. Do not touch protected paths.\n3. TS strict — no any, no non-null assertions without proof.\n4. NG-5: append must be atomic and survive process restart with no gap; a torn final line (crash mid-write) is ignored, not chained onto.\n5. computeEntryHash MUST be canonical (key order independent) so verifyChain (AF-406, later) can recompute it.\n6. No network, no external services — this is a local file.\n7. After each function+test pair, run vitest on that file and report.\n8. When done, run all ledger tests and report a summary. Write two entries and assert entry2.prevHash === entry1.hash."
+}

@@ -1,0 +1,10 @@
+{
+  "sprint": "Sprint 4 — False-positive loop + Briefing scaffold + Recurring-work Stage 1",
+  "story_sequence": ["US-022", "US-024", "US-025", "US-026", "US-020"],
+  "rationale": "US-022 (FP review queue + resolutions as governance events) drives the <1 false-block/user/week metric and must land before pilots. US-024 makes the two rooms unmistakable. US-025/026 start E7: feature extraction over the redacted+pseudonymised corpus (NG-10) and MinHash near-duplicate blocking (Stage 1). US-020 briefing is scaffolded from ledger stats here; its recurring-work headline completes in Sprint 5.",
+  "estimated_agent_hours": 7,
+  "total_stories": 5,
+  "critical_path": ["US-022", "US-025", "US-026"],
+  "acceptance_gate": ["false-block-rate instrumentation", "no-originals-in-recurring (NG-10)"],
+  "language": "TypeScript (E6) + Python (E7)"
+}

@@ -1,0 +1,80 @@
+# de-entity-variants.yml — German entity-name normalisation corpus
+# The acceptance fixture for E7 entity resolution (FR-24, NG-18). Drives the
+# `de-entity-normalisation` CI check against normalizeEntityValue (SF-3051, E3).
+#
+# CONTRACT:
+#   * Every surface form within a `group` MUST normalise to ONE pseudonym.
+#   * No two distinct groups may collide (the `distinct` pairs assert this).
+#   * A change that breaks either direction is a defect — under-clustering here is
+#     the silent failure that looks like "no duplicated work this week".
+#
+# Seeded from the design corpus (Brechtmann, Haltmayer, Nordwerk) + the German
+# legal-form and umlaut cases that break naive matching. Extend from real pilot
+# data, never from imagination — and only widen a rule when a corpus group proves
+# it under-clusters.
+version: "1.0.0"
+domain: de-entity-variants
+languages: [de]
+
+# Each group: one real-world entity, many surface forms that MUST unify.
+groups:
+  - id: ENT-001
+    entity: "Brechtmann"
+    kind: supplier
+    forms:
+      - "Brechtmann GmbH"
+      - "Brechtmann"
+      - "Brechtmann GmbH & Co. KG"
+      - "Brechtmann GmbH & Co KG"
+      - "brechtmann gmbh"
+      - "BRECHTMANN GMBH"
+      - "Brechtmann GmbHs"        # genitive/declension
+      - "Fa. Brechtmann"          # "Firma" abbreviation
+
+  - id: ENT-002
+    entity: "Haltmayer & Söhne"
+    kind: supplier
+    forms:
+      - "Haltmayer & Söhne"
+      - "Haltmayer & Soehne"      # transliteration
+      - "Haltmayer und Söhne"     # & ↔ und
+      - "haltmayer & söhne ohg"
+      - "Haltmayer"               # dropped legal form / casual
+
+  - id: ENT-003
+    entity: "Müller Präzisionstechnik"
+    kind: supplier
+    forms:
+      - "Müller Präzisionstechnik AG"
+      - "Mueller Praezisionstechnik AG"   # full transliteration
+      - "Müller Präzisionstechnik"
+      - "müller präzisionstechnik ag"
+
+  - id: ENT-004
+    entity: "Nordwerk Systemtechnik"
+    kind: customer
+    forms:
+      - "Nordwerk Systemtechnik GmbH"
+      - "Nordwerk Systemtechnik"
+      - "Nordwerk"
+      - "nordwerk systemtechnik gmbh"
+
+  - id: ENT-005
+    entity: "Anna Berger (contact)"
+    kind: person
+    forms:
+      - "Anna Berger"
+      - "anna berger"
+      - "A. Berger"
+      - "Frau Berger"
+
+# Negative assertions: these MUST stay distinct (guard against over-collapse).
+distinct:
+  - ["Brechtmann", "Brechtmann Metallbau"]      # same first token, different firm
+  - ["Müller Präzisionstechnik", "Müller Logistik"]
+  - ["Haltmayer & Söhne", "Haltmayer Transporte"]
+  - ["Nordwerk Systemtechnik", "Nordwerk Immobilien"]
+
+# Legal forms the normaliser strips (documentation mirror of SF-3051 rules).
+legal_forms: ["GmbH", "AG", "KG", "mbH", "e.K.", "GbR", "OHG", "SE", "GmbH & Co. KG", "GmbH & Co KG"]
+# Transliteration folds: ä↔ae, ö↔oe, ü↔ue, ß↔ss

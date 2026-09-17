@@ -1,0 +1,11 @@
+{
+  "sprint": "Sprint 2 — Inspection + Transcript Engine (correctness core)",
+  "story_sequence": ["US-006", "US-007", "US-008", "US-009", "US-010", "US-011", "US-012"],
+  "rationale": "Chain order of the inspection turn: US-006 rules layer (no network, <50ms) → US-007 backstop + degradation → US-008 verdict assembly with span attribution → US-009 semantic placeholders → US-010 keyed pseudonyms → US-011 wire transcript + isolation assertion → US-012 client-side rehydration. US-011 + the request-entry write (US-014, pulled forward if needed) satisfy the load-bearing wire-isolation acceptance test, which runs as the sprint's exit gate.",
+  "estimated_agent_hours": 8,
+  "total_stories": 7,
+  "critical_path": ["US-006", "US-008", "US-011", "US-012"],
+  "acceptance_gate": ["rules-latency", "degradation-recorded", "wire-isolation", "rehydration-never-guess"],
+  "notes": "AF-304..307 (US-009..012) are the PURE, STATELESS transcript engine (NG-14): no fs/db/network imports; the mapping is injected, never owned. US-014 (request entry) may be pulled in from Sprint 3 to complete the wire-isolation integration test at sprint end.",
+  "language": "TypeScript (core)"
+}

@@ -1,0 +1,10 @@
+{
+  "sprint": "Sprint 5 — Recurring-work Stage 2 + synthesis + briefing complete",
+  "story_sequence": ["US-027", "US-028", "US-029", "US-030", "US-020"],
+  "rationale": "US-027 semantic clustering (pinned embeddings, deterministic — the reproducibility-critical stage) catches same-document-different-words. US-028 resolves entities on pseudonyms and guards key epochs (R5). US-029 detects temporal patterns (cadence, cessation). US-030 synthesises hours-saved + names the removing artefact — the briefing headline. US-020 briefing is completed by wiring E7 findings into theme synthesis. Sprint delivers the product's value-creating output.",
+  "estimated_agent_hours": 7,
+  "total_stories": 5,
+  "critical_path": ["US-027", "US-030"],
+  "acceptance_gate": ["resolution-determinism (NG-15)", "briefing novel-insight"],
+  "language": "Python (E7) + TypeScript (E6 briefing)"
+}

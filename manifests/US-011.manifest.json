@@ -1,0 +1,29 @@
+{
+  "id": "US-011",
+  "title": "Build wire transcript and enforce two-transcript isolation",
+  "created": "2026-09-13T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/transcript/wire/composeWireMessage.ts", "reason": "Append this turn's wire message to redacted history", "sf_id": "SF-3061" },
+    { "file": "core/src/features/inspection/transcript/wire/composeWireMessage.test.ts", "reason": "TDD stub", "sf_id": "SF-3061" },
+    { "file": "core/src/features/inspection/transcript/wire/assertWireIsolation.ts", "reason": "Hard invariant: no original in any wire message (NG-1)", "sf_id": "SF-3062" },
+    { "file": "core/src/features/inspection/transcript/wire/assertWireIsolation.test.ts", "reason": "The load-bearing 10-turn isolation test (§8)", "sf_id": "SF-3062" },
+    { "file": "core/src/features/inspection/transcript/wire/index.ts", "reason": "AF-306 entry point", "sf_id": "AF-306" }
+  ],
+  "protected": [
+    { "file": "core/src/features/inspection/transcript/rehydrate/**", "reason": "Rehydration is US-012; the wire must never contain rehydrated content" },
+    { "file": "core/lib/types.ts", "reason": "WireMessage type is fixed by the E1 contract; do not change it here" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/transcript/wire/composeWireMessage.test.ts",
+    "core/src/features/inspection/transcript/wire/assertWireIsolation.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.6", "app_functions": ["AF-306"], "sw_functions": ["SF-3061", "SF-3062"], "acceptance_criteria": ["US-011 AC-1..3", "§8 wire-transcript isolation"] },
+  "chain_order": [
+    { "sf_id": "SF-3061", "reason": "compose the wire message (pure)" },
+    { "sf_id": "SF-3062", "reason": "assert isolation invariant over the whole transcript" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard. Tech: TypeScript strict + Vitest.\n- Current state: placeholders (US-009) and pseudonyms (US-010) done; verdict assembly (US-008) produces redactedPrompt. This story builds the wire transcript that the adapter transmits — the highest-severity correctness surface in the product.\n\nTASK:\nImplement US-011 (AF-306). The wire transcript is the ONLY content ever transmitted upstream, including as history on later turns (NG-1). Provide assertWireIsolation as a hard invariant.\n\nCREATE FILES: per manifest.create. Signatures exactly per specs/EP-03-inspection-redaction/APP-FUNCTIONS.md (AF-306).\n\nRULES:\n1. TDD. The centrepiece test builds a 10-turn conversation containing redactions and asserts NO original value appears in ANY outbound wire message (the §8 acceptance test). Write this test first and make it fail meaningfully.\n2. NG-14: this module is PURE and STATELESS — no fs, no db, no network imports. history is passed in; return a fresh array (never mutate history).\n3. NG-1: prior turns in history are already redacted; never re-hydrate them into the wire. composeWireMessage appends only the redacted wireText.\n4. assertWireIsolation(wire, originals) throws WireLeakError if any original substring appears; returns void otherwise. It must be cheap enough to call at runtime, not only in tests.\n5. Do NOT import from rehydrate/** (protected) — rehydrated content must never reach the wire.\n6. Report the 10-turn isolation test result explicitly in the summary."
+}

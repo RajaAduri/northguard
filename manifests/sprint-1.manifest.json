@@ -1,0 +1,10 @@
+{
+  "sprint": "Sprint 1 — Ledger + Policy Intake foundation",
+  "story_sequence": ["US-013", "US-015", "US-018", "US-001", "US-002", "US-003", "US-004", "US-005"],
+  "rationale": "US-013 (append-only hash-chained writer) is the substrate every write depends on (NG-5); US-015 (governance writer) and US-018 (durability/backup) build directly on it. Policy intake then runs: US-001 ingest, US-002 extract + stability, US-003 activation guard on instability, US-004 human confirmation/edit, US-005 mode assignment + guarded activation. On completion the system has an active, audited policy and a durable ledger — the preconditions for inspection in Sprint 2.",
+  "estimated_agent_hours": 7,
+  "total_stories": 8,
+  "critical_path": ["US-013", "US-002", "US-005"],
+  "acceptance_gate": ["ledger-chain", "activation-guard"],
+  "language": "TypeScript (core) + Python sidecar consumed by US-002"
+}

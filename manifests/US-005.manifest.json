@@ -1,0 +1,40 @@
+{
+  "id": "US-005",
+  "title": "Assign per-area mode and activate (guarded, logged)",
+  "created": "2026-09-13T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/policy/modes/setAreaMode.ts", "reason": "block|redact per area; default redact", "sf_id": "SF-2051" },
+    { "file": "core/src/features/policy/modes/setAreaMode.test.ts", "reason": "TDD stub", "sf_id": "SF-2051" },
+    { "file": "core/src/features/policy/modes/validateModeConfig.ts", "reason": "every area has a mode", "sf_id": "SF-2052" },
+    { "file": "core/src/features/policy/modes/validateModeConfig.test.ts", "reason": "TDD stub", "sf_id": "SF-2052" },
+    { "file": "core/src/features/policy/modes/index.ts", "reason": "AF-205 entry point", "sf_id": "AF-205" },
+    { "file": "core/src/features/policy/activate/guardActivation.ts", "reason": "stable + confirmed + modes assigned (NG-3)", "sf_id": "SF-2061" },
+    { "file": "core/src/features/policy/activate/guardActivation.test.ts", "reason": "TDD stub", "sf_id": "SF-2061" },
+    { "file": "core/src/features/policy/activate/writeActivationGovernanceEvent.ts", "reason": "governance event via E4 AF-403 (NG-12)", "sf_id": "SF-2062" },
+    { "file": "core/src/features/policy/activate/writeActivationGovernanceEvent.test.ts", "reason": "TDD stub", "sf_id": "SF-2062" },
+    { "file": "core/src/features/policy/activate/publishActivePolicy.ts", "reason": "unlock inspection; retire prior version", "sf_id": "SF-2063" },
+    { "file": "core/src/features/policy/activate/publishActivePolicy.test.ts", "reason": "TDD stub", "sf_id": "SF-2063" },
+    { "file": "core/src/features/policy/activate/index.ts", "reason": "AF-206 entry point", "sf_id": "AF-206" }
+  ],
+  "modify_note": "Reads (imports) core/src/features/ledger/governance AF-403 — read-only dependency, not modified.",
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Consumed via AF-403; not modified in this story" },
+    { "file": "core/src/features/inspection/**", "reason": "Consumes the active policy but is built in Sprint 2" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/policy/modes/*.test.ts",
+    "core/src/features/policy/activate/*.test.ts"
+  ],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.5", "app_functions": ["AF-205", "AF-206"], "sw_functions": ["SF-2051", "SF-2052", "SF-2061", "SF-2062", "SF-2063"], "acceptance_criteria": ["US-005 AC-1..2"] },
+  "chain_order": [
+    { "sf_id": "SF-2051", "reason": "set modes" },
+    { "sf_id": "SF-2052", "reason": "validate modes" },
+    { "sf_id": "SF-2061", "reason": "guard: unstable/invalid/unassigned → throw (NG-3)" },
+    { "sf_id": "SF-2062", "reason": "log the activation as a governance event before publishing" },
+    { "sf_id": "SF-2063", "reason": "publish → inspection may now forward" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard. Tech: TypeScript strict + Vitest.\n- Current state: US-013 (ledger append + AF-403 governance writer) and US-002/003/004 (extract, stability, confirm) are done. This story activates a confirmed, stable policy version.\n\nTASK:\nImplement US-005 (AF-205 mode assignment, AF-206 guarded+logged activation). Activation is the ONLY thing that unlocks inspection/forwarding.\n\nCREATE FILES: per manifest.create. Signatures exactly per specs/EP-02-policy-intake/APP-FUNCTIONS.md (AF-205, AF-206).\n\nRULES:\n1. TDD first.\n2. NG-3: guardActivation MUST throw ActivationBlockedError when the area set is unstable, invalid, or has an unassigned mode. There is no force path.\n3. NG-12: writeActivationGovernanceEvent MUST write to the ledger (E4 AF-403) BEFORE publishActivePolicy runs. If the ledger write fails, activation aborts.\n4. publishActivePolicy retires any prior active version; with no active policy, inspection refuses to forward (fresh-install lock).\n5. Import AF-403 read-only; do NOT modify the ledger package (protected).\n6. Default area mode is 'redact' if unset (conservative but usable).\n7. Report tests after each pair; final summary must show a blocked-activation test AND a successful activation writing a governance entry."
+}

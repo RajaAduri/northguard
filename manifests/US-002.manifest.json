@@ -1,0 +1,42 @@
+{
+  "id": "US-002",
+  "title": "Extract protected concepts once per policy version + stability index",
+  "created": "2026-09-13T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/policy/extract/requestConceptGraph.ts", "reason": "POST /graph to the localhost sidecar", "sf_id": "SF-2021" },
+    { "file": "core/src/features/policy/extract/requestConceptGraph.test.ts", "reason": "TDD stub (mock sidecar)", "sf_id": "SF-2021" },
+    { "file": "core/src/features/policy/extract/mapGraphToAreas.ts", "reason": "nodes/edges → Area[]", "sf_id": "SF-2022" },
+    { "file": "core/src/features/policy/extract/mapGraphToAreas.test.ts", "reason": "TDD stub", "sf_id": "SF-2022" },
+    { "file": "core/src/features/policy/extract/readCachedGraph.ts", "reason": "serve cached graph by policy hash (NG-6)", "sf_id": "SF-2023" },
+    { "file": "core/src/features/policy/extract/readCachedGraph.test.ts", "reason": "TDD stub", "sf_id": "SF-2023" },
+    { "file": "core/src/features/policy/extract/index.ts", "reason": "AF-202 entry point", "sf_id": "AF-202" },
+    { "file": "core/src/features/policy/stability/readStabilityIndex.ts", "reason": "read SI from graph", "sf_id": "SF-2031" },
+    { "file": "core/src/features/policy/stability/readStabilityIndex.test.ts", "reason": "TDD stub", "sf_id": "SF-2031" },
+    { "file": "core/src/features/policy/stability/enforceStabilityThreshold.ts", "reason": "0.80 gate; null=not stable", "sf_id": "SF-2032" },
+    { "file": "core/src/features/policy/stability/enforceStabilityThreshold.test.ts", "reason": "TDD stub", "sf_id": "SF-2032" },
+    { "file": "core/src/features/policy/stability/buildStabilityReport.ts", "reason": "report + blockingReason", "sf_id": "SF-2033" },
+    { "file": "core/src/features/policy/stability/buildStabilityReport.test.ts", "reason": "TDD stub", "sf_id": "SF-2033" },
+    { "file": "core/src/features/policy/stability/index.ts", "reason": "AF-203 entry point", "sf_id": "AF-203" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Built in US-013; not modified here" },
+    { "file": "prototype/kg_sidecar.py", "reason": "Sidecar is consumed over HTTP, never edited from core" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/policy/extract/*.test.ts",
+    "core/src/features/policy/stability/*.test.ts"
+  ],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.2 / FT-2.3", "app_functions": ["AF-202", "AF-203"], "sw_functions": ["SF-2021", "SF-2022", "SF-2023", "SF-2031", "SF-2032", "SF-2033"], "acceptance_criteria": ["US-002 AC-1..3", "US-003 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-2023", "reason": "cache check first (NG-6: serve without re-extract)" },
+    { "sf_id": "SF-2021", "reason": "call sidecar on cache miss" },
+    { "sf_id": "SF-2022", "reason": "map returned graph to areas" },
+    { "sf_id": "SF-2031", "reason": "read SI" },
+    { "sf_id": "SF-2032", "reason": "enforce threshold" },
+    { "sf_id": "SF-2033", "reason": "build report" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard. Tech: TypeScript strict + Vitest; a Python kg-gen sidecar runs at http://127.0.0.1:8077 (see prototype/kg_sidecar.py — do NOT edit it).\n- Current state: US-013 (ledger) done. Policy ingest (US-001) may or may not be done; this story only needs a policy string + hash as input.\n\nTASK:\nImplement US-002 + US-003: extract protected concepts via the sidecar keyed by content hash (NG-6, never per request), map the graph to areas, and enforce the 0.80 stability gate (NFR-07). Treat SI null as NOT stable.\n\nCREATE FILES: as listed in manifest.create (AF-202 extract/, AF-203 stability/). Signatures exactly per specs/EP-02-policy-intake/APP-FUNCTIONS.md.\n\nRULES:\n1. TDD first. Mock the sidecar in requestConceptGraph.test.ts (do not require a running sidecar for unit tests).\n2. NG-6: readCachedGraph is checked BEFORE calling the sidecar; a known hash serves the cache with no extraction.\n3. The core re-enforces the 0.80 threshold even if the sidecar returned stable=true (defence in depth).\n4. SI null → stable:false, blockingReason:'not-measured'. Never treat unknown as stable (feeds NG-3).\n5. Only touch manifest files; sidecar and ledger are protected.\n6. Report test results after each pair; summary at the end."
+}

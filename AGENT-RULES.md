@@ -1,0 +1,49 @@
+# NorthGuard — Agent Rules (NG-*)
+
+Binding invariants for any coding agent (human or LLM) working on NorthGuard.
+These sit **above** the manifest for a given story: a manifest may narrow what
+you touch, but it can never license breaking a rule below. Every rule maps to a
+requirement in the SLC pack and, where possible, to an automated check.
+
+> Read alongside `DECISION-REGISTER.md` (what is locked) and the global
+> `CLAUDE.md` (universal coding rules). On any conflict, security and privacy
+> rules (NG-1, NG-2, NG-9, NG-10) win.
+
+---
+
+| ID | Rule | Source | How it is enforced |
+|----|------|--------|--------------------|
+| **NG-1** | **Two transcripts never cross.** The wire transcript (redacted) is the only content ever transmitted upstream, including as conversation history on every later turn. The local transcript (rehydrated) is display-only. A rehydrated span must never appear in an outbound payload. | FR-08d | `assertWireIsolation()` unit + integration test over a ≥10-turn conversation (§8 acceptance test). CI-blocking. |
+| **NG-2** | **No prompt content leaves customer infrastructure except to the configured provider, and only the wire transcript does.** No content in logs, telemetry, error traces, or the ledger beyond hash + redacted text (unless full-text retention is opted in per NG-10). | NFR-05, FR-12 | Egress test asserts only `forwardToProvider` transmits, and only wire messages. |
+| **NG-3** | **Never auto-activate a policy.** An extracted protection graph is inert until a human confirms the areas. Below the stability threshold it is blocked from activation entirely. | FR-04, FR-05, NFR-07 | Activation guard rejects any graph with `stable !== true` or `confirmedBy == null`. |
+| **NG-4** | **Never fail open silently.** If the LLM backstop is unavailable, run rules-only and record the reduced coverage in the ledger and surface it in the UI. Degradation is logged, never hidden. | NFR-08, FR-14 | Every verdict carries `coverage: 'full' | 'rules-only'`; ledger entry records it. |
+| **NG-5** | **One ledger entry per request, written before the reply returns** — including on provider failure. The ledger is append-only; every entry carries the hash of its predecessor. | FR-02, FR-10, FR-14 | Writer returns the entry id before inspection returns it in the verdict; chain-verify test. |
+| **NG-6** | **Policy extraction runs once per policy version, keyed by content hash — never per request.** | FR-03 | Sidecar caches by `sha256(policy)`; inspection reads the cached graph only. |
+| **NG-7** | **Rules layer makes no network call and is deterministic.** | FR-06, NFR-01 | Rules module has no network imports; p95 <50 ms benchmark. |
+| **NG-8** | **Attribution is span-level, not verdict-level.** Every redacted or blocked span carries its protected area, the layer that caught it (`rule` vs `llm`), and the rule id where applicable. | FR-08b | Verdict schema requires `spans[].{area,layer,ruleId?}`. |
+| **NG-9** | **Never guess a rehydration.** A placeholder that cannot be matched to its original with confidence stays visible as a placeholder; an approximate or wrong substitution is never made silently. Rehydrated spans are visibly marked as locally restored. | FR-08g, FR-08h | Rehydration matcher returns `unresolved[]`; no fuzzy fallback below threshold. |
+| **NG-10** | **Entity resolution operates on pseudonyms, never on stored original values.** The pseudonym is `HMAC(customerKey, normalize(entityValue))`; the key lives on customer infrastructure and never leaves. **Full-text retention is opt-in per deployment and is never the default.** | R4, D4 | Recurring-work reads only pseudonyms + redacted text from the ledger; no code path reads original values from persistent storage. |
+| **NG-11** | **Placeholders are semantic and indexed, never opaque tokens.** `⟨Lieferant 1⟩`, `⟨Vertragsnummer⟩` — never `[REDACTED]`. Colliding entities of the same type are indexed. The reply must preserve the same placeholders. | FR-08a, FR-08f | Placeholder generator forbids opaque tokens; index assigned per distinct pseudonym within a conversation. |
+| **NG-12** | **System tuning is a logged governance decision.** Rule narrowing, term exclusions, area-mode changes, report dismissals, evidence exports, and key rotations are written to the ledger with actor, timestamp, and reason. Never an off-the-record edit. | FR-18 | Governance-event writer is the only path to mutate rule config. |
+| **NG-13** | **Individual-level prompt behaviour is never exposed in the engineer's own surface, and the management view has no person column.** Frequency/exposure data is aggregated across the team. Per-request detail exists only in the ledger, retrievable only with a stated reason. | FR-19, FR-20 | Management read-models have no `userId` group-by; ledger export includes user id, management view does not. |
+| **NG-14** | **The transcript engine is pure and stateless.** It accepts `(text, spans, key, mapping?)` and returns `(wireText, displayPlaceholders, pseudonyms)`. It owns no state, persists nothing, and there is no server-side mapping store. The reversible placeholder→original mapping is constructed and held client-side only, discarded when the conversation closes. | R1, FR-08c, FR-08e | Module has no filesystem/DB imports; mapping type never appears in a persistence signature. |
+| **NG-15** | **Recurring-work similarity is deterministic and reproducible.** Same input → same clusters, every run. The pinned embedding model version and the fixed thresholds are recorded in the audit record, exactly as kg-gen records its model and SI threshold. Clustering never crosses a `keyEpoch`. | R2, R3, R5 | Determinism test: two runs over the same ledger window produce identical cluster ids. |
+| **NG-16** | **Bilingual DE/EN throughout.** All UI copy and all detection lexicons exist in German and English. German is the default case; labels may wrap; buttons have no fixed width. | FR-15 | Lexicon files carry both languages; no hardcoded user-facing strings outside the i18n layer. |
+| **NG-17** | **Key separation is the pseudonym's only privacy.** The pseudonym key never shares storage or backups with the ledger; it is **excluded from ledger backups** (`AF-407`) and **never appears in an evidence export** (`AF-405`). Rationale: HMAC over a low-entropy value (supplier/customer names are highly guessable) is dictionary-attackable by anyone holding the key — an attacker with both the ledger and the key can enumerate candidates and reverse the pseudonyms. Privacy rests entirely on the key being separate. | FR-23 | Backup routine asserts no key material present; export asserts no key and no pseudonym preimage present; storage-separation is a deployment check (E8). |
+| **NG-18** | **German normalisation is corpus-validated; silent under-clustering is a failure.** `normalizeEntityValue` (SF-3051) must fold German legal forms (GmbH, AG, KG, mbH, e.K., "GmbH & Co. KG"), umlaut/transliteration variance (Müller/Mueller), casing, and dropped-legal-form casual reference so one entity yields one pseudonym. It is validated against a maintained German entity-variant corpus. Under-clustering that produces "no duplicated work this week" when the normaliser is actually broken is treated as a defect, not an empty result. | FR-24 | `de-entity-variants` corpus test: every variant group collapses to one pseudonym; distinct entities never collide. Part of E7 acceptance, not an afterthought. |
+
+---
+
+## Rule → automated-check summary (the CI gate)
+
+The following must be green before any story is accepted (dev-blueprint Phase 8):
+
+1. `wire-isolation` — NG-1, NG-2 (10-turn conversation, zero originals in any outbound payload)
+2. `ledger-chain` — NG-5, NG-10 (unbroken chain; no originals present)
+3. `activation-guard` — NG-3 (unstable/unconfirmed graph cannot activate)
+4. `degradation-recorded` — NG-4 (backstop down → rules-only + coverage flag in ledger)
+5. `rules-latency` — NG-7 (p95 <50 ms, no network)
+6. `rehydration-never-guess` — NG-9 (declension cases resolve; ambiguous stays placeholder)
+7. `resolution-determinism` — NG-15 (identical clusters across two runs)
+8. `key-separation` — NG-17 (no key material in a ledger backup; no key or pseudonym preimage in an evidence export)
+9. `de-entity-normalisation` — NG-18 (German entity-variant corpus: each group → one pseudonym; distinct entities never collide)

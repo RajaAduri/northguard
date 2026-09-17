@@ -1,0 +1,128 @@
+# compliance-de.yml — DE/EN compliance & functional safety lexicon
+# Part of dev-blueprint § RETRIEVER (lexicon-augmented grep).
+# Versioned: bump on every change; the version lands in the audit record.
+version: "1.1.0"
+domain: compliance
+languages: [de, en]
+
+entries:
+  - id: LEX-CMP-001
+    canonical: "ISO 26262"
+    variants:
+      - "ISO-26262"
+      - "ISO26262"
+      - "Funktionale Sicherheit"
+      - "functional safety"
+      - "FuSi"
+
+  - id: LEX-CMP-002
+    canonical: "ASPICE"
+    variants:
+      - "Automotive SPICE"
+      - "A-SPICE"
+      - "ISO/IEC 33061"
+      - "SPICE Level"
+      - "Reifegrad"
+
+  - id: LEX-CMP-003
+    canonical: "ISO 13485"
+    variants:
+      - "ISO-13485"
+      - "ISO13485"
+      - "Medizinprodukte QMS"
+      - "medical device quality management"
+
+  - id: LEX-CMP-004
+    canonical: "IEC 62304"
+    variants:
+      - "IEC-62304"
+      - "IEC62304"
+      - "Medizingeraete-Software"
+      - "Medizingeräte-Software"
+      - "medical device software lifecycle"
+
+  - id: LEX-CMP-005
+    canonical: "MDR"
+    variants:
+      - "Medical Device Regulation"
+      - "EU 2017/745"
+      - "Medizinprodukteverordnung"
+
+  - id: LEX-CMP-006
+    canonical: "DSGVO"
+    variants:
+      - "GDPR"
+      - "Datenschutz-Grundverordnung"
+      - "General Data Protection Regulation"
+      - "EU 2016/679"
+
+  - id: LEX-CMP-007
+    canonical: "fault tolerance"
+    variants:
+      - "Fehlertoleranz"
+      - "fault tolerant"
+      - "fehlertolerant"
+
+  - id: LEX-CMP-008
+    canonical: "traceability"
+    variants:
+      - "Rueckverfolgbarkeit"
+      - "Rückverfolgbarkeit"
+      - "Nachverfolgbarkeit"
+      - "trace matrix"
+      - "Traceability-Matrix"
+
+  - id: LEX-CMP-009
+    canonical: "safety requirement"
+    variants:
+      - "Sicherheitsanforderung"
+      - "safety requirements"
+      - "Sicherheitsanforderungen"
+      - "SafReq"
+
+  - id: LEX-CMP-010
+    canonical: "ASIL"
+    variants:
+      - "Automotive Safety Integrity Level"
+      - "ASIL-Einstufung"
+      - "ASIL classification"
+
+  - id: LEX-CMP-011
+    canonical: "verification"
+    variants:
+      - "Verifikation"
+      - "Verifizierung"
+      - "verify"
+
+  - id: LEX-CMP-012
+    canonical: "validation"
+    variants:
+      - "Validierung"
+      - "validate"
+
+  - id: LEX-CMP-013
+    canonical: "audit"
+    variants:
+      - "Audit"
+      - "Assessment"
+      - "Auditierung"
+      - "audit trail"
+      - "Audit-Trail"
+
+  - id: LEX-CMP-014
+    canonical: "change management"
+    variants:
+      - "Aenderungsmanagement"
+      - "Änderungsmanagement"
+      - "change request"
+      - "Aenderungsantrag"
+      - "Änderungsantrag"
+      - "ECR"
+      - "ECO"
+
+  - id: LEX-CMP-015
+    canonical: "work product"
+    variants:
+      - "Arbeitsprodukt"
+      - "Arbeitsergebnis"
+      - "work products"

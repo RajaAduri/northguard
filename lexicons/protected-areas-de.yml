@@ -1,0 +1,67 @@
+# protected-areas-de.yml — NorthGuard DE/EN protected-area & rule-family lexicon
+# Loaded by E3 AF-301 (rules layer) and used for retrieval-aware naming (§ RETRIEVER).
+# Bilingual DE/EN throughout (NG-16). Versioned: the version lands in the ledger
+# provenance and in every governance event that narrows a rule.
+version: "1.0.0"
+domain: protected-areas
+languages: [de, en]
+
+# The six protected areas of the example deployment (design PDFs). Each maps to an
+# area id used across specs, verdicts, and the ledger. Variants are the surface
+# terms the lexicon layer matches; rule families (below) handle structured spans.
+entries:
+  - id: LEX-NGA-001
+    canonical: "Kundendaten"
+    area: kundendaten
+    variants: ["Kundendaten", "customer data", "Kundenname", "customer name", "Ansprechpartner", "contact person"]
+
+  - id: LEX-NGA-002
+    canonical: "Quellcode & Repositories"
+    area: quellcode-repositories
+    variants: ["Quellcode", "source code", "Repository", "Repositories", "Repo", "internal repository", "internes Repository"]
+
+  - id: LEX-NGA-003
+    canonical: "Lieferanten & Konditionen"
+    area: lieferanten-konditionen
+    variants: ["Lieferant", "Lieferanten", "supplier", "suppliers", "Konditionen", "terms", "Lieferbedingungen", "delivery terms", "Qualitaetssicherungsvereinbarung", "Qualitätssicherungsvereinbarung", "quality assurance agreement", "QSV"]
+
+  - id: LEX-NGA-004
+    canonical: "Preise & Margen"
+    area: preise-margen
+    variants: ["Preis", "Preise", "price", "pricing", "Marge", "Margen", "margin", "Zielmarge", "target margin", "Rabatt", "discount", "Aufschlag", "markup", "Deckungsbeitrag", "contribution margin", "Preisstufe", "pricing tier"]
+
+  - id: LEX-NGA-005
+    canonical: "Projektcodenamen"
+    area: projektcodenamen
+    variants: ["Projektcodename", "Projektcodenamen", "project codename", "codename", "Projektkennung", "project code"]
+
+  - id: LEX-NGA-006
+    canonical: "Zugangsdaten"
+    area: zugangsdaten
+    variants: ["Zugangsdaten", "credentials", "Passwort", "password", "API-Schluessel", "API-Schlüssel", "API key", "Token", "Secret", "Geheimnis", "Zugangsschluessel", "access key"]
+
+# Rule families (deterministic structured spans — matched by regex in SF-3012, not
+# by literal lexicon terms). Listed here so rule ids are stable and auditable; the
+# `pattern` field is documentation — the implementation owns the compiled regex.
+rule_families:
+  - id: RULE-EMAIL
+    label_de: "E-Mail-Adresse"
+    label_en: "email address"
+    area: kundendaten
+    pattern: "local@domain.tld"
+  - id: RULE-CONTRACT
+    label_de: "Vertragsnummer"
+    label_en: "contract number"
+    area: kundendaten
+    pattern: "(CN|CT|VN)-<digits>"
+  - id: RULE-PERCENT-PRICE
+    label_de: "Prozentangabe im Preiskontext"
+    label_en: "percentage in price context"
+    area: preise-margen
+    pattern: "<number>% AND price term in sentence (Rabatt|Marge|Preis|Aufschlag)"
+    note: "Narrowed form (from the design FP loop): percentages only count with a price term in the sentence — avoids blocking Testabdeckung/Fehlerraten."
+  - id: RULE-REPO
+    label_de: "Interner Repository-Name"
+    label_en: "internal repository name"
+    area: quellcode-repositories
+    pattern: "<slug>-(core|internal|prod|api|svc)"

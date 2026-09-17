@@ -1,0 +1,112 @@
+# procurement.yml — DE/EN procurement & commercial lexicon
+# Part of dev-blueprint § RETRIEVER (lexicon-augmented grep).
+version: "1.1.0"
+domain: procurement
+languages: [de, en]
+
+entries:
+  - id: LEX-PRC-001
+    canonical: "purchase order"
+    variants:
+      - "Bestellung"
+      - "P.O."
+      - "PO number"
+      - "Auftrag"
+      - "order confirmation"
+      - "Auftragsbestaetigung"
+      - "Auftragsbestätigung"
+
+  - id: LEX-PRC-002
+    canonical: "RFQ"
+    variants:
+      - "request for quotation"
+      - "Angebotsanfrage"
+      - "Ausschreibung"
+      - "RFP"
+      - "request for proposal"
+
+  - id: LEX-PRC-003
+    canonical: "quotation"
+    variants:
+      - "Angebot"
+      - "quote"
+      - "Kostenvoranschlag"
+      - "offer"
+
+  - id: LEX-PRC-004
+    canonical: "MOQ"
+    variants:
+      - "minimum order quantity"
+      - "Mindestbestellmenge"
+      - "Mindestabnahmemenge"
+
+  - id: LEX-PRC-005
+    canonical: "supplier"
+    variants:
+      - "Lieferant"
+      - "vendor"
+      - "Zulieferer"
+      - "Tier 1"
+      - "Tier-1"
+      - "Tier 2"
+      - "Tier-2"
+
+  - id: LEX-PRC-006
+    canonical: "Incoterms"
+    variants:
+      - "DDP"
+      - "EXW"
+      - "FOB"
+      - "CIF"
+      - "DAP"
+      - "Lieferbedingungen"
+
+  - id: LEX-PRC-007
+    canonical: "VAT"
+    variants:
+      - "value added tax"
+      - "Mehrwertsteuer"
+      - "MwSt"
+      - "USt"
+      - "Umsatzsteuer"
+
+  - id: LEX-PRC-008
+    canonical: "part number"
+    variants:
+      - "Teilenummer"
+      - "Sachnummer"
+      - "P/N"
+      - "article number"
+      - "Artikelnummer"
+
+  - id: LEX-PRC-009
+    canonical: "lead time"
+    variants:
+      - "Lieferzeit"
+      - "Vorlaufzeit"
+      - "delivery time"
+      - "Liefertermin"
+
+  - id: LEX-PRC-010
+    canonical: "change order"
+    variants:
+      - "Aenderungsauftrag"
+      - "Änderungsauftrag"
+      - "change request"
+      - "Nachtrag"
+      - "CO"
+
+  - id: LEX-PRC-011
+    canonical: "invoice"
+    variants:
+      - "Rechnung"
+      - "billing"
+      - "Faktura"
+
+  - id: LEX-PRC-012
+    canonical: "payment terms"
+    variants:
+      - "Zahlungsbedingungen"
+      - "Zahlungsziel"
+      - "net 30"
+      - "net 60"
