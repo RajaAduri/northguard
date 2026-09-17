@@ -13,6 +13,10 @@ export function setLedgerPath(path: string): void {
   ledgerPath = path
 }
 
+export function getLedgerPath(): string {
+  return ledgerPath
+}
+
 // SF-4014 — compose: guard (NG-19) → chain → hash → atomic append.
 export async function appendLedgerEntry(
   e: Partial<LedgerEntry>,

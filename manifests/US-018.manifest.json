@@ -1,0 +1,38 @@
+{
+  "id": "US-018",
+  "title": "Ledger durability & backup (AF-407) + chain recompute (AF-406, pulled forward as a dependency)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-04 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "core/src/features/ledger/append/appendLedgerEntry.ts", "reason": "Add getLedgerPath() so the snapshot has a source-of-truth path", "sf_id": "SF-4014" },
+    { "file": "core/src/features/ledger/append/index.ts", "reason": "Export getLedgerPath", "sf_id": "AF-401" }
+  ],
+  "create": [
+    { "file": "core/src/features/ledger/verify/recomputeChain.ts", "reason": "AF-406 SF-4061 — recompute the chain; needed by verifyBackupChain (dependency pulled forward from US-017)", "sf_id": "SF-4061", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/verify/recomputeChain.test.ts", "reason": "TDD stub", "sf_id": "SF-4061" },
+    { "file": "core/src/features/ledger/verify/index.ts", "reason": "AF-406 entry point", "sf_id": "AF-406" },
+    { "file": "core/src/features/ledger/backup/snapshotLedger.ts", "reason": "Consistent snapshot; key store NEVER included (NG-17); throws if target unwritable", "sf_id": "SF-4071" },
+    { "file": "core/src/features/ledger/backup/snapshotLedger.test.ts", "reason": "TDD stub", "sf_id": "SF-4071" },
+    { "file": "core/src/features/ledger/backup/verifyBackupChain.ts", "reason": "Delegates AF-406; truncated → false; restore continues with no gap", "sf_id": "SF-4072" },
+    { "file": "core/src/features/ledger/backup/verifyBackupChain.test.ts", "reason": "TDD stub", "sf_id": "SF-4072" },
+    { "file": "core/src/features/ledger/backup/index.ts", "reason": "AF-407 entry point", "sf_id": "AF-407" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/governance/**", "reason": "Not in scope for this story" },
+    { "file": "core/src/features/policy/**", "reason": "Not in scope" },
+    { "file": "core/src/features/inspection/**", "reason": "Not in scope" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/verify/recomputeChain.test.ts",
+    "core/src/features/ledger/backup/snapshotLedger.test.ts",
+    "core/src/features/ledger/backup/verifyBackupChain.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.6", "app_functions": ["AF-407", "AF-406"], "sw_functions": ["SF-4071", "SF-4072", "SF-4061"], "acceptance_criteria": ["US-018 AC-1..2"] },
+  "chain_order": [
+    { "sf_id": "SF-4061", "reason": "chain recompute — the verification primitive" },
+    { "sf_id": "SF-4071", "reason": "snapshot the ledger (no key material — NG-17)" },
+    { "sf_id": "SF-4072", "reason": "verify the snapshot chain via SF-4061" }
+  ],
+  "agent_prompt": "Implement US-018 (AF-407 backup/durability) per specs/EP-04. NFR-06: a snapshot verifies as an unbroken chain across restart + restore. NG-17: the pseudonym key store is NEVER included in a ledger backup — assert it. Pull AF-406 recomputeChain (SF-4061) forward as the verification primitive. TDD."
+}
