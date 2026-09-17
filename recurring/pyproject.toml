@@ -1,0 +1,10 @@
+[project]
+name = "northguard-recurring"
+version = "0.1.0"
+description = "NorthGuard E7 recurring-work intelligence (deterministic two-stage similarity; non-attributable, NG-21)."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+addopts = "-q"

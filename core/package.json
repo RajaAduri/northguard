@@ -1,0 +1,17 @@
+{
+  "name": "northguard-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "NorthGuard architecture-independent core (E2 policy intake, E3 inspection/redaction, E4 ledger, E6 management).",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
