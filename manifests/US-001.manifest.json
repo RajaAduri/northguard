@@ -1,0 +1,37 @@
+{
+  "id": "US-001",
+  "title": "Ingest a policy document (text/PDF) → normalized text + content hash",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-02 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/policy/ingest/acceptPolicyInput.ts", "reason": "Validate + branch on kind; size cap", "sf_id": "SF-2011", "template": "specs/EP-02-policy-intake/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/policy/ingest/acceptPolicyInput.test.ts", "reason": "TDD stub", "sf_id": "SF-2011" },
+    { "file": "core/src/features/policy/ingest/extractPdfText.ts", "reason": "PDF bytes → text; empty → EmptyPolicyError", "sf_id": "SF-2012" },
+    { "file": "core/src/features/policy/ingest/extractPdfText.test.ts", "reason": "TDD stub", "sf_id": "SF-2012" },
+    { "file": "core/src/features/policy/ingest/normalizePolicyText.ts", "reason": "Deterministic whitespace/encoding normalise (NFC, LF)", "sf_id": "SF-2013" },
+    { "file": "core/src/features/policy/ingest/normalizePolicyText.test.ts", "reason": "TDD stub", "sf_id": "SF-2013" },
+    { "file": "core/src/features/policy/ingest/computePolicyHash.ts", "reason": "sha256 first-16-hex of trimmed normalized text (matches sidecar policy_key)", "sf_id": "SF-2014" },
+    { "file": "core/src/features/policy/ingest/computePolicyHash.test.ts", "reason": "TDD stub", "sf_id": "SF-2014" },
+    { "file": "core/src/features/policy/ingest/index.ts", "reason": "AF-201 entry point", "sf_id": "AF-201" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not in scope" },
+    { "file": "core/src/features/inspection/**", "reason": "Not in scope" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/policy/ingest/acceptPolicyInput.test.ts",
+    "core/src/features/policy/ingest/extractPdfText.test.ts",
+    "core/src/features/policy/ingest/normalizePolicyText.test.ts",
+    "core/src/features/policy/ingest/computePolicyHash.test.ts"
+  ],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.1", "app_functions": ["AF-201"], "sw_functions": ["SF-2011", "SF-2012", "SF-2013", "SF-2014"], "acceptance_criteria": ["US-001 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-2014", "reason": "pure hash, no deps" },
+    { "sf_id": "SF-2013", "reason": "normalise (feeds the hash)" },
+    { "sf_id": "SF-2012", "reason": "pdf → text" },
+    { "sf_id": "SF-2011", "reason": "accept + branch (composes 2012)" }
+  ],
+  "agent_prompt": "Implement US-001 (AF-201 ingest) per specs/EP-02. PDF with no text → EmptyPolicyError (never a silent empty policy). policyHash = sha256(normalized.trim()) first 16 hex. Normalisation idempotent, NFC, umlauts preserved. TDD."
+}
