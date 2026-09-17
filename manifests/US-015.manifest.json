@@ -1,0 +1,35 @@
+{
+  "id": "US-015",
+  "title": "Governance-event writer (actor pseudonymised, NG-12/NG-19)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-04 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/lib/pseudonym.ts", "reason": "Shared HMAC primitive (computePseudonymHmac) + actor normalisation — used by E4 actor derivation now and E3 entity pseudonyms (SF-3052) later; avoids duplication", "sf_id": "shared", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/lib/pseudonym.test.ts", "reason": "TDD stub", "sf_id": "shared" },
+    { "file": "core/src/features/ledger/governance/buildGovernanceEntry.ts", "reason": "Governance entry; reason mandatory; actor stored as actorPseudonym (NG-19)", "sf_id": "SF-4031", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/governance/buildGovernanceEntry.test.ts", "reason": "TDD stub", "sf_id": "SF-4031" },
+    { "file": "core/src/features/ledger/governance/writeGovernanceEvent.ts", "reason": "Build + append; missing actor throws (accountability, NG-12)", "sf_id": "SF-4032" },
+    { "file": "core/src/features/ledger/governance/writeGovernanceEvent.test.ts", "reason": "TDD stub", "sf_id": "SF-4032" },
+    { "file": "core/src/features/ledger/governance/index.ts", "reason": "AF-403 entry point", "sf_id": "AF-403" }
+  ],
+  "modify_note": "Imports AF-401 appendLedgerEntry read-only. core/lib/pseudonym.ts is a new shared primitive (structural decision — see SESSION-LOG).",
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "Consumed read-only; not modified" },
+    { "file": "core/src/features/policy/**", "reason": "Not in scope for this story" },
+    { "file": "core/src/features/inspection/**", "reason": "Not in scope for this story" }
+  ],
+  "tests_must_pass": [
+    "core/lib/pseudonym.test.ts",
+    "core/src/features/ledger/governance/buildGovernanceEntry.test.ts",
+    "core/src/features/ledger/governance/writeGovernanceEvent.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.3", "app_functions": ["AF-403"], "sw_functions": ["SF-4031", "SF-4032"], "acceptance_criteria": ["US-015 AC"] },
+  "chain_order": [
+    { "sf_id": "shared", "reason": "pseudonym HMAC primitive first" },
+    { "sf_id": "SF-4031", "reason": "build the governance entry (pseudonymise actor, require reason)" },
+    { "sf_id": "SF-4032", "reason": "append via AF-401; missing actor throws" }
+  ],
+  "agent_prompt": "Implement US-015 (AF-403 governance-event writer) per specs/EP-04-audit-ledger/APP-FUNCTIONS.md. NG-12: actor + reason mandatory. NG-19: the actor is stored as actorPseudonym (HMAC via core/lib/pseudonym.ts), never a plaintext id. Governance entries share the AF-401 chain. TDD."
+}
