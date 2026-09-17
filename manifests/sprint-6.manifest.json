@@ -1,0 +1,11 @@
+{
+  "sprint": "Sprint 6 — Governed Chat Surface (E5)",
+  "story_sequence": ["US-037", "US-036", "US-032", "US-033", "US-034", "US-035", "US-038", "US-039"],
+  "rationale": "E5 is the full redact-and-continue experience — a React SPA (Vite, TS strict) over the solved E3 core (DECISION-REGISTER §8 A1). Build the substrate first: US-037 motion/design tokens (the Handoff §2 timings ARE the spec) and US-036 i18n (DE default, three-level language) underpin every other story. Then US-032 composer state machine (the interaction spine), US-033 submission mirror (read-only mirror of redactedPrompt), US-034 reply rehydration (imports E3 AF-307; never guess, never re-wire), US-035 provider-view/wire transcript (NG-1). US-038 FP report bridges to E6 AF-604; US-039 two-rooms threshold + management shell (no person column, NG-13) is last. The E1 browser extension (block-and-warn) decomposes AFTER this sprint.",
+  "estimated_agent_hours": 9,
+  "total_stories": 8,
+  "critical_path": ["US-037", "US-036", "US-032", "US-033", "US-034"],
+  "acceptance_gate": ["wire-isolation (E5 as an InterceptionAdapter: no draftPrompt/restored span forwarded)", "rehydration-never-guess (delegated to AF-307)", "timing-fidelity (Handoff §2)", "de-en-string-parity (NG-16)", "no-person-column (NG-13)"],
+  "notes": "E5 introduces no detection/redaction/rehydration logic — it renders the E3 core. Bridges B6 (adapter↔E5), B7 (E5↔E3 AF-307), B8 (E5↔E6 AF-604) each need an integration test. The submission mirror MUST be byte-identical to redactedPrompt (FR-08). Term is 'Maskieren', never 'Schwärzen/anonymisieren/REDACTED' (Handoff rule 16); the clean state is 'nichts erkannt', never 'safe' (rule 2).",
+  "language": "TypeScript (web — React SPA, Vite)"
+}

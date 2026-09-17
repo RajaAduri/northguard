@@ -4,6 +4,13 @@ Language: TypeScript. Files under `core/src/features/inspection/`. Shared types
 from `core/lib/types.ts` (E1 contract). The transcript-engine AFs (304–307) are
 **pure**: no fs, no db, no network imports (enforced by lint rule + NG-14 test).
 
+> **Build order (§8 A4, R12).** The model is the detector; rules are a latency/
+> determinism strategy. Build **lexicons (SF-3011/3013) + backstop-model integration
+> (AF-302) before regex breadth (SF-3012).** SF-3012 covers *validated* German
+> identifiers (IBAN MOD-97, Steuernummer per-Bundesland, Handelsregisternummer) and a
+> small high-precision family — not an ever-widening pattern zoo that would spend the
+> sprint chasing a small fraction of recall.
+
 ---
 
 ## AF-301: runRulesLayer
@@ -39,13 +46,17 @@ export function loadLexicons(dir: string): Lexicons   // called once at boot
 // 2. GIVEN a missing language file THEN throws LexiconLoadError at boot
 // 3. GIVEN duplicate entry ids THEN throws (versioned, stable ids required)
 
-// SF-3012  rules/matchRulePatterns.ts
+// SF-3012  rules/matchRulePatterns.ts   (validated German identifiers + high-precision families; §8 A4)
 export function matchRulePatterns(text: string): RawHit[]
 // 1. GIVEN "anna.berger@nordwerk.de" THEN email rule hit
 // 2. GIVEN "CN-48213" THEN contract-number rule hit
 // 3. GIVEN "Zielmarge von 34 %" THEN percentage-in-price-context hit
 // 4. GIVEN "shiftnorth-core" THEN internal-repository-name hit
 // 5. GIVEN a 100k-char adversarial string THEN completes < 50 ms (linear patterns)
+// 6. GIVEN "DE89 3704 0044 0532 0130 00" THEN IBAN hit ONLY if the MOD-97 checksum is valid; an invalid check digit does not hit (validation, not just shape)
+// 7. GIVEN a Steuernummer in a Bundesland-specific format THEN hit (format table per Bundesland, not one regex)
+// 8. GIVEN "HRB 12345" / "HRA 12345" THEN Handelsregisternummer hit in the standard form
+// NOTE (A4): rules are precision-first; contextual recall is the model's job (AF-302), so this stays a bounded, validated set — not an open-ended pattern zoo.
 
 // SF-3013  rules/matchLexiconTerms.ts
 export function matchLexiconTerms(text: string, lex: Lexicons, locale: Locale): RawHit[]

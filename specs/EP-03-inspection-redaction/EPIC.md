@@ -14,6 +14,27 @@ live together because they share the placeholder/span model:
   builds the wire transcript and asserts two-transcript isolation, and rehydrates
   replies client-side with declension tolerance and a strict never-guess rule.
 
+## Detection rebalance — the model is the detector, rules are a latency strategy (§8 A4)
+Directional benchmarking (PIIBench and vendor-adjacent sources) puts rule engines
+near **F1 ≈ 0.14 with ~17% recall on contextual entities**, versus **~0.99** for a
+fine-tuned small language model and **~0.94** for a quantised Gemma-2B. Rules-first
+stays correct for the <50 ms deterministic path (NFR-01, NG-7) — but the rules layer
+catches almost nothing *contextual*, so **the backstop model is the detector, not the
+fallback.** Consequences for this epic:
+
+- **Build order (R12):** German lexicons (SF-3011/3013) and backstop-model
+  integration (AF-302) come **before** regex breadth (SF-3012). Do not spend the
+  sprint perfecting patterns that contribute a small fraction of recall.
+- **German is hard for detection specifically:** compound nouns break whitespace
+  tokenisation; declension across four cases defeats English-trained NER; German
+  identifiers need real validation — **IBAN (MOD-97 checksum), *Steuernummer*
+  (format varies across the sixteen Bundesländer), *Handelsregisternummer* (standard
+  form).** These are the acceptance targets for the rules layer, and NG-18's corpus
+  must exercise the compound-noun and four-case declension behaviour.
+- **Degradation is now more visible, not less:** with the model as the detector,
+  `coverage:'rules-only'` (NG-4) means recall drops materially — the degraded banner
+  (E5) must say so plainly, not treat rules-only as near-parity.
+
 ## The transcript engine is pure and stateless (NG-14)
 It accepts `(text, spans, key, mapping?)` and returns `(wireText,
 displayPlaceholders, pseudonyms)`. **It owns no state and persists nothing. There
@@ -46,5 +67,7 @@ token that may reach the ledger (NG-10).
 |--------|--------|
 | Rules layer p95 | < 50 ms (NFR-01) |
 | Full inspection p95 (before provider) | < 800 ms (NFR-02) |
+| Contextual-entity recall | Carried by the model (AF-302), not the rules layer (§8 A4) |
+| German identifier validation | IBAN MOD-97 valid/invalid distinguished; Steuernummer per-Bundesland; Handelsregisternummer standard form |
 | Wire-isolation over 10 turns | 0 originals in any outbound payload |
 | Rehydration wrong-substitution rate | 0 (never guess) |

@@ -58,8 +58,9 @@ FLOW:
  │        failure mode: ledger write fails → inspection throws; adapter must not forward
  └─[10]→ return InspectionVerdict (to adapter; adapter forwards wire, then rehydrates via AF-307)
 CHAIN LOGIC: sequential with a branch at [2]; [6] and [7] are independent (may parallelise)
-UPSTREAM:    E1 adapter (submitForInspection); AF-206 (active policy)
-DOWNSTREAM:  E1 adapter forwardToProvider; AF-307 rehydrate; E4 ledger; E7 reads the entry later
+UPSTREAM:    E1 adapter / E5 (submitForInspection); AF-206 (active policy)
+DOWNSTREAM:  adapter/E5 forwardToProvider; AF-307 rehydrate; E4 ledger (actorPseudonym derived at AF-402, NG-19); E7 reads the entry later
+NOTE (§8 A4): the backstop (AF-302) is the detector; the rules layer is the latency/determinism path. rules-only coverage means materially reduced recall — surfaced plainly by E5's degraded banner (NG-4).
 BLAST RADIUS: AF-306 broken → wire-isolation risk (highest severity). AF-402 broken → unaudited request (NG-5). AF-301 slow → NFR-01 miss.
 ```
 
@@ -74,8 +75,8 @@ FLOW:
  ├─[3]→ SF-3073 markRestoredSpans       reads: [2] → restoredText + restoredSpans (display-only, FR-08h)
  └─[3']→ SF-3074 collectUnresolved      reads: [2] → unresolved[] (placeholders stay visible)
 CHAIN LOGIC: sequential to [2], then [3] ∥ [3']
-UPSTREAM:    E1 adapter (provider reply stream)
-DOWNSTREAM:  E5 rendering (deferred) — restored content NEVER re-enters the wire (NG-1)
+UPSTREAM:    E1 adapter / E5 (provider reply stream)
+DOWNSTREAM:  E5 AF-503 replyRehydrationView (governed surface) ═══ B7 — restored content NEVER re-enters the wire (NG-1)
 BLAST RADIUS: SF-3072 broken → wrong substitution (privacy/quality). Guarded by never-guess: failure degrades to visible placeholder, not a leak.
 ```
 
@@ -95,7 +96,7 @@ FLOW:
  └─[6]→ SF-6026 renderBriefingMarkdown  → briefing (PDF export = same content)
 CHAIN LOGIC: [1] then [2][3][4][5] parallel then [6] converge
 UPSTREAM:    E4 ledger, E7 recurring-work
-DOWNSTREAM:  E5 rendering (deferred) / PDF export
+DOWNSTREAM:  E5 AF-508 management shell (buildBriefingView) / PDF export
 BLAST RADIUS: [1] broken → briefing has no inputs. E7 down → themes degrade to ledger-only (recorded).
 ```
 
@@ -110,9 +111,28 @@ FLOW:
  ├─[4]→ SF-6044 applyResolution           ═══ BRIDGE → E4 AF-403 (governance event, NG-12)
  └─[5]→ SF-6045 notifyReporter            → quiet line in the originating conversation
 CHAIN LOGIC: sequential; [4] and [5] follow the human decision
-UPSTREAM:    E5 report action (span → FP report); E4 ledger (for preview)
+UPSTREAM:    E5 AF-507 report action (span → FP report) ═══ B8; E4 ledger (for preview)
 DOWNSTREAM:  E4 governance ledger; E5 reporter notice; AF-602 policy-fit note
 BLAST RADIUS: SF-6044 broken → tuning unaudited (NG-12 violation). SF-6043 wrong → bad narrowing decisions.
+```
+
+## AF-408: unmaskActor  *(dual-key de-anonymisation — NG-20, E4)*
+```
+PURPOSE: Recover a person from an actorPseudonym — only under the Vier-Augen-Prinzip.
+ENTRY:   core/src/features/ledger/unmask/index.ts
+FLOW:
+ ├─[1]→ SF-4081 buildUnmaskRequest   reads: target pseudonym + reason → UnmaskRequest (empty reason → throw)
+ ├─[2]→ SF-4082 verifyDualAuthorisation  reads: two Authorisations, RoleBinding
+ │        failure mode: single authoriser OR same-role pair → throw DualAuthorisationError (NG-20)
+ ├─[3]→ SF-4084 writeUnmaskGovernanceEvent   ═══ BRIDGE → E4 AF-403   (BEFORE the identity is resolved)
+ │        returns: govKind:'unmask' entryId (both parties + reason + target; NO identity, NO plaintext id)
+ ├─[4]→ SF-4083 resolveActorIdentity  reads: target, key, DirectoryProvider (E8-provided interface)
+ │        failure mode: no directory match → UnresolvedActorError (never guesses)
+ └─[5]→ SF-4085 unmaskActor  → { identity, ledgerEntryId }  (identity returned ONLY after the entry is written)
+CHAIN LOGIC: sequential; the ledger entry precedes the identity (an unmask off the record is impossible)
+UPSTREAM:    an E6/E8 admin surface with two authenticated authorisers (role binding + secret store = E8, deferred)
+DOWNSTREAM:  the two authorised callers only; the identity is never written to the ledger or an export
+BLAST RADIUS: SF-4082 broken → single-party unmask (co-determination breach, NG-20). SF-4084 skipped → off-ledger unmask.
 ```
 
 ## AF-706: synthesizeRecurringWork  *(the deep chain — Python)*
@@ -162,11 +182,29 @@ BRIDGE B4: E7 AF-706 ↔ E6 AF-602 (recurring-work → briefing)
   Risk:      the two type definitions drift; a finding naming an original value
   Test:      contract test on the JSON shape; privacy assertion on findings
 
-BRIDGE B5: E2 AF-206 / E6 AF-604 / AF-405 ↔ E4 AF-403 (governance events)
+BRIDGE B5: E2 AF-206 / E6 AF-604 / AF-405 / E4 AF-408 ↔ E4 AF-403 (governance events)
   Mechanism: function call
-  Contract:  (GovKind, actor, reason, payload) → entryId
-  Risk:      a tuning/activation/export edit made off-ledger (NG-12)
-  Test:      every mutation path writes a governance event
+  Contract:  (GovKind, actorId, reason, payload, key) → entryId  (actor stored as pseudonym, NG-19)
+  Risk:      a tuning/activation/export/unmask edit made off-ledger (NG-12); a plaintext actor stored (NG-19)
+  Test:      every mutation path writes a governance event; no plaintext user id in any entry
+
+BRIDGE B6: E1 adapter / E5 ↔ E3 AF-303 (submitForInspection) + forwardToProvider
+  Mechanism: function call (both surfaces implement InterceptionAdapter)
+  Contract:  InspectionRequest → InspectionVerdict; WireMessage[] out (core/lib/types.ts)
+  Risk:      E5 forwarding draftPrompt or a restored span instead of the wire (NG-1)
+  Test:      the wire-isolation conformance suite (E5 passes it now; the E1 extension later)
+
+BRIDGE B7: E5 AF-503 ↔ E3 AF-307 (client-side rehydration)
+  Mechanism: function call; the placeholder→original mapping is client-held, injected (NG-14)
+  Contract:  RehydrateResult { restoredText, restoredSpans, unresolved }
+  Risk:      a restored value re-entering the wire (NG-1); a guessed substitution (NG-9)
+  Test:      restored-never-in-wire; never-guess (delegated to AF-307)
+
+BRIDGE B8: E5 AF-507 ↔ E6 AF-604 (false-positive report)
+  Mechanism: function call
+  Contract:  FalsePositiveReport → faId
+  Risk:      the rest of the prompt shared without the explicit 'Kontext freigeben' opt-in
+  Test:      off-by-default context sharing; only span+rule+area cross without opt-in
 ```
 
 All bridge types live once in `core/lib/types.ts` (TS) with a mirror in

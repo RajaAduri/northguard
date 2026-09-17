@@ -26,14 +26,36 @@ by avoiding embeddings:
 Entity resolution runs on **pseudonyms** (NG-10). Clustering **never crosses a
 `keyEpoch`** (R5); a window spanning a rotation carries a coverage caveat.
 
+## AI Act posture — non-attributable by construction (§8 A5, NG-21)
+**Open legal risk, not resolved in code.** The EU AI Act's Annex III classifies AI
+systems that monitor or evaluate employee performance or behaviour as **high-risk**;
+Article 6(3) exempts narrow procedural tasks that do not profile or evaluate workers.
+A DLP classifier that only flags policy violations plausibly sits outside high-risk.
+**Recurring-work detection plausibly does not** — it analyses what a team is doing.
+E7 is therefore constrained so the safer reading stays available (binding as NG-21):
+
+- E7 reports on **work topics and artefacts, never on people.**
+- **No scoring, ranking, or evaluation** of individuals or their output.
+- **No inference of sentiment, tone, or emotional state** (separately prohibited in
+  workplace settings).
+- Output is **aggregate and non-attributable by construction** — there is no person
+  dimension anywhere in an E7 result, and `assert_non_attributable` (SF-7065) fails
+  the synthesis if one appears.
+
+The legal exposure is recorded in DECISION-REGISTER §8 A5 as an open item. **No
+AI-Act effective-date appears in this spec, in code, or in any user-facing copy** —
+sources conflict on when Annex III obligations take full effect; verify against the
+regulation text before stating a date anywhere.
+
 ## Scope
 - **In scope:** content-feature extraction over the redacted+pseudonymised corpus,
   MinHash-LSH near-duplicate blocking, semantic clustering via pinned embeddings,
   pseudonym-based entity/topic resolution, temporal pattern detection, hours-saved
-  + named-artefact synthesis.
+  + named-artefact synthesis — all **aggregate and non-attributable (NG-21)**.
 - **Out of scope:** reading any original entity value (NG-10); embeddings sent off
-  host (NFR-05); non-deterministic inference (NG-15); the briefing prose itself
-  (E6 `AF-602` consumes E7 output).
+  host (NFR-05); non-deterministic inference (NG-15); **any per-person scoring,
+  ranking, sentiment/tone inference, or attribution (NG-21)**; the briefing prose
+  itself (E6 `AF-602` consumes E7 output).
 
 ## Features
 | ID | Feature | Stories | App Functions |
@@ -67,6 +89,7 @@ form casual reference are all in the corpus.
 | Cross-epoch cluster leakage | 0 (R5) |
 | **German entity-variant corpus** | **Every group → one pseudonym; zero cross-group collision (FR-24, NG-18) — a hard acceptance gate** |
 | Key material in any E7 output/log | 0 (NG-17 — E7 reads pseudonyms, never the key) |
+| **Person dimension / per-individual score/rank / sentiment field in any output** | **0 (NG-21) — `assert_non_attributable` fails the synthesis if present** |
 
 ## Language
 Python 3.11 (`recurring/` package), colocated with the embedding model on the

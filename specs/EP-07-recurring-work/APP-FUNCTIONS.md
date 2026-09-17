@@ -207,6 +207,13 @@ def rank_findings(findings: list[RecurringWorkFinding]) -> list[RecurringWorkFin
 # 1. GIVEN findings THEN ranked by hours saved desc (briefing headline first)
 # 2. GIVEN ties THEN by cluster size
 # 3. GIVEN determinism THEN identical order across runs (NG-15)
+
+# SF-7065  synthesis/assert_non_attributable.py   (NG-21 gate; runs before findings leave E7)
+def assert_non_attributable(findings: list[RecurringWorkFinding]) -> None: ...
+# 1. GIVEN a finding carrying a person dimension (actor, user, name) THEN raises AttributionViolation (NG-21)
+# 2. GIVEN a finding carrying a per-individual score, rank, or sentiment/tone field THEN raises AttributionViolation (NG-21)
+# 3. GIVEN topic/artefact/aggregate findings only THEN returns None
+# NOTE (A5): a RecurringWorkFinding describes work topics and artefacts (area, pseudonymised cluster, count, hours saved) — never who did it or how they felt.
 ```
 
-**Chain order:** extractContentFeatures → blockNearDuplicates → clusterSemantic → resolveEntities → detectTemporalPatterns → synthesizeRecurringWork → (E6 briefing).
+**Chain order:** extractContentFeatures → blockNearDuplicates → clusterSemantic → resolveEntities → detectTemporalPatterns → synthesizeRecurringWork (rank_findings → **assert_non_attributable**, the last gate) → (E6 briefing).

@@ -6,16 +6,18 @@
   "status": "planned",
   "modify": [],
   "create": [
-    { "file": "core/lib/types.ts", "reason": "Shared LedgerEntry type (and contract types) — single source of truth", "sf_id": "shared", "template": "specs/EP-01-gateway-adapter/EPIC.md" },
+    { "file": "core/lib/types.ts", "reason": "Shared LedgerEntry type (actorPseudonym+actorEpoch, NO plaintext user — NG-19) and contract types — single source of truth", "sf_id": "shared", "template": "specs/EP-01-gateway-adapter/EPIC.md" },
     { "file": "core/src/features/ledger/append/loadChainTail.ts", "reason": "Read chain tail; ignore torn last line", "sf_id": "SF-4011", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
     { "file": "core/src/features/ledger/append/loadChainTail.test.ts", "reason": "TDD stub", "sf_id": "SF-4011" },
     { "file": "core/src/features/ledger/append/computeEntryHash.ts", "reason": "Canonical sha256 over entry sans hash", "sf_id": "SF-4012" },
     { "file": "core/src/features/ledger/append/computeEntryHash.test.ts", "reason": "TDD stub", "sf_id": "SF-4012" },
     { "file": "core/src/features/ledger/append/appendAtomic.ts", "reason": "Atomic, fsync'd, single-writer append", "sf_id": "SF-4013" },
     { "file": "core/src/features/ledger/append/appendAtomic.test.ts", "reason": "TDD stub", "sf_id": "SF-4013" },
-    { "file": "core/src/features/ledger/append/appendLedgerEntry.ts", "reason": "Compose: chain + hash + append", "sf_id": "SF-4014" },
+    { "file": "core/src/features/ledger/append/assertNoPlaintextActor.ts", "reason": "NG-19 guard: reject any entry carrying a plaintext user id; only actorPseudonym permitted", "sf_id": "SF-4015" },
+    { "file": "core/src/features/ledger/append/assertNoPlaintextActor.test.ts", "reason": "TDD stub", "sf_id": "SF-4015" },
+    { "file": "core/src/features/ledger/append/appendLedgerEntry.ts", "reason": "Compose: assert-no-plaintext-actor + chain + hash + append", "sf_id": "SF-4014" },
     { "file": "core/src/features/ledger/append/appendLedgerEntry.test.ts", "reason": "TDD stub", "sf_id": "SF-4014" },
-    { "file": "core/src/features/ledger/append/index.ts", "reason": "App Function entry point composing SF-4011..4014", "sf_id": "AF-401" }
+    { "file": "core/src/features/ledger/append/index.ts", "reason": "App Function entry point composing SF-4011..4015", "sf_id": "AF-401" }
   ],
   "protected": [
     { "file": "core/src/features/policy/**", "reason": "Not in scope for this story" },
@@ -25,14 +27,16 @@
     "core/src/features/ledger/append/loadChainTail.test.ts",
     "core/src/features/ledger/append/computeEntryHash.test.ts",
     "core/src/features/ledger/append/appendAtomic.test.ts",
+    "core/src/features/ledger/append/assertNoPlaintextActor.test.ts",
     "core/src/features/ledger/append/appendLedgerEntry.test.ts"
   ],
-  "traceability": { "epic": "EP-04", "feature": "FT-4.1", "app_functions": ["AF-401"], "sw_functions": ["SF-4011", "SF-4012", "SF-4013", "SF-4014"], "acceptance_criteria": ["US-013 AC-1"] },
+  "traceability": { "epic": "EP-04", "feature": "FT-4.1", "app_functions": ["AF-401"], "sw_functions": ["SF-4011", "SF-4012", "SF-4013", "SF-4014", "SF-4015"], "acceptance_criteria": ["US-013 AC-1", "US-013 AC-2"] },
   "chain_order": [
     { "sf_id": "SF-4012", "reason": "pure hash, no deps" },
     { "sf_id": "SF-4011", "reason": "reads existing chain" },
     { "sf_id": "SF-4013", "reason": "atomic write primitive" },
-    { "sf_id": "SF-4014", "reason": "composes the above" }
+    { "sf_id": "SF-4015", "reason": "NG-19 guard: pure, no deps; asserts no plaintext actor before any write" },
+    { "sf_id": "SF-4014", "reason": "composes the above; runs the guard before appending" }
   ],
-  "agent_prompt": "CONTEXT:\n- Project: NorthGuard — LLM prompt governance gateway (audit-grade evidence ledger).\n- Tech: TypeScript, Node 20 ESM, strict; Vitest. See DECISION-REGISTER.md and AGENT-RULES.md.\n- Current state: fresh core package; this is the first ledger story. Nothing depends on it yet, but everything will.\n\nTASK:\nImplement US-013: the append-only, hash-chained JSONL ledger writer (AF-401).\n\nCREATE THESE FILES (see manifest.create): core/lib/types.ts (LedgerEntry + the contract types from specs/EP-01-gateway-adapter/EPIC.md), then SF-4011..4014 under core/src/features/ledger/append/, each with an adjacent .test.ts, plus index.ts.\n\nFUNCTION SIGNATURES: exactly as in specs/EP-04-audit-ledger/APP-FUNCTIONS.md (AF-401 section) — loadChainTail, computeEntryHash, appendAtomic, appendLedgerEntry.\n\nCHAIN ORDER: computeEntryHash → loadChainTail → appendAtomic → appendLedgerEntry.\n\nRULES:\n1. TDD: write the test first, watch it fail, then implement.\n2. ONLY create files in this manifest. Do not touch protected paths.\n3. TS strict — no any, no non-null assertions without proof.\n4. NG-5: append must be atomic and survive process restart with no gap; a torn final line (crash mid-write) is ignored, not chained onto.\n5. computeEntryHash MUST be canonical (key order independent) so verifyChain (AF-406, later) can recompute it.\n6. No network, no external services — this is a local file.\n7. After each function+test pair, run vitest on that file and report.\n8. When done, run all ledger tests and report a summary. Write two entries and assert entry2.prevHash === entry1.hash."
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard — LLM prompt governance gateway (audit-grade evidence ledger).\n- Tech: TypeScript, Node 20 ESM, strict; Vitest. See DECISION-REGISTER.md and AGENT-RULES.md.\n- Current state: fresh core package; this is the first ledger story. Nothing depends on it yet, but everything will.\n- AMENDMENT (DECISION-REGISTER §8 A2, NG-19): the ledger stores actorPseudonym + actorEpoch, NEVER a plaintext user id. This guard lands HERE, before any writer exists.\n\nTASK:\nImplement US-013: the append-only, hash-chained JSONL ledger writer (AF-401), including the NG-19 actor-pseudonym guard.\n\nCREATE THESE FILES (see manifest.create): core/lib/types.ts (LedgerEntry with actorPseudonym?:string + actorEpoch?:number and NO `user` field, plus the contract types from specs/EP-01-gateway-adapter/EPIC.md), then SF-4011..4015 under core/src/features/ledger/append/, each with an adjacent .test.ts, plus index.ts.\n\nFUNCTION SIGNATURES: exactly as in specs/EP-04-audit-ledger/APP-FUNCTIONS.md (AF-401 section) — loadChainTail, computeEntryHash, appendAtomic, assertNoPlaintextActor, appendLedgerEntry.\n\nCHAIN ORDER: computeEntryHash → loadChainTail → appendAtomic → assertNoPlaintextActor → appendLedgerEntry.\n\nRULES:\n1. TDD: write the test first, watch it fail, then implement.\n2. ONLY create files in this manifest. Do not touch protected paths.\n3. TS strict — no any, no non-null assertions without proof.\n4. NG-5: append must be atomic and survive process restart with no gap; a torn final line (crash mid-write) is ignored, not chained onto.\n5. NG-19: appendLedgerEntry MUST call assertNoPlaintextActor before writing; an entry carrying a plaintext `user` (or any userId-shaped) field throws PlaintextActorError. Only actorPseudonym (+actorEpoch) is permitted.\n6. computeEntryHash MUST be canonical (key order independent) so verifyChain (AF-406, later) can recompute it.\n7. No network, no external services — this is a local file.\n8. After each function+test pair, run vitest on that file and report.\n9. When done, run all ledger tests and report a summary. Write two entries and assert entry2.prevHash === entry1.hash; assert an entry with a plaintext user id is rejected."
 }

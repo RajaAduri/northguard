@@ -1,0 +1,42 @@
+{
+  "id": "US-031",
+  "title": "Dual-key actor unmask (Vier-Augen-Prinzip) — interface + ledger semantics",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/ledger/unmask/buildUnmaskRequest.ts", "reason": "Well-formed unmask request; mandatory reason; rejects a raw-id target", "sf_id": "SF-4081", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/unmask/buildUnmaskRequest.test.ts", "reason": "TDD stub", "sf_id": "SF-4081" },
+    { "file": "core/src/features/ledger/unmask/verifyDualAuthorisation.ts", "reason": "Two named parties, distinct roles; reject single or same-role (NG-20)", "sf_id": "SF-4082" },
+    { "file": "core/src/features/ledger/unmask/verifyDualAuthorisation.test.ts", "reason": "TDD stub", "sf_id": "SF-4082" },
+    { "file": "core/src/features/ledger/unmask/resolveActorIdentity.ts", "reason": "Recompute HMAC over the employee directory (interface; E8 provides the store) to match the pseudonym; never guess", "sf_id": "SF-4083" },
+    { "file": "core/src/features/ledger/unmask/resolveActorIdentity.test.ts", "reason": "TDD stub", "sf_id": "SF-4083" },
+    { "file": "core/src/features/ledger/unmask/writeUnmaskGovernanceEvent.ts", "reason": "govKind:'unmask' entry: both authorisers, reason, target pseudonym — never the identity", "sf_id": "SF-4084" },
+    { "file": "core/src/features/ledger/unmask/writeUnmaskGovernanceEvent.test.ts", "reason": "TDD stub", "sf_id": "SF-4084" },
+    { "file": "core/src/features/ledger/unmask/unmaskActor.ts", "reason": "Compose: request → dual-auth → write entry → resolve → return (ledger before identity)", "sf_id": "SF-4085" },
+    { "file": "core/src/features/ledger/unmask/unmaskActor.test.ts", "reason": "TDD stub", "sf_id": "SF-4085" },
+    { "file": "core/src/features/ledger/unmask/index.ts", "reason": "AF-408 entry point composing SF-4081..4085", "sf_id": "AF-408" }
+  ],
+  "modify_note": "Imports E4 AF-403 (governance writer) and E3 SF-3052 computePseudonymHmac read-only. RoleBinding + DirectoryProvider are INTERFACES only here; their physical secret store + role binding are E8 (deferred) — stub them in dev.",
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "Consumed via AF-403; not modified in this story" },
+    { "file": "core/src/features/inspection/**", "reason": "computePseudonymHmac consumed read-only; not modified here" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/unmask/buildUnmaskRequest.test.ts",
+    "core/src/features/ledger/unmask/verifyDualAuthorisation.test.ts",
+    "core/src/features/ledger/unmask/resolveActorIdentity.test.ts",
+    "core/src/features/ledger/unmask/writeUnmaskGovernanceEvent.test.ts",
+    "core/src/features/ledger/unmask/unmaskActor.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.7", "app_functions": ["AF-408"], "sw_functions": ["SF-4081", "SF-4082", "SF-4083", "SF-4084", "SF-4085"], "acceptance_criteria": ["US-031 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-4081", "reason": "build + validate the request (reason mandatory)" },
+    { "sf_id": "SF-4082", "reason": "verify two distinct-role authorisers (NG-20)" },
+    { "sf_id": "SF-4084", "reason": "write the unmask ledger entry BEFORE resolving (no off-ledger unmask)" },
+    { "sf_id": "SF-4083", "reason": "resolve the identity via directory + key (interface)" },
+    { "sf_id": "SF-4085", "reason": "compose: return the identity only after the entry is written" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard. Tech: TypeScript strict + Vitest. See DECISION-REGISTER.md §8 A3 and AGENT-RULES.md NG-19/NG-20.\n- Current state: E4 ledger (append AF-401, governance AF-403) and E3 pseudonym HMAC (SF-3052) are done. Actors in the ledger are actorPseudonyms (NG-19). This story adds the ONLY way to recover a person: a dual-key unmask.\n\nTASK:\nImplement US-031 (AF-408 unmaskActor). Recovering a person from an actorPseudonym requires the Vier-Augen-Prinzip.\n\nCREATE FILES: per manifest.create. Signatures exactly per specs/EP-04-audit-ledger/APP-FUNCTIONS.md (AF-408).\n\nRULES:\n1. TDD first.\n2. NG-20: verifyDualAuthorisation MUST reject a single authoriser AND two authorisers in the same role; only two named parties in distinct bound roles (IT security + works-council rep) pass.\n3. Ledger-before-identity (mirrors NG-5): writeUnmaskGovernanceEvent runs BEFORE resolveActorIdentity returns; if the ledger write fails, NO identity is returned.\n4. The unmask entry records both authorisers, reason, timestamp, and the target pseudonym — NEVER the recovered identity, and NEVER a plaintext user id (NG-19).\n5. resolveActorIdentity reuses E3 SF-3052 (same HMAC) and matches against a DirectoryProvider INTERFACE (physical store is E8 — stub it). It never guesses: no match → UnresolvedActorError.\n6. RoleBinding + DirectoryProvider are interfaces; do not build the E8 secret store.\n7. Import AF-403 and SF-3052 read-only; do not modify protected paths.\n8. Final summary must show: a single-authoriser rejection, a same-role rejection, and a valid pair that returns the identity AND wrote a govKind:'unmask' entry naming both parties + reason."
+}

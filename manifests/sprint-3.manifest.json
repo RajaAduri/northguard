@@ -1,10 +1,10 @@
 {
-  "sprint": "Sprint 3 — Ledger query/export + Management read-models",
-  "story_sequence": ["US-016", "US-017", "US-019", "US-021", "US-023"],
-  "rationale": "Needs a populated ledger (S1) and request entries (S2). US-016 query underpins US-017 export and the US-019/021 read-models. US-017 (verifiable evidence bundle) is the artefact that closes a sale and satisfies the month-long-chain acceptance test. US-019/021 are aggregated read-models with NO person column (NG-13). US-023 wires the export into the management view.",
-  "estimated_agent_hours": 6,
-  "total_stories": 5,
-  "critical_path": ["US-016", "US-017"],
-  "acceptance_gate": ["ledger-chain (month-long export verifies)"],
+  "sprint": "Sprint 3 — Ledger query/export + dual-key unmask + Management read-models",
+  "story_sequence": ["US-016", "US-017", "US-031", "US-019", "US-021", "US-023"],
+  "rationale": "Needs a populated ledger (S1) and request entries (S2). US-016 query underpins US-017 export and the US-019/021 read-models. US-017 (verifiable evidence bundle) is the artefact that closes a sale and satisfies the month-long-chain acceptance test. US-031 (dual-key actor unmask, AF-408 — NG-20) fits here: it reuses the governance writer + pseudonym HMAC and is the mechanism that makes the Betriebsvereinbarung signable (§8 A3); its secret store stays deferred to E8. US-019/021 are aggregated read-models with NO person column (NG-13). US-023 wires the export into the management view.",
+  "estimated_agent_hours": 7,
+  "total_stories": 6,
+  "critical_path": ["US-016", "US-017", "US-031"],
+  "acceptance_gate": ["ledger-chain (month-long export verifies)", "actor-pseudonymisation (export shows actorPseudonym, no plaintext id)", "unmask-dual-authorisation"],
   "language": "TypeScript (core)"
 }

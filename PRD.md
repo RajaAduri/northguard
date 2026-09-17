@@ -6,12 +6,14 @@
 **Tech Stack:** TypeScript (Node 20, ESM) core · Python 3.11/FastAPI kg-gen sidecar + local embeddings · hash-chained JSONL ledger · static SPA (Nordic Clarity, deferred)
 
 > Generated with the dev-blueprint methodology. This PRD decomposes the
-> **architecture-independent core** (E2, E3, E4, E6, E7) to file level. The
-> interception-dependent epics (E1 Gateway, E5 Chat Surface, E8 Operations) are
-> specified as contracts and deferred until the interception architecture
-> (API gateway vs browser extension) is chosen. See `DECISION-REGISTER.md` for
-> the epic renumber and locked decisions, and `AGENT-RULES.md` for binding
-> invariants (NG-1…NG-16).
+> **architecture-independent core** (E2, E3, E4, E6, E7) **and the governed chat
+> surface (E5)** to file level. **Amended 2026-09-17 (DECISION-REGISTER §8):** the
+> interception architecture is decided — a **browser extension (block-and-warn, E1)
+> plus a governed chat surface (E5, the full experience)**. E5 is now decomposed; E1
+> stays a contract (decompose after E5); E8 Operations stays deferred. See
+> `DECISION-REGISTER.md` for the epic renumber and locked decisions, and
+> `AGENT-RULES.md` for binding invariants (NG-1…**NG-21**, incl. NG-19 actor
+> pseudonymisation, NG-20 dual-key unmask, NG-21 E7 non-attributability).
 
 ---
 
@@ -161,11 +163,12 @@ As an **engineer**, I want the provider's placeholders substituted back to origi
 
 ### Epic E4 · Audit Ledger  *(decomposed)*
 
-**US-013 — Append-only hash-chained entry writer** — AF-401 · P0 · Sprint 1
-- AC: each entry carries `prevHash`; append is atomic and survives process restart with no gap (NG-5, NFR-06).
+**US-013 — Append-only hash-chained entry writer (+ actor-pseudonym guard)** — AF-401 · P0 · Sprint 1
+- AC-1: each entry carries `prevHash`; append is atomic and survives process restart with no gap (NG-5, NFR-06).
+- AC-2: **the append refuses any entry carrying a plaintext user identifier** — only `actorPseudonym` (+`actorEpoch`) is permitted (`assertNoPlaintextActor`, NG-19). This lands here, in the first ledger story, before any writer can populate the field.
 
 **US-014 — One request entry per request, written before reply** — AF-402 · P0 · Sprint 2
-- AC: exactly one entry per request, written before the reply returns, containing timestamp, user, prompt hash, touched areas, verdict, mode, caught-by, provider, latency, coverage, and span pseudonyms — never original text (FR-02, NG-2, NG-10).
+- AC: exactly one entry per request, written before the reply returns, containing timestamp, **actor pseudonym** (derived from the raw userId; the raw id never lands on the entry — NG-19), prompt hash, touched areas, verdict, mode, caught-by, provider, latency, coverage, and span pseudonyms — never original text (FR-02, NG-2, NG-10, NG-19).
 
 **US-015 — Governance-event writer** — AF-403 · P0 · Sprint 1
 - AC: activations, rule tuning, dismissals, exports, and key rotations are appended as governance entries with actor, timestamp, reason (FR-18, NG-12).
@@ -181,6 +184,11 @@ As an **engineer**, I want the provider's placeholders substituted back to origi
 **US-018 — Ledger durability and backup** — AF-407 · P0 · Sprint 1
 - AC-1: a month of entries exports and verifies as an unbroken chain across at least one process restart and one backup/restore cycle (NFR-06).
 - AC-2: the pseudonym key is excluded from every ledger backup — the backup contains no key material (FR-23, NG-17).
+
+**US-031 — Dual-key actor unmask (Vier-Augen-Prinzip)** — AF-408 · P0 · Sprint 3
+- AC-1: recovering the person behind an `actorPseudonym` requires two named authorisers in **distinct** roles (IT security + works-council rep); a single authoriser, or two in the same role, is rejected (NG-20).
+- AC-2: a valid unmask writes its own `govKind:'unmask'` ledger entry recording both authorising parties, timestamp, reason, and the target pseudonym — never the recovered identity; the identity is returned to the authorised callers only (NG-19, NG-20).
+- AC-3: the ledger entry is written **before** the identity is returned — an unmask off the record is impossible (mirrors NG-5). Secret storage + role binding are an E8 concern; this story specifies the interface + ledger semantics only (R11).
 
 ### Epic E6 · Management View  *(decomposed)*
 
@@ -221,13 +229,45 @@ As an **engineer**, I want the provider's placeholders substituted back to origi
 - AC: per-cluster trend (rising/steady/falling), weekly cadence (the Friday-CI pattern), and cessation ("no request since Wednesday — likely solved") are detected deterministically.
 
 **US-030 — Hours-saved and artefact synthesis** — AF-706 · P0 · Sprint 5
-- AC: each finding reports estimated duplicated effort in *hours saved* and names the artefact that would remove it (a stored extract, a phrasing kit); findings are ranked. This is the briefing's headline.
+- AC-1: each finding reports estimated duplicated effort in *hours saved* and names the artefact that would remove it (a stored extract, a phrasing kit); findings are ranked. This is the briefing's headline.
+- AC-2: **findings are non-attributable by construction** — no person dimension, no per-individual score/rank, no sentiment/tone field; `assert_non_attributable` (SF-7065) fails the synthesis if one appears (NG-21, AI Act posture — see §10 risks).
+
+### Epic E5 · Governed Chat Surface  *(now decomposed — DECISION-REGISTER §8 A1)*
+
+The full redact-and-continue experience: a React SPA over the E3 core. Behaviour,
+timings, and strings follow `prototype/NorthGuard Handoff.md` (§8 A6). Full
+file-level decomposition in `specs/EP-05-chat-surface/APP-FUNCTIONS.md`.
+
+**US-032 — Composer state machine** — AF-501 · P0 · Sprint 6
+- AC: the §1.1 state inventory (idle→typing→inspecting→clean/touched/blocked/report/report-done/degraded/locked) is implemented as a pure reducer with the §2 timings (600 ms debounce, inspection sweep ≥ 400 ms); Send during typing auto-sends on `clean` but stops on a finding; `locked` until E2 areas confirmed (NG-3); `degraded` overlays and is never hidden (NG-4).
+
+**US-033 — Submission mirror view-model** — AF-502 · P0 · Sprint 6
+- AC: the mirror renders a **byte-identical read-only mirror of `redactedPrompt`** (FR-08) with per-span attribution (placeholder · layer · area · report); the blocked variant offers no send, quotes detected spans, and states there is no per-prompt approval (Handoff rule 7).
+
+**US-034 — Reply rehydration view** — AF-503 · P0 · Sprint 6
+- AC: consumes E3 `AF-307`; renders full/partial/not-rendered states; unmatched placeholders stay visible with an explicit insert/leave choice — **never guessed** (NG-9); restored content is display-only and never re-enters the wire (NG-1); copy warns of real customer data and offers a redacted copy (Handoff rule 13).
+
+**US-035 — Provider-view toggle + wire transcript** — AF-504 · P0 · Sprint 6
+- AC: the "Anbietersicht" toggle appears from the first sent message and shows **only the wire transcript** — including as history (NG-1); footnote copy is state-dependent (§1.4).
+
+**US-036 — i18n catalogue + three-level language** — AF-505 · P0 · Sprint 6
+- AC: DE/EN catalogues with 100% key parity (NG-16), DE default; UI copy follows the person, area/rule names follow the policy, wire placeholders + evidence export follow the tenant (fixed at setup — Handoff rule 11).
+
+**US-037 — Motion & design tokens** — AF-506 · P0 · Sprint 6
+- AC: the Handoff §2 timing table is encoded as typed tokens driving every animation (fidelity test); §4 colours only (no green, no gradient except the inspection sweep); the system-says-Mono / humans-read-Inter type rule holds.
+
+**US-038 — False-positive report flow** — AF-507 · P0 · Sprint 6
+- AC: the report form replaces the mirror in place; context is shared only on an explicit opt-in (Handoff `report.privacy`); submit bridges to E6 `AF-604`; report-done states the rule stays active with a path forward; every report gets a quiet in-conversation reply — even a reasoned "no" (rules 7/8/13).
+
+**US-039 — Two-rooms threshold + management shell** — AF-508 · P1 · Sprint 6
+- AC: a named, dated threshold (320 ms fade, no slide) separates the workspace (tool) from the management view (720 px document); the management surface has **no person column** (NG-13); estimates carry a "≈" range and their formula (rule 12); the briefing names pseudonymised clusters + areas, never a person or an original entity (C1, NG-21).
 
 ### Deferred epics (contract/spec only — NOT decomposed)
 
-- **US-C1 (E1 Gateway)** — the Interception Adapter Contract: `submitForInspection` / `forwardToProvider`, request/verdict types, and the failure→ledger rule. Types live in `core/lib/types.ts`; no implementation built. See `specs/EP-01-gateway-adapter/EPIC.md`.
-- **US-C2 (E5 Chat Surface)** — the rendering shell consuming E3 core outputs (redaction preview / submission mirror / restored-span marks / rehydration). Deferred; design states are catalogued in `specs/EP-05-chat-surface/EPIC.md`.
-- **US-C3 (E8 Operations)** — Compose topology, health checks, key storage, log rotation. Deferred; ledger durability/backup moved to E4. See `specs/EP-08-operations/EPIC.md`.
+- **US-C1 (E1 Gateway — browser extension, block-and-warn)** — interception surface **decided** (§8 A1): a browser extension. The Interception Adapter Contract (`submitForInspection` / `forwardToProvider`, request/verdict types, failure→ledger rule) lives in `core/lib/types.ts`; **the extension implementation is a contract for now and decomposes after E5 ships.** See `specs/EP-01-gateway-adapter/EPIC.md`.
+- **US-C3 (E8 Operations)** — Compose topology, health checks, key storage, log rotation, **and the dual-key unmask secret store + role binding** (NG-20 interface is in E4; storage is here). Deferred; ledger durability/backup moved to E4. See `specs/EP-08-operations/EPIC.md`.
+
+*(US-C2 (E5 Chat Surface) is retired: E5 is now decomposed as US-032…US-039 above.)*
 
 ---
 
@@ -253,6 +293,9 @@ As an **engineer**, I want the provider's placeholders substituted back to origi
 | FR-23 | Key separation: the pseudonym key never shares storage or backups with the ledger; excluded from ledger backups and evidence exports | `key-separation` test (NG-17) + E8 storage-separation deployment check |
 | FR-24 | German normalisation is validated against a maintained entity-variant corpus; silent under-clustering is a defect | `de-entity-normalisation` corpus test (NG-18), part of E7 acceptance |
 | FR-25 | Evidence export shows pseudonyms, not entity names (stated design position) | Export schema test: pseudonyms present, no entity-name preimage (R8) |
+| FR-26 | Actor pseudonymisation: the ledger stores `actorPseudonym`, never a plaintext user id — even in an export (BAG *objektive Eignung*, §87(1) Nr. 6 BetrVG) | `actor-pseudonymisation` test (NG-19); `assertNoPlaintextActor` at append |
+| FR-27 | Dual-key actor unmask: recovering a person requires the Vier-Augen-Prinzip (two distinct-role authorisers) and is itself a logged ledger entry | `unmask-dual-authorisation` test (NG-20); interface in E4 (AF-408), secret store in E8 |
+| FR-28 | Recurring-work intelligence is aggregate and non-attributable — no person dimension, scoring, ranking, or sentiment (AI Act posture; open legal risk) | `e7-non-attributable` test (NG-21); `assert_non_attributable` gates synthesis |
 
 ---
 
@@ -291,7 +334,10 @@ v1 ships when all are true (SLC pack §5.8):
 
 | Risk | Impact | Prob. | Mitigation |
 |------|--------|-------|------------|
-| Interception decision changes the surface | H | M | Core is architecture-independent; E1/E5 behind contracts (this decomposition's central bet) |
+| **AI Act Annex III (high-risk) applies to recurring-work detection (E7/FR-21)** | **H** | **M** | **OPEN LEGAL RISK (§8 A5) — not resolved in code.** E7 constrained to topics/artefacts, non-attributable, no scoring/ranking/sentiment (NG-21), to keep the Art. 6(3) reading available; no AI-Act effective-date stated anywhere until verified. Escalate to counsel before GA. |
+| Works-council co-determination (§87(1) Nr. 6 BetrVG) blocks deployment | H | M | Actor pseudonymisation (NG-19) + dual-key unmask (NG-20) make the Betriebsvereinbarung signable; co-determination is not avoidable (*objektive Eignung*), so the design makes it easy to agree to (§8 A2/A3) |
+| Interception surface (extension) can't do in-place redaction | M | M–H | **Decided (§8 A1):** E5 governed chat surface delivers the full experience; the E1 extension is block-and-warn coverage — "use ours and it's better; go elsewhere and we still catch you" |
+| Interception decision changes the surface | L | L | Now decided (browser extension + E5); core stays architecture-independent, so a later change is contained |
 | False-block rate can't get under 1/user/week | H | M | FP loop (US-022), rule narrowing with impact preview, span-level attribution for actionability |
 | Recurring-work resolution weak without originals | M | M | Keyed pseudonyms (NG-10) enable cross-conversation linking without full text; two-stage similarity catches semantic duplicates |
 | Local embedding model breaks NFR-04 (RAM) | M | M | Pin a small model; cache vectors; MinHash Stage 1 reduces embedding volume |
@@ -307,11 +353,12 @@ v1 ships when all are true (SLC pack §5.8):
 
 **Sprint sequencing** (full detail in `SPRINT-PLAN.md`):
 
-1. **Sprint 1 — Ledger + Policy Intake foundation** (E4 writer/durability/governance, E2 ingest/extract/stability/confirm/activate)
-2. **Sprint 2 — Inspection + Transcript Engine** (E3 all AFs; the correctness core)
-3. **Sprint 3 — Ledger query/export + Management read-models** (E4 query/export, E6 exposure/activity/export view)
+1. **Sprint 1 — Ledger + Policy Intake foundation** (E4 writer incl. actor-pseudonym guard/durability/governance, E2 ingest/extract/stability/confirm/activate)
+2. **Sprint 2 — Inspection + Transcript Engine** (E3 all AFs; the correctness core; model-first detection per §8 A4)
+3. **Sprint 3 — Ledger query/export + dual-key unmask + Management read-models** (E4 query/export/**AF-408 unmask (US-031)**, E6 exposure/activity/export view)
 4. **Sprint 4 — Briefing + FP loop + Recurring-work Stage 1** (E6 briefing/FP/context, E7 features + MinHash)
-5. **Sprint 5 — Recurring-work Stage 2 + synthesis** (E7 embeddings/resolution/temporal/synthesis)
+5. **Sprint 5 — Recurring-work Stage 2 + synthesis** (E7 embeddings/resolution/temporal/synthesis; non-attributability gate NG-21)
+6. **Sprint 6 — Governed Chat Surface (E5)** (US-032…US-039: composer/mirror/reply/provider-view/i18n/tokens/FP-report/two-rooms — React SPA over the solved core). *The E1 browser extension decomposes after this.*
 
 **Cuts made to hold the SLC "Complete" standard** (see `DECISION-REGISTER.md` §7):
 
@@ -330,13 +377,13 @@ Phase 6 and lives in `manifests/traceability-matrix.md`. Epic-level summary:
 
 | Epic | Status | Features | App Functions | ~SW Functions |
 |------|--------|----------|---------------|---------------|
-| E1 Gateway | Deferred (contract) | — | — (interface only) | — |
+| E1 Gateway (browser extension, block-and-warn) | Decided; contract only (decompose after E5) | — | — (interface only) | — |
 | E2 Policy Intake | Decomposed | 5 | AF-201…206 (6) | ~20 |
 | E3 Inspection + Transcript | Decomposed | 7 | AF-301…307 (7) | ~28 |
-| E4 Audit Ledger | Decomposed | 6 | AF-401…407 (7) | ~24 |
-| E5 Chat Surface | Deferred (shell) | — | — (renders E3) | — |
+| E4 Audit Ledger | Decomposed | 7 | AF-401…408 (8) | ~29 |
+| E5 Chat Surface (governed) | **Decomposed** | 8 | AF-501…508 (8) | ~35 |
 | E6 Management View | Decomposed | 6 | AF-601…606 (6) | ~22 |
-| E7 Recurring-Work | Decomposed | 6 | AF-701…706 (6) | ~22 |
+| E7 Recurring-Work | Decomposed | 6 | AF-701…706 (6) | ~23 |
 | E8 Operations | Deferred | — | — | — |
 
 Per-epic decomposition with SW-Function signatures, test cases, and dependencies

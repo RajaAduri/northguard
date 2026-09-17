@@ -2,10 +2,11 @@
 
 US → FT → AF → SF → implementation file → test file. The single artifact that
 answers "if I change this file, which requirements are affected?" and "if I build
-this story, which files do I touch?" Deferred epics (E1/E5/E8) carry no SF rows —
-only their contract types.
+this story, which files do I touch?" Deferred epics (E1/E8) carry no SF rows —
+only their contract types. E5 is now decomposed (§8 A1) and carries SF rows.
 
-Language key: TS files under `core/`; Python files under `sidecar/` and `recurring/`.
+Language key: TS files under `core/` (E2–E4, E6) and `web/` (E5 React SPA);
+Python files under `sidecar/` and `recurring/` (E7).
 
 | US | FT | AF | SF | Implementation file | Test file |
 |----|----|----|----|--------------------|-----------|
@@ -58,6 +59,8 @@ Language key: TS files under `core/`; Python files under `sidecar/` and `recurri
 | US-013 | FT-4.1 | AF-401 | SF-4012 | core/src/features/ledger/append/computeEntryHash.ts | .test.ts |
 | US-013 | FT-4.1 | AF-401 | SF-4013 | core/src/features/ledger/append/appendAtomic.ts | .test.ts |
 | US-013 | FT-4.1 | AF-401 | SF-4014 | core/src/features/ledger/append/appendLedgerEntry.ts | .test.ts |
+| US-013 | FT-4.1 | AF-401 | SF-4015 | core/src/features/ledger/append/assertNoPlaintextActor.ts | .test.ts |
+| US-014 | FT-4.2 | AF-402 | SF-4024 | core/src/features/ledger/request/deriveActorPseudonym.ts | .test.ts |
 | US-014 | FT-4.2 | AF-402 | SF-4021 | core/src/features/ledger/request/buildRequestEntry.ts | .test.ts |
 | US-014 | FT-4.2 | AF-402 | SF-4022 | core/src/features/ledger/request/redactBeforeWrite.ts | .test.ts |
 | US-014 | FT-4.2 | AF-402 | SF-4023 | core/src/features/ledger/request/writeRequestEntry.ts | .test.ts |
@@ -75,6 +78,11 @@ Language key: TS files under `core/`; Python files under `sidecar/` and `recurri
 | US-017 | FT-4.5 | AF-406 | SF-4061 | core/src/features/ledger/verify/recomputeChain.ts | .test.ts |
 | US-018 | FT-4.6 | AF-407 | SF-4071 | core/src/features/ledger/backup/snapshotLedger.ts | .test.ts |
 | US-018 | FT-4.6 | AF-407 | SF-4072 | core/src/features/ledger/backup/verifyBackupChain.ts | .test.ts |
+| US-031 | FT-4.7 | AF-408 | SF-4081 | core/src/features/ledger/unmask/buildUnmaskRequest.ts | .test.ts |
+| US-031 | FT-4.7 | AF-408 | SF-4082 | core/src/features/ledger/unmask/verifyDualAuthorisation.ts | .test.ts |
+| US-031 | FT-4.7 | AF-408 | SF-4083 | core/src/features/ledger/unmask/resolveActorIdentity.ts | .test.ts |
+| US-031 | FT-4.7 | AF-408 | SF-4084 | core/src/features/ledger/unmask/writeUnmaskGovernanceEvent.ts | .test.ts |
+| US-031 | FT-4.7 | AF-408 | SF-4085 | core/src/features/ledger/unmask/unmaskActor.ts | .test.ts |
 | US-019 | FT-6.1 | AF-601 | SF-6011 | core/src/features/management/exposure/aggregateTouchesByArea.ts | .test.ts |
 | US-019 | FT-6.1 | AF-601 | SF-6012 | core/src/features/management/exposure/computeAreaTrend.ts | .test.ts |
 | US-019 | FT-6.1 | AF-601 | SF-6013 | core/src/features/management/exposure/orderByConcentration.ts | .test.ts |
@@ -116,12 +124,50 @@ Language key: TS files under `core/`; Python files under `sidecar/` and `recurri
 | US-030 | FT-7.6 | AF-706 | SF-7062 | recurring/synthesis/estimate_hours_saved.py | test_estimate_hours_saved.py |
 | US-030 | FT-7.6 | AF-706 | SF-7063 | recurring/synthesis/name_removing_artefact.py | test_name_removing_artefact.py |
 | US-030 | FT-7.6 | AF-706 | SF-7064 | recurring/synthesis/rank_findings.py | test_rank_findings.py |
+| US-030 | FT-7.6 | AF-706 | SF-7065 | recurring/synthesis/assert_non_attributable.py | test_assert_non_attributable.py |
+| US-032 | FT-5.1 | AF-501 | SF-5011 | web/src/composer/composerReducer.ts | .test.ts |
+| US-032 | FT-5.1 | AF-501 | SF-5012 | web/src/composer/deriveComposerView.ts | .test.ts |
+| US-032 | FT-5.1 | AF-501 | SF-5013 | web/src/composer/inspectionDebounce.ts | .test.ts |
+| US-032 | FT-5.1 | AF-501 | SF-5014 | web/src/composer/resolvePendingSend.ts | .test.ts |
+| US-032 | FT-5.1 | AF-501 | SF-5015 | web/src/composer/Composer.tsx | .test.tsx |
+| US-033 | FT-5.2 | AF-502 | SF-5021 | web/src/mirror/buildMirrorModel.ts | .test.ts |
+| US-033 | FT-5.2 | AF-502 | SF-5022 | web/src/mirror/buildBlockModel.ts | .test.ts |
+| US-033 | FT-5.2 | AF-502 | SF-5023 | web/src/mirror/buildAttributionRow.ts | .test.ts |
+| US-033 | FT-5.2 | AF-502 | SF-5024 | web/src/mirror/SubmissionMirror.tsx | .test.tsx |
+| US-034 | FT-5.3 | AF-503 | SF-5031 | web/src/reply/buildReplyView.ts | .test.ts |
+| US-034 | FT-5.3 | AF-503 | SF-5032 | web/src/reply/buildCopyModel.ts | .test.ts |
+| US-034 | FT-5.3 | AF-503 | SF-5033 | web/src/reply/buildRestoreSuggestion.ts | .test.ts |
+| US-034 | FT-5.3 | AF-503 | SF-5034 | web/src/reply/ReplyMessage.tsx | .test.tsx |
+| US-035 | FT-5.4 | AF-504 | SF-5041 | web/src/provider-view/buildWireTranscriptView.ts | .test.ts |
+| US-035 | FT-5.4 | AF-504 | SF-5042 | web/src/provider-view/selectFootnote.ts | .test.ts |
+| US-035 | FT-5.4 | AF-504 | SF-5043 | web/src/provider-view/ViewToggle.tsx | .test.tsx |
+| US-036 | FT-5.5 | AF-505 | SF-5051 | web/src/i18n/loadStringCatalogue.ts | .test.ts |
+| US-036 | FT-5.5 | AF-505 | SF-5052 | web/src/i18n/resolveUiLocale.ts | .test.ts |
+| US-036 | FT-5.5 | AF-505 | SF-5053 | web/src/i18n/formatMessage.ts | .test.ts |
+| US-036 | FT-5.5 | AF-505 | SF-5054 | web/src/i18n/languageLevels.ts | .test.ts |
+| US-037 | FT-5.6 | AF-506 | SF-5061 | web/src/design/motionTokens.ts | .test.ts |
+| US-037 | FT-5.6 | AF-506 | SF-5062 | web/src/design/colorTokens.ts | .test.ts |
+| US-037 | FT-5.6 | AF-506 | SF-5063 | web/src/design/typeScale.ts | .test.ts |
+| US-037 | FT-5.6 | AF-506 | SF-5064 | web/src/design/inspectionSweep.ts | .test.ts |
+| US-038 | FT-5.7 | AF-507 | SF-5071 | web/src/report/buildReportForm.ts | .test.ts |
+| US-038 | FT-5.7 | AF-507 | SF-5072 | web/src/report/submitReport.ts | .test.ts |
+| US-038 | FT-5.7 | AF-507 | SF-5073 | web/src/report/buildReportDone.ts | .test.ts |
+| US-038 | FT-5.7 | AF-507 | SF-5074 | web/src/report/buildReporterNotice.ts | .test.ts |
+| US-038 | FT-5.7 | AF-507 | SF-5075 | web/src/report/ReportPanel.tsx | .test.tsx |
+| US-039 | FT-5.8 | AF-508 | SF-5081 | web/src/rooms/buildThresholdModel.ts | .test.ts |
+| US-039 | FT-5.8 | AF-508 | SF-5082 | web/src/rooms/buildManagementShell.ts | .test.ts |
+| US-039 | FT-5.8 | AF-508 | SF-5083 | web/src/rooms/buildBriefingView.ts | .test.ts |
+| US-039 | FT-5.8 | AF-508 | SF-5084 | web/src/rooms/ManagementView.tsx | .test.tsx |
 
 **Deferred (contract only, no SF rows):**
 | US | Epic | Artifact |
 |----|------|----------|
-| US-C1 | E1 Gateway | `core/lib/types.ts` (InterceptionAdapter, InspectionRequest/Verdict) + conformance suite |
-| US-C2 | E5 Chat Surface | rendering shell; consumes E3 core (no new logic) |
-| US-C3 | E8 Operations | Compose/health/key-storage; `core/lib/keyProvider.ts` interface only |
+| US-C1 | E1 Gateway (browser extension, block-and-warn) | interception **decided**; `core/lib/types.ts` (InterceptionAdapter, InspectionRequest/Verdict) + conformance suite; extension implementation decomposes after E5 |
+| US-C3 | E8 Operations | Compose/health/key-storage; dual-key unmask secret store + role binding (NG-20); `core/lib/keyProvider.ts` interface only |
 
-**Totals:** 30 build stories · 39 SW functions in TS core (E2–E4, E6) · 21 SW functions in Python (E7) · plus the shared `core/lib/types.ts`. Bridges B1–B5 each require an integration test that crosses the boundary.
+*(US-C2 retired — E5 is decomposed above as US-032…US-039.)*
+
+**Totals:** 39 build stories (30 core + US-031 unmask + US-032…039 E5) · 45 SW
+functions in TS core (E2–E4 incl. AF-408, E6) · ~35 SW functions in the E5 web SPA
+· 22 SW functions in Python (E7 incl. SF-7065) · plus the shared `core/lib/types.ts`.
+Bridges B1–B8 each require an integration test that crosses the boundary.

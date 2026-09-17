@@ -1,15 +1,28 @@
-# EP-01: Gateway — Interception Adapter Contract
-**Status:** DEFERRED — contract only, no implementation built.
+# EP-01: Gateway — Interception Adapter Contract (browser extension, block-and-warn)
+**Status:** DECIDED as a browser extension (2026-09-17, DECISION-REGISTER §8 A1) —
+**contract only for now; decompose after E5 ships.**
 
-## Why this epic is not decomposed
+## Why this epic is a contract (and why it is a browser extension)
 
-The interception mechanism is under evaluation and may be an **API gateway** (an
-OpenAI-compatible endpoint existing tools are repointed at) **or a browser
-extension** (which hooks the host tool's send action). That choice determines the
-implementation of both this epic and E5 (Chat Surface). Rather than build to a
-guess, E1 is specified as the **seam** every interceptor must satisfy. The core
-(E2–E4, E6–E7) is built against this contract; either implementation is a later,
-contained project.
+The interception question is resolved: **a browser extension, not an API gateway.**
+A network proxy cannot see a prompt typed into a web AI tool at the point it is
+composed, and an API gateway sees none of the shadow-AI traffic that is the
+product's whole premise — the leak happens in the browser (§8 A1).
+
+The extension, however, cannot deliver in-place redaction reliably: React, Vue and
+Svelte serialise internal component state on submit, so mutating `element.value`
+from a content script transmits the *original* unless a fragile synthetic-event
+sequence is dispatched. So E1 is the **block-and-warn coverage surface**, and the
+full redact-and-continue experience is **E5 (the governed chat surface)**. Both
+implement the same `InterceptionAdapter`. E1 stays a contract until E5 ships; then
+it is a later, contained project against the seam below.
+
+### E1 (extension) responsibilities in v1 — block-and-warn only
+Intercept the host tool's send action on supported AI sites; hold the submission;
+call the local inspection service (the core, on customer infra); on a touch, show
+the violation and a **sanitised string the user can copy** into the input. **No
+in-place DOM redaction in v1.** Positioning: *use ours (E5) and it is better; go
+elsewhere and we still catch you.*
 
 ## The adapter contract
 
@@ -97,17 +110,28 @@ export interface InterceptionAdapter {
 4. The reversible placeholder→original mapping is built and held **client-side**
    from `displayPlaceholders`; the adapter never sees or forwards it (NG-14).
 5. Streaming (NFR-03) is the adapter's concern; the core is streaming-agnostic.
+6. **Actor identity (NG-19):** the adapter passes the raw `userId` into the core
+   (customer-side, via `RequestMeta` on the inspection call) and **never persists it
+   itself**. The core derives `actorPseudonym = HMAC(customerKey, normalize(userId))`
+   before the ledger write; the plaintext id never reaches the ledger. Recovering a
+   person from a pseudonym is the dual-key unmask (NG-20, E4 `AF-408`), never the
+   adapter's job.
 
 ### What a gateway implementation would add (later, out of scope now)
 OpenAI-compatible `/v1/chat/completions`, request parsing, provider SDK, SSE
 streaming, key handling (D3). — **not built.**
 
-### What a browser-extension implementation would add (later, out of scope now)
-DOM hook on the host tool's send action, in-page rendering of the E5 states,
-local call to the inspection service. — **not built.**
+### What the browser-extension (block-and-warn) implementation adds — later, after E5
+DOM hook on the host tool's send action; hold submission; local call to the
+inspection service; render the violation + a copyable sanitised string; **no
+in-place DOM redaction in v1**. Because the extension does not redact in place, its
+conformance target is narrower than E5's: it must never forward on a `block`/`redact`
+touch, and it must surface the sanitised string rather than silently mutate the
+input. — **not built yet; decompose after E5.**
 
 ## Scope
 - **In scope (now):** the contract types in `core/lib/types.ts`; a conformance
-  test suite the eventual implementation must pass (wire-isolation, ledger-before-
-  reply, degrade-don't-fail-open).
-- **Out of scope (now):** any implementation of either interceptor.
+  test suite every interceptor must pass (wire-isolation, ledger-before-reply,
+  degrade-don't-fail-open) — E5 passes it now; the extension passes it later.
+- **Out of scope (now):** the extension implementation (decompose after E5). E5, the
+  other implementer of this contract, **is** decomposed — see `specs/EP-05-chat-surface/`.

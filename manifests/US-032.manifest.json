@@ -1,0 +1,43 @@
+{
+  "id": "US-032",
+  "title": "Composer state machine (governed chat surface interaction spine)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "web/src/types.ts", "reason": "E5 view types (ComposerState, ComposerView) — single source of truth for the surface", "sf_id": "shared", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/composer/composerReducer.ts", "reason": "Pure reducer over the §1.1 state inventory", "sf_id": "SF-5011", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/composer/composerReducer.test.ts", "reason": "TDD stub — exhaustive §1.1 transition table", "sf_id": "SF-5011" },
+    { "file": "web/src/composer/deriveComposerView.ts", "reason": "State (+verdict) → ComposerView (status/send/border/mirror/area-menu)", "sf_id": "SF-5012" },
+    { "file": "web/src/composer/deriveComposerView.test.ts", "reason": "TDD stub", "sf_id": "SF-5012" },
+    { "file": "web/src/composer/inspectionDebounce.ts", "reason": "600 ms typing-pause → inspect; reset per keystroke; immediate on submit", "sf_id": "SF-5013" },
+    { "file": "web/src/composer/inspectionDebounce.test.ts", "reason": "TDD stub", "sf_id": "SF-5013" },
+    { "file": "web/src/composer/resolvePendingSend.ts", "reason": "Auto-send on clean; stop on a finding (never auto-send a touch)", "sf_id": "SF-5014" },
+    { "file": "web/src/composer/resolvePendingSend.test.ts", "reason": "TDD stub", "sf_id": "SF-5014" },
+    { "file": "web/src/composer/Composer.tsx", "reason": "Component: wires reducer+debounce to submitForInspection; inspection sweep; reserved mirror slot", "sf_id": "SF-5015" },
+    { "file": "web/src/composer/Composer.test.tsx", "reason": "TDD stub (component test)", "sf_id": "SF-5015" },
+    { "file": "web/src/composer/index.ts", "reason": "AF-501 entry point composing SF-5011..5015", "sf_id": "AF-501" }
+  ],
+  "modify_note": "Imports core/lib/types.ts (InspectionVerdict), web/src/design (AF-506 motion tokens — the 600 ms/≥400 ms values) and web/src/i18n (AF-505 keys) read-only. Those two stories (US-037, US-036) build first this sprint.",
+  "protected": [
+    { "file": "core/**", "reason": "E5 renders the core; it never modifies it (NG-1/NG-14)" },
+    { "file": "web/src/mirror/**", "reason": "AF-502, built in US-033; the composer only reserves its slot" },
+    { "file": "web/src/reply/**", "reason": "AF-503, built in US-034" }
+  ],
+  "tests_must_pass": [
+    "web/src/composer/composerReducer.test.ts",
+    "web/src/composer/deriveComposerView.test.ts",
+    "web/src/composer/inspectionDebounce.test.ts",
+    "web/src/composer/resolvePendingSend.test.ts"
+  ],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.1", "app_functions": ["AF-501"], "sw_functions": ["SF-5011", "SF-5012", "SF-5013", "SF-5014", "SF-5015"], "acceptance_criteria": ["US-032 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-5011", "reason": "the reducer — pure, no deps" },
+    { "sf_id": "SF-5012", "reason": "derive the view from state (+ i18n keys)" },
+    { "sf_id": "SF-5013", "reason": "debounce drives the typing→inspecting edge" },
+    { "sf_id": "SF-5014", "reason": "pending-send resolution on the verdict" },
+    { "sf_id": "SF-5015", "reason": "component wires the above to the adapter" }
+  ],
+  "agent_prompt": "CONTEXT:\n- Project: NorthGuard governed chat surface (E5), now decomposed (DECISION-REGISTER §8 A1). Tech: React SPA (Vite), TypeScript strict, Vitest.\n- AUTHORITATIVE SPEC: prototype/NorthGuard Handoff.md — state inventory §1.1, timings §2. Where the Handoff and the prototype HTML disagree, the Handoff wins for behaviour, the HTML for pacing.\n- Current state: US-037 (motion/design tokens) and US-036 (i18n) are done this sprint; import them. The E3 core (InspectionVerdict) exists.\n\nTASK:\nImplement US-032 (AF-501): the composer state machine — the interaction spine of the surface.\n\nCREATE FILES: per manifest.create. Signatures exactly per specs/EP-05-chat-surface/APP-FUNCTIONS.md (AF-501).\n\nRULES:\n1. TDD first. The composerReducer test MUST cover every edge in the Handoff §1.1 table (idle/typing/inspecting/clean/touched/blocked/report/report-done/degraded/locked).\n2. Timings come from AF-506 motion tokens, never hardcoded: 600 ms typing pause → inspecting; inspection sweep runs ≥ 400 ms even if the verdict is faster; a keystroke during inspecting aborts to typing.\n3. Send during typing AUTO-SENDS on a clean verdict but STOPS on redact/block (never auto-send a finding).\n4. 'locked' until E2 areas are confirmed — no forward (NG-3). 'degraded' overlays any state when the backstop is down and is never hidden (NG-4).\n5. The composer stores state + the last verdict only; ComposerView is always derived (deriveComposerView), never stored.\n6. Do NOT modify core/** or the sibling mirror/reply packages (protected) — only reserve the mirror slot in the grid (rows 0fr↔1fr so the layout never jumps).\n7. Report tests after each pair; final summary must show the full transition table green and the auto-send-on-clean vs stop-on-touch behaviour."
+}
