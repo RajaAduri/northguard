@@ -183,6 +183,11 @@ export interface BackstopResult {
   coverage: Coverage
 }
 
+export interface BackstopMessages {
+  system: string
+  user: string
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'

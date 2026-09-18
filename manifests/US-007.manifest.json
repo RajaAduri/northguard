@@ -1,0 +1,41 @@
+{
+  "id": "US-007",
+  "title": "LLM backstop only when inconclusive; degrade gracefully (never fail open)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-03 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/backstop/backstopAvailabilityGuard.ts", "reason": "Health check; down → false (no throw)", "sf_id": "SF-3021", "template": "specs/EP-03-inspection-redaction/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/inspection/backstop/backstopAvailabilityGuard.test.ts", "reason": "TDD stub", "sf_id": "SF-3021" },
+    { "file": "core/src/features/inspection/backstop/shouldInvokeBackstop.ts", "reason": "Gate: only when inconclusive (latency budget)", "sf_id": "SF-3022" },
+    { "file": "core/src/features/inspection/backstop/shouldInvokeBackstop.test.ts", "reason": "TDD stub", "sf_id": "SF-3022" },
+    { "file": "core/src/features/inspection/backstop/buildBackstopPrompt.ts", "reason": "System lists active areas; JSON-only ask", "sf_id": "SF-3023" },
+    { "file": "core/src/features/inspection/backstop/buildBackstopPrompt.test.ts", "reason": "TDD stub", "sf_id": "SF-3023" },
+    { "file": "core/src/features/inspection/backstop/callBackstopModel.ts", "reason": "Local model call, temp 0; failure → BackstopUnavailableError", "sf_id": "SF-3024" },
+    { "file": "core/src/features/inspection/backstop/callBackstopModel.test.ts", "reason": "TDD stub", "sf_id": "SF-3024" },
+    { "file": "core/src/features/inspection/backstop/parseBackstopFindings.ts", "reason": "Parse JSON (strip fences); malformed → inconclusive; layer:'llm'", "sf_id": "SF-3025" },
+    { "file": "core/src/features/inspection/backstop/parseBackstopFindings.test.ts", "reason": "TDD stub", "sf_id": "SF-3025" },
+    { "file": "core/src/features/inspection/backstop/index.ts", "reason": "AF-302 entry point (runBackstop)", "sf_id": "AF-302" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not modified" },
+    { "file": "core/src/features/policy/**", "reason": "Consumes ActivePolicy read-only; not modified" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/backstop/backstopAvailabilityGuard.test.ts",
+    "core/src/features/inspection/backstop/shouldInvokeBackstop.test.ts",
+    "core/src/features/inspection/backstop/buildBackstopPrompt.test.ts",
+    "core/src/features/inspection/backstop/callBackstopModel.test.ts",
+    "core/src/features/inspection/backstop/parseBackstopFindings.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.2", "app_functions": ["AF-302"], "sw_functions": ["SF-3021", "SF-3022", "SF-3023", "SF-3024", "SF-3025"], "acceptance_criteria": ["US-007 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-3022", "reason": "decide whether to invoke (latency budget)" },
+    { "sf_id": "SF-3021", "reason": "availability guard (degrade path)" },
+    { "sf_id": "SF-3023", "reason": "build the prompt" },
+    { "sf_id": "SF-3024", "reason": "call the model" },
+    { "sf_id": "SF-3025", "reason": "parse findings" }
+  ],
+  "agent_prompt": "Implement US-007 (AF-302 backstop) per specs/EP-03. §8 A4: the model is the detector, not the backstop — but it still only runs when rules are inconclusive (latency). NG-4: unreachable → coverage:'rules-only', empty findings, never fail open. Mock the model in tests. TDD."
+}
