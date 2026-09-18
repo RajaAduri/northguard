@@ -251,6 +251,43 @@ export interface RehydrateResult {
   unresolved: string[]
 }
 
+// ── E6 weekly briefing (AF-602) ──────────────────────────────────────────────
+// E7 AF-706 output the briefing consumes (produced in Sprint 5). Non-attributable
+// by construction (NG-21): topics/artefacts, never people.
+export interface RecurringWorkFinding {
+  theme: string
+  area: string
+  clusterSize: number
+  hoursSavedLow: number
+  hoursSavedHigh: number
+  artefact: string
+  cadence?: string
+}
+export interface FootnoteStats {
+  requests: number
+  redactedForwarded: number
+  blocked: number
+  rulesOnlyRequests: number
+}
+export interface BriefingInputs {
+  week: string
+  people: number
+  stats: FootnoteStats
+  findings: RecurringWorkFinding[]
+  sufficient: boolean
+  coverageCaveat?: string
+}
+export interface Theme {
+  title: string
+  signal: string
+  artefact?: string
+}
+export interface PolicyFitNote {
+  verdict: string
+  falseBlockRate?: number
+  pendingNarrowing?: string
+}
+
 // ── E6 false-positive queue (AF-604) ─────────────────────────────────────────
 export interface FpReport {
   faId: string

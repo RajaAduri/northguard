@@ -1,0 +1,44 @@
+{
+  "id": "US-020",
+  "title": "Weekly briefing composition (AF-602) — PARTIAL: structure + ledger stats (E7 themes complete in Sprint 5)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "partial",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/management/briefing/gatherBriefingInputs.ts", "reason": "ledger stats + insufficient-traffic + rotation caveat; E7 findings injected (empty until Sprint 5)", "sf_id": "SF-6021", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/briefing/gatherBriefingInputs.test.ts", "reason": "TDD stub", "sf_id": "SF-6021" },
+    { "file": "core/src/features/management/briefing/synthesizeThemes.ts", "reason": "themes from E7 findings (deterministic; empty → none)", "sf_id": "SF-6022" },
+    { "file": "core/src/features/management/briefing/synthesizeThemes.test.ts", "reason": "TDD stub", "sf_id": "SF-6022" },
+    { "file": "core/src/features/management/briefing/synthesizeFriction.ts", "reason": "friction read; thin data → insufficient message", "sf_id": "SF-6023" },
+    { "file": "core/src/features/management/briefing/synthesizeFriction.test.ts", "reason": "TDD stub", "sf_id": "SF-6023" },
+    { "file": "core/src/features/management/briefing/assessPolicyFit.ts", "reason": "policy-fit from FP + false-block rate", "sf_id": "SF-6024" },
+    { "file": "core/src/features/management/briefing/assessPolicyFit.test.ts", "reason": "TDD stub", "sf_id": "SF-6024" },
+    { "file": "core/src/features/management/briefing/buildBriefingFootnote.ts", "reason": "footnote stats (never headline)", "sf_id": "SF-6025" },
+    { "file": "core/src/features/management/briefing/buildBriefingFootnote.test.ts", "reason": "TDD stub", "sf_id": "SF-6025" },
+    { "file": "core/src/features/management/briefing/renderBriefingMarkdown.ts", "reason": "short letter; quiet-week variant", "sf_id": "SF-6026" },
+    { "file": "core/src/features/management/briefing/renderBriefingMarkdown.test.ts", "reason": "TDD stub", "sf_id": "SF-6026" },
+    { "file": "core/src/features/management/briefing/index.ts", "reason": "AF-602 entry point (composeWeeklyBriefing)", "sf_id": "AF-602" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/management/briefing/gatherBriefingInputs.test.ts",
+    "core/src/features/management/briefing/synthesizeThemes.test.ts",
+    "core/src/features/management/briefing/synthesizeFriction.test.ts",
+    "core/src/features/management/briefing/assessPolicyFit.test.ts",
+    "core/src/features/management/briefing/buildBriefingFootnote.test.ts",
+    "core/src/features/management/briefing/renderBriefingMarkdown.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.2", "app_functions": ["AF-602"], "sw_functions": ["SF-6021", "SF-6022", "SF-6023", "SF-6024", "SF-6025", "SF-6026"], "acceptance_criteria": ["US-020 AC (partial)"] },
+  "chain_order": [
+    { "sf_id": "SF-6021", "reason": "gather inputs (ledger stats + findings)" },
+    { "sf_id": "SF-6025", "reason": "footnote stats" },
+    { "sf_id": "SF-6024", "reason": "policy fit" },
+    { "sf_id": "SF-6022", "reason": "themes" },
+    { "sf_id": "SF-6023", "reason": "friction" },
+    { "sf_id": "SF-6026", "reason": "render" }
+  ],
+  "agent_prompt": "Implement US-020 PARTIAL (AF-602 briefing) per specs/EP-06. Structure + ledger stats now; E7 recurring-work themes complete in Sprint 5 once AF-706 lands (findings injected, empty until then — flag, don't block). FR-13: inputs deterministic, regenerable. Numbers are footnote, not headline; quiet-week variant. Estimates carry ranges; nothing harder than the ledger. TDD."
+}
