@@ -1,0 +1,28 @@
+{
+  "id": "US-023",
+  "title": "Evidence export view (delegates E4 AF-405)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/management/export-view/validateExportRequest.ts", "reason": "range + mandatory reason (Anlass); reject inverted range", "sf_id": "SF-6051", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/export-view/validateExportRequest.test.ts", "reason": "TDD stub", "sf_id": "SF-6051" },
+    { "file": "core/src/features/management/export-view/invokeExport.ts", "reason": "delegate AF-405; export logged with Anlass", "sf_id": "SF-6052" },
+    { "file": "core/src/features/management/export-view/invokeExport.test.ts", "reason": "TDD stub", "sf_id": "SF-6052" },
+    { "file": "core/src/features/management/export-view/index.ts", "reason": "AF-605 entry point", "sf_id": "AF-605" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/export/**", "reason": "AF-405 delegated read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/management/export-view/validateExportRequest.test.ts",
+    "core/src/features/management/export-view/invokeExport.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.5", "app_functions": ["AF-605"], "sw_functions": ["SF-6051", "SF-6052"], "acceptance_criteria": ["US-023 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-6051", "reason": "validate the request" },
+    { "sf_id": "SF-6052", "reason": "delegate to AF-405" }
+  ],
+  "agent_prompt": "Implement US-023 (AF-605 export view) per specs/EP-06. Delegates E4 AF-405; the export states its Anlass (mandatory reason) and is logged. The bundle carries actorPseudonym (audit), never plaintext (NG-19), and the view has no person column (NG-13). TDD."
+}
