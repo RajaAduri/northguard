@@ -8,7 +8,7 @@ import type { InspectionVerdict, KeyMaterial, RequestMeta } from '../../../../li
 
 const key: KeyMaterial = { secret: 's', keyEpoch: 1 }
 const meta = (over: Partial<RequestMeta> = {}): RequestMeta => ({
-  userId: 'anna.berger', promptHash: 'ph', provider: 'eu-endpoint', latencyMs: 40, key, ...over,
+  userId: 'anna.berger', conversationId: 'c1', redactedText: 'x', promptHash: 'ph', provider: 'eu-endpoint', latencyMs: 40, key, ...over,
 })
 const verdict = (over: Partial<InspectionVerdict> = {}): InspectionVerdict => ({
   verdict: 'clean', touchedAreas: [], spans: [], redactedPrompt: 'x', displayPlaceholders: [],

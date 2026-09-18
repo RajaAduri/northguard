@@ -12,6 +12,8 @@ export function buildRequestEntry(v: InspectionVerdict, meta: RequestMeta): Part
     kind: 'request',
     actorPseudonym,
     actorEpoch,
+    conversationId: meta.conversationId,
+    redactedText: meta.redactedText,
     promptHash: meta.promptHash,
     provider: meta.provider,
     latencyMs: meta.latencyMs,

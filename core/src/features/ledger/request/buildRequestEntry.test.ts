@@ -3,7 +3,7 @@ import { buildRequestEntry } from './buildRequestEntry'
 import type { InspectionVerdict, KeyMaterial, RequestMeta } from '../../../../lib/types'
 
 const key: KeyMaterial = { secret: 's', keyEpoch: 1 }
-const meta: RequestMeta = { userId: 'anna.berger', promptHash: 'ph', provider: 'eu-endpoint', latencyMs: 42, key }
+const meta: RequestMeta = { userId: 'anna.berger', conversationId: 'c1', redactedText: 'Frage zu ⟨Lieferant⟩', promptHash: 'ph', provider: 'eu-endpoint', latencyMs: 42, key }
 
 const verdict: InspectionVerdict = {
   verdict: 'redact',

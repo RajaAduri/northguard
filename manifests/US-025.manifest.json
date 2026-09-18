@@ -1,0 +1,37 @@
+{
+  "id": "US-025",
+  "title": "Content feature extraction over the redacted corpus (AF-701, Python)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-07 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "core/lib/types.ts", "reason": "LedgerEntry gains redactedText? + conversationId? (redacted, NG-2-safe) so E7 has a corpus; RequestMeta gains conversationId", "sf_id": "shared" },
+    { "file": "core/src/features/ledger/request/buildRequestEntry.ts", "reason": "write redactedText (wire text) + conversationId for E7", "sf_id": "SF-4021" },
+    { "file": "core/src/features/inspection/verdict/index.ts", "reason": "assembleVerdict passes conversationId into the request meta", "sf_id": "SF-3035" }
+  ],
+  "create": [
+    { "file": "recurring/types.py", "reason": "FeatureDoc/RawDoc/LedgerWindow/PrivacyViolation dataclasses", "sf_id": "shared", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/features/__init__.py", "reason": "AF-701 entry point (extract_content_features)", "sf_id": "AF-701" },
+    { "file": "recurring/features/load_redacted_corpus.py", "reason": "redacted text + pseudonyms per request; raw text → PrivacyViolation (NG-10)", "sf_id": "SF-7011" },
+    { "file": "recurring/features/test_load_redacted_corpus.py", "reason": "TDD stub", "sf_id": "SF-7011" },
+    { "file": "recurring/features/tokenize_and_shingle.py", "reason": "deterministic hashed k-shingles; placeholders = single tokens", "sf_id": "SF-7012" },
+    { "file": "recurring/features/test_tokenize_and_shingle.py", "reason": "TDD stub", "sf_id": "SF-7012" },
+    { "file": "recurring/features/attach_pseudonyms.py", "reason": "attach pseudonyms + key_epoch; no original value (type-enforced)", "sf_id": "SF-7013" },
+    { "file": "recurring/features/test_attach_pseudonyms.py", "reason": "TDD stub", "sf_id": "SF-7013" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "not modified" }
+  ],
+  "tests_must_pass": [
+    "recurring/features/test_load_redacted_corpus.py",
+    "recurring/features/test_tokenize_and_shingle.py",
+    "recurring/features/test_attach_pseudonyms.py"
+  ],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.1", "app_functions": ["AF-701"], "sw_functions": ["SF-7011", "SF-7012", "SF-7013"], "acceptance_criteria": ["US-025 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-7011", "reason": "load redacted corpus" },
+    { "sf_id": "SF-7012", "reason": "tokenize + shingle" },
+    { "sf_id": "SF-7013", "reason": "attach pseudonyms" }
+  ],
+  "agent_prompt": "Implement US-025 (AF-701) per specs/EP-07, Python 3.11 + pytest. NG-10: read only redacted text + pseudonyms; a raw-text field → PrivacyViolation; no code path reads an original value. NG-15: shingling deterministic (fixed k, stable hash — never Python's salted hash()). Plumb redactedText + conversationId into the TS request entry so E7 has a corpus. TDD."
+}

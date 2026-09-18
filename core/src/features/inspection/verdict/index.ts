@@ -105,6 +105,8 @@ export async function assembleVerdict(
   const promptHash = createHash('sha256').update(req.draftPrompt).digest('hex').slice(0, 32)
   verdict.ledgerEntryId = await writeRequestEntry(verdict, {
     userId: ctx.userId,
+    conversationId: req.conversationId,
+    redactedText: verdict.redactedPrompt,
     promptHash,
     provider: ctx.provider,
     latencyMs: Date.now() - t0,

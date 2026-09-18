@@ -366,6 +366,8 @@ export interface LedgerEntry {
   // request entries:
   actorPseudonym?: string // HMAC(customerKey, normalize(userId)) — NG-19, NEVER a plaintext user id
   actorEpoch?: number
+  conversationId?: string // for E7 cross-conversation resolution (not a person id)
+  redactedText?: string // the wire text (placeholders only) — redacted, NG-2-safe; E7's corpus
   promptHash?: string
   touchedAreas?: string[]
   verdict?: Verdict
@@ -414,6 +416,8 @@ export interface UnmaskContext {
 // customer-side only; the writer derives actorPseudonym and never stores the raw id.
 export interface RequestMeta {
   userId: string
+  conversationId: string
+  redactedText: string
   promptHash: string
   provider: string
   latencyMs: number
