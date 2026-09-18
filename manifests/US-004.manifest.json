@@ -1,0 +1,33 @@
+{
+  "id": "US-004",
+  "title": "Confirm and edit extracted areas (pure model; editing never activates)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-02 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/policy/confirm/buildAreaConfirmationModel.ts", "reason": "Editable, unconfirmed model + provenance; empty → invalid", "sf_id": "SF-2041", "template": "specs/EP-02-policy-intake/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/policy/confirm/buildAreaConfirmationModel.test.ts", "reason": "TDD stub", "sf_id": "SF-2041" },
+    { "file": "core/src/features/policy/confirm/applyManualEdits.ts", "reason": "rename/merge/split/remove; id stable on rename", "sf_id": "SF-2042" },
+    { "file": "core/src/features/policy/confirm/applyManualEdits.test.ts", "reason": "TDD stub", "sf_id": "SF-2042" },
+    { "file": "core/src/features/policy/confirm/validateAreaSet.ts", "reason": "non-empty set, unique labels", "sf_id": "SF-2043" },
+    { "file": "core/src/features/policy/confirm/validateAreaSet.test.ts", "reason": "TDD stub", "sf_id": "SF-2043" },
+    { "file": "core/src/features/policy/confirm/index.ts", "reason": "AF-204 entry point", "sf_id": "AF-204" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not in scope" },
+    { "file": "core/src/features/inspection/**", "reason": "Not in scope" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/policy/confirm/buildAreaConfirmationModel.test.ts",
+    "core/src/features/policy/confirm/applyManualEdits.test.ts",
+    "core/src/features/policy/confirm/validateAreaSet.test.ts"
+  ],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.4", "app_functions": ["AF-204"], "sw_functions": ["SF-2041", "SF-2042", "SF-2043"], "acceptance_criteria": ["US-004 AC-1..2"] },
+  "chain_order": [
+    { "sf_id": "SF-2043", "reason": "validation primitive" },
+    { "sf_id": "SF-2042", "reason": "apply edits" },
+    { "sf_id": "SF-2041", "reason": "build model (uses validation)" }
+  ],
+  "agent_prompt": "Implement US-004 (AF-204 confirm) per specs/EP-02. Pure model — editing NEVER activates (NG-3). rename keeps id stable; merge combines provenance; validation flags empty-area-set and duplicate-label. TDD."
+}
