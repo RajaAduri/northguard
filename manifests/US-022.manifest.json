@@ -1,0 +1,43 @@
+{
+  "id": "US-022",
+  "title": "False-positive review queue and resolutions (AF-604)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "core/src/features/ledger/request/buildRequestEntry.ts", "reason": "carry ruleId in spanPseudonyms so a narrowing preview can count rule hits", "sf_id": "SF-4021" },
+    { "file": "core/lib/types.ts", "reason": "spanPseudonyms gains optional ruleId; FP-queue types", "sf_id": "shared" }
+  ],
+  "create": [
+    { "file": "core/src/features/management/fp-queue/groupReportsByTrigger.ts", "reason": "group by (rule|llm, area); count + distinct reporters", "sf_id": "SF-6041", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/fp-queue/groupReportsByTrigger.test.ts", "reason": "TDD stub", "sf_id": "SF-6041" },
+    { "file": "core/src/features/management/fp-queue/sortByRepeatFrequency.ts", "reason": "repeat offenders on top; resolved below open", "sf_id": "SF-6042" },
+    { "file": "core/src/features/management/fp-queue/sortByRepeatFrequency.test.ts", "reason": "TDD stub", "sf_id": "SF-6042" },
+    { "file": "core/src/features/management/fp-queue/previewRuleNarrowing.ts", "reason": "30-day impact preview; flags when the after-count needs re-evaluation", "sf_id": "SF-6043" },
+    { "file": "core/src/features/management/fp-queue/previewRuleNarrowing.test.ts", "reason": "TDD stub", "sf_id": "SF-6043" },
+    { "file": "core/src/features/management/fp-queue/applyResolution.ts", "reason": "resolution → governance event (NG-12); dismiss reason mandatory", "sf_id": "SF-6044" },
+    { "file": "core/src/features/management/fp-queue/applyResolution.test.ts", "reason": "TDD stub", "sf_id": "SF-6044" },
+    { "file": "core/src/features/management/fp-queue/notifyReporter.ts", "reason": "quiet in-conversation notice; a no comes back", "sf_id": "SF-6045" },
+    { "file": "core/src/features/management/fp-queue/notifyReporter.test.ts", "reason": "TDD stub", "sf_id": "SF-6045" },
+    { "file": "core/src/features/management/fp-queue/index.ts", "reason": "AF-604 entry point", "sf_id": "AF-604" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/governance/**", "reason": "AF-403 consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/management/fp-queue/groupReportsByTrigger.test.ts",
+    "core/src/features/management/fp-queue/sortByRepeatFrequency.test.ts",
+    "core/src/features/management/fp-queue/previewRuleNarrowing.test.ts",
+    "core/src/features/management/fp-queue/applyResolution.test.ts",
+    "core/src/features/management/fp-queue/notifyReporter.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.4", "app_functions": ["AF-604"], "sw_functions": ["SF-6041", "SF-6042", "SF-6043", "SF-6044", "SF-6045"], "acceptance_criteria": ["US-022 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-6041", "reason": "group by trigger" },
+    { "sf_id": "SF-6042", "reason": "sort by repeat frequency" },
+    { "sf_id": "SF-6043", "reason": "narrowing preview" },
+    { "sf_id": "SF-6044", "reason": "apply resolution (governance event)" },
+    { "sf_id": "SF-6045", "reason": "notify the reporter" }
+  ],
+  "agent_prompt": "Implement US-022 (AF-604 FP queue) per specs/EP-06. Reports grouped by trigger (rule/area), NOT by reporter (NG-13); sorted by repeat frequency. Every resolution is a governance event (NG-12); dismiss reason mandatory; reporter notified even on a no. The 30-day narrowing preview counts current rule hits from the ledger; the after-count comes from a separate re-evaluation over originals — flag it (measured:false) rather than fabricate. TDD."
+}

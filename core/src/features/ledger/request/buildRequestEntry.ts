@@ -20,6 +20,6 @@ export function buildRequestEntry(v: InspectionVerdict, meta: RequestMeta): Part
     caughtBy: v.caughtBy,
     coverage: v.coverage,
     touchedAreas: touched,
-    spanPseudonyms: v.spans.map((s) => ({ area: s.area, layer: s.layer, pseudonym: s.pseudonym, keyEpoch: s.keyEpoch })),
+    spanPseudonyms: v.spans.map((s) => ({ area: s.area, layer: s.layer, ...(s.ruleId ? { ruleId: s.ruleId } : {}), pseudonym: s.pseudonym, keyEpoch: s.keyEpoch })),
   }
 }

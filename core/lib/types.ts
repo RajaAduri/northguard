@@ -251,6 +251,58 @@ export interface RehydrateResult {
   unresolved: string[]
 }
 
+// ── E6 false-positive queue (AF-604) ─────────────────────────────────────────
+export interface FpReport {
+  faId: string
+  area: string
+  layer: Layer
+  ruleId?: string
+  ts: string
+  reporter: string // pseudonymous; grouped by trigger, never by reporter (NG-13)
+  resolved?: boolean
+}
+export interface TriggerGroup {
+  key: string
+  layer: Layer
+  area: string
+  ruleId?: string
+  count: number
+  distinctReporters: number
+  latestTs: string
+  resolved: boolean
+}
+export type RuleId = string
+export interface Narrowing {
+  description: string
+  measuredBefore?: number // from re-evaluation over originals (measured separately)
+  measuredAfter?: number
+  reportsResolved?: number
+  residualRisk?: string
+}
+export interface NarrowPreview {
+  ruleId: RuleId
+  before: number
+  after: number
+  reportsResolved: number
+  residualRisk: string
+  measured: boolean // false → the after-count needs an out-of-ledger re-evaluation (flagged)
+}
+export type FpResolution =
+  | { kind: 'narrow'; ruleId: RuleId; reason: string; narrowing: Narrowing }
+  | { kind: 'exclude'; ruleId: RuleId; term: string; reason: string }
+  | { kind: 'mode-change'; area: string; mode: AreaMode; reason: string }
+  | { kind: 'dismiss'; faId: string; reason: string }
+export interface FpOutcome {
+  kind: 'implemented' | 'dismissed'
+  change?: string
+  reason?: string
+}
+export interface ReporterNotice {
+  faId: string
+  state: 'applied' | 'declined'
+  message: string
+}
+
 // ── E6 management read-models (all use the management projection — no user, NG-13) ──
 export type Trend = 'rising' | 'steady' | 'falling'
 export interface AreaExposure {
@@ -302,7 +354,7 @@ export interface LedgerEntry {
   provider?: string
   latencyMs?: number
   coverage?: Coverage
-  spanPseudonyms?: { area: string; layer: Layer; pseudonym: string; keyEpoch: number }[]
+  spanPseudonyms?: { area: string; layer: Layer; ruleId?: string; pseudonym: string; keyEpoch: number }[]
   // governance entries:
   govKind?: GovKind
   reason?: string
