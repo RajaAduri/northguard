@@ -324,6 +324,26 @@ export interface ExportRequest {
   reason: string
 }
 
+// ── E6 two-rooms context (AF-606) ────────────────────────────────────────────
+export interface ViewContextModel {
+  view: 'workspace' | 'management'
+  kind: 'tool' | 'document'
+  typeface: string
+  maxWidthPx: number | null
+  hairlines: boolean
+  sidebar: boolean
+  accent: string
+}
+export interface ThresholdModel {
+  week: string
+  people: number
+  headline: string
+  aggregationNote: string // states structural, no-names aggregation (NG-13)
+  structural: true
+  enterLabel: string
+  backInHeader: true // the way back is a word in the header, not a tab
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'

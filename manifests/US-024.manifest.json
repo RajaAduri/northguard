@@ -1,0 +1,26 @@
+{
+  "id": "US-024",
+  "title": "Two-rooms context distinctness (workspace vs management)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/management/context/resolveViewContext.ts", "reason": "document vs tool context, unmistakable at a glance (FR-19)", "sf_id": "SF-6061", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/context/resolveViewContext.test.ts", "reason": "TDD stub", "sf_id": "SF-6061" },
+    { "file": "core/src/features/management/context/buildThresholdModel.ts", "reason": "named, dated Schwelle; structural aggregation stated (NG-13)", "sf_id": "SF-6062" },
+    { "file": "core/src/features/management/context/buildThresholdModel.test.ts", "reason": "TDD stub", "sf_id": "SF-6062" },
+    { "file": "core/src/features/management/context/index.ts", "reason": "AF-606 entry point", "sf_id": "AF-606" }
+  ],
+  "protected": [],
+  "tests_must_pass": [
+    "core/src/features/management/context/resolveViewContext.test.ts",
+    "core/src/features/management/context/buildThresholdModel.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.6", "app_functions": ["AF-606"], "sw_functions": ["SF-6061", "SF-6062"], "acceptance_criteria": ["US-024 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-6061", "reason": "resolve the view context" },
+    { "sf_id": "SF-6062", "reason": "build the threshold model" }
+  ],
+  "agent_prompt": "Implement US-024 (AF-606 context) per specs/EP-06. Management = document (one column, hairlines, Fraunces); workspace = tool (dense, cards, teal) — unmistakable (FR-19). The threshold is named + dated and states structural aggregation (no names, NG-13); the way back is a word in the header. TDD."
+}
