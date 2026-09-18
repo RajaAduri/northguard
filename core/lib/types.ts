@@ -213,6 +213,44 @@ export interface BackstopMessages {
   user: string
 }
 
+// ── E3 rehydration (AF-307) — client-side, mapping injected (NG-9/NG-14) ──────
+// The reversible placeholder→original mapping, held client-side only, never persisted.
+export type PlaceholderMapping = Record<string, string>
+
+export interface RehydrationEntry {
+  placeholder: string // "⟨Lieferant 1⟩"
+  original: string // "Brechtmann GmbH"
+  word: string // "Lieferant" (inner head word, for declension)
+  stem: string // "lieferant"
+}
+export interface RehydrationIndex {
+  entries: RehydrationEntry[]
+}
+
+export interface RehydrationMatch {
+  placeholder: string
+  original: string
+  offset: number // in the provider text
+  length: number
+}
+export interface MatchResult {
+  matches: RehydrationMatch[]
+  text: string
+}
+
+export interface RestoredSpan {
+  placeholder: string
+  original: string
+  offset: number // in the restored text
+  length: number
+}
+
+export interface RehydrateResult {
+  restoredText: string
+  restoredSpans: RestoredSpan[]
+  unresolved: string[]
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'
