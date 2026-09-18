@@ -77,6 +77,64 @@ export interface KeyMaterial {
   keyEpoch: number
 }
 
+// ── E2 policy intake ────────────────────────────────────────────────────────
+export interface Area {
+  id: string
+  label: string
+  kind?: string
+  provenance?: string
+  mode?: AreaMode
+  confirmed?: boolean
+}
+
+export interface SidecarGraph {
+  graph: {
+    nodes: { id: string; label: string; kind?: string }[]
+    edges: { from: string; to: string; rel?: string }[]
+  }
+  stability_index: number | null
+  stable: boolean | null
+  model: string
+}
+
+export interface ExtractedGraph {
+  key: string
+  areas: Area[]
+  stabilityIndex: number | null
+  stable: boolean | null
+  model: string
+  cached: boolean
+}
+
+export interface StabilityReport {
+  index: number | null
+  threshold: number
+  stable: boolean
+  blockingReason?: string
+}
+
+export type AreaEditKind = 'rename' | 'merge' | 'split' | 'remove'
+export interface AreaEdit {
+  kind: AreaEditKind
+  areaId: string
+  label?: string // rename / split labels
+  intoIds?: string[] // merge target(s)
+  splitLabels?: string[]
+}
+
+export interface ConfirmationModel {
+  areas: Area[]
+  valid: boolean
+  issues: string[]
+}
+
+export interface ActivePolicy {
+  policyVersion: string
+  areas: Area[]
+  activatedAt: string
+  activatedBy: string
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'
