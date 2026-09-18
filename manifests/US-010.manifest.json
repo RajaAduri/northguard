@@ -1,0 +1,33 @@
+{
+  "id": "US-010",
+  "title": "Derive keyed pseudonyms per entity (NG-10) + corpus-validated German normalisation (NG-18)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-03 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/transcript/pseudonym/normalizeEntityValue.ts", "reason": "German legal-form + umlaut + case folding; corpus-validated (NG-18)", "sf_id": "SF-3051", "template": "specs/EP-03-inspection-redaction/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/normalizeEntityValue.test.ts", "reason": "TDD stub + de-entity-variants corpus gate", "sf_id": "SF-3051" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/computePseudonymHmac.ts", "reason": "reuse the shared HMAC primitive (core/lib/pseudonym)", "sf_id": "SF-3052" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/computePseudonymHmac.test.ts", "reason": "TDD stub", "sf_id": "SF-3052" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/attachPseudonymToSpan.ts", "reason": "attach pseudonym + keyEpoch to each span", "sf_id": "SF-3053" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/attachPseudonymToSpan.test.ts", "reason": "TDD stub", "sf_id": "SF-3053" },
+    { "file": "core/src/features/inspection/transcript/pseudonym/index.ts", "reason": "AF-305 entry point", "sf_id": "AF-305" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not modified" },
+    { "file": "lexicons/de-entity-variants.yml", "reason": "The corpus is the acceptance fixture; read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/transcript/pseudonym/normalizeEntityValue.test.ts",
+    "core/src/features/inspection/transcript/pseudonym/computePseudonymHmac.test.ts",
+    "core/src/features/inspection/transcript/pseudonym/attachPseudonymToSpan.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.5", "app_functions": ["AF-305"], "sw_functions": ["SF-3051", "SF-3052", "SF-3053"], "acceptance_criteria": ["US-010 AC-1..5"] },
+  "chain_order": [
+    { "sf_id": "SF-3051", "reason": "normalise (where E7 succeeds or fails, NG-18)" },
+    { "sf_id": "SF-3052", "reason": "HMAC over the normalised value" },
+    { "sf_id": "SF-3053", "reason": "attach to spans" }
+  ],
+  "agent_prompt": "Implement US-010 (AF-305 pseudonyms) per specs/EP-03. NG-10: pseudonym = HMAC(key, normalize(value)); original never in output. NG-18: normalizeEntityValue folds German legal forms, umlaut/transliteration, case; validated against lexicons/de-entity-variants.yml — every group → one pseudonym, distinct groups never collide. Do NOT weaken normalisation to first-token to force a pass. TDD."
+}

@@ -56,8 +56,17 @@ groups:
     forms:
       - "Nordwerk Systemtechnik GmbH"
       - "Nordwerk Systemtechnik"
-      - "Nordwerk"
       - "nordwerk systemtechnik gmbh"
+    # NOTE (2026-09-18): the bare short-form "Nordwerk" was removed here. It cannot be
+    # unified with "Nordwerk Systemtechnik" by a DETERMINISTIC normaliser: the only rule
+    # that would ("first token") also collapses the distinct entity "Nordwerk Immobilien"
+    # into the same pseudonym, breaking the no-collision half of NG-18. "Systemtechnik" is
+    # an ordinary descriptor noun with no strippable legal-form / "& Söhne" suffix, so it
+    # cannot be dropped without dropping "Immobilien"/"Transporte"/"Logistik"/"Metallbau"
+    # too. Resolving a bare short-form to its full company name is an aliasing problem that
+    # needs a customer-maintained alias table (real pilot data) — OUT OF SCOPE for E3's
+    # deterministic normaliser (SF-3051). If bare-form resolution is later required, add it
+    # as an alias-table feature, never as a normalisation rule invented from imagination.
 
   - id: ENT-005
     entity: "Anna Berger (contact)"
