@@ -1,0 +1,37 @@
+{
+  "id": "US-014",
+  "title": "One request entry per request, written before reply (AF-402) — pulled forward into Sprint 2",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-04; pulled forward per SPRINT-PLAN to complete assembleVerdict + NG-5)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/ledger/request/deriveActorPseudonym.ts", "reason": "actorPseudonym = HMAC(key, normalize(userId)) — NG-19", "sf_id": "SF-4024", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/request/deriveActorPseudonym.test.ts", "reason": "TDD stub", "sf_id": "SF-4024" },
+    { "file": "core/src/features/ledger/request/buildRequestEntry.ts", "reason": "verdict + meta → entry (span pseudonyms, no originals, no plaintext actor)", "sf_id": "SF-4021" },
+    { "file": "core/src/features/ledger/request/buildRequestEntry.test.ts", "reason": "TDD stub", "sf_id": "SF-4021" },
+    { "file": "core/src/features/ledger/request/redactBeforeWrite.ts", "reason": "assert no raw prompt/response text (NG-10 guard)", "sf_id": "SF-4022" },
+    { "file": "core/src/features/ledger/request/redactBeforeWrite.test.ts", "reason": "TDD stub", "sf_id": "SF-4022" },
+    { "file": "core/src/features/ledger/request/writeRequestEntry.ts", "reason": "build → redact-guard → append; written even on provider failure (FR-14)", "sf_id": "SF-4023" },
+    { "file": "core/src/features/ledger/request/writeRequestEntry.test.ts", "reason": "TDD stub", "sf_id": "SF-4023" },
+    { "file": "core/src/features/ledger/request/index.ts", "reason": "AF-402 entry point", "sf_id": "AF-402" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "Consumed read-only" },
+    { "file": "core/src/features/policy/**", "reason": "Not modified" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/request/deriveActorPseudonym.test.ts",
+    "core/src/features/ledger/request/buildRequestEntry.test.ts",
+    "core/src/features/ledger/request/redactBeforeWrite.test.ts",
+    "core/src/features/ledger/request/writeRequestEntry.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.2", "app_functions": ["AF-402"], "sw_functions": ["SF-4024", "SF-4021", "SF-4022", "SF-4023"], "acceptance_criteria": ["US-014 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-4024", "reason": "derive actor pseudonym (NG-19)" },
+    { "sf_id": "SF-4021", "reason": "build the entry from verdict + meta" },
+    { "sf_id": "SF-4022", "reason": "redact-before-write guard" },
+    { "sf_id": "SF-4023", "reason": "append (before the reply returns, NG-5)" }
+  ],
+  "agent_prompt": "Implement US-014 (AF-402 request-entry writer) per specs/EP-04. NG-5: exactly one entry per request, written before the reply returns, even on provider failure (FR-14). NG-2/NG-10: metadata + span pseudonyms only, never original text. NG-19: actorPseudonym via SF-4024, never a plaintext userId. TDD."
+}
