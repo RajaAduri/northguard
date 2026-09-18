@@ -292,6 +292,31 @@ export interface LedgerEntry {
   // NEVER: raw prompt/response text (default mode); NEVER a plaintext user id (NG-19)
 }
 
+// ── E4 dual-key unmask (AF-408, NG-20) ───────────────────────────────────────
+export interface UnmaskRequest {
+  targetPseudonym: string
+  reason: string
+}
+export interface Authorisation {
+  party: string
+  role: string
+}
+// The two distinct roles required by the Vier-Augen-Prinzip (bound in E8).
+export interface RoleBinding {
+  itSecurityRole: string
+  worksCouncilRole: string
+}
+// Supplies the customer's employee directory so a pseudonym can be matched by
+// recomputing the HMAC. Physical store is an E8 concern (interface only here).
+export interface DirectoryProvider {
+  listUserIds(): string[]
+}
+export interface UnmaskContext {
+  key: KeyMaterial
+  roleBinding: RoleBinding
+  directory: DirectoryProvider
+}
+
 // Metadata handed to the request-entry writer (AF-402). Carries the raw userId
 // customer-side only; the writer derives actorPseudonym and never stores the raw id.
 export interface RequestMeta {
