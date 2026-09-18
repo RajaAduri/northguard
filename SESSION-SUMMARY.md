@@ -1,9 +1,11 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprint 1 → Sprint 2 → (continued) Sprint 3.
-**Outcome:** **Sprints 1, 2 and 3 COMPLETE.** One stop condition was hit mid-run (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed to completion. Full per-story trace in `SESSION-LOG.md`.
+**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4.
+**Outcome:** **Sprints 1, 2, 3 and 4 COMPLETE** (Sprint 4 = US-020 partial per plan). One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
 
-**21 stories, 265 tests green, `tsc` strict clean.** Sprint 3 (continued on "continue please") added: US-016 query (AF-404), US-017 verifiable export bundle (AF-405, re-verifies via AF-406), US-031 dual-key unmask (AF-408, **NG-20**), US-019 exposure (AF-601), US-021 activity log (AF-603), US-023 export view (AF-605) — all E4 query/export/unmask + E6 read-models under the management projection (NG-13). Commits through `4bb9bd9`.
+**26 stories, 301 vitest + 18 pytest green, `tsc` strict clean.**
+- **Sprint 3** added US-016/017/031/019/021/023 (E4 query/export/unmask + E6 read-models; **NG-20** dual-key unmask).
+- **Sprint 4** added US-022 FP-queue (AF-604), US-024 two-rooms context (AF-606), US-025 E7 feature extraction (AF-701, Python), US-026 E7 MinHash-LSH blocking (AF-702, Python), US-020 briefing (AF-602, **partial** — E7 themes land in Sprint 5). `recurring/` (Python) now live. Commits through `aee69a9`.
 
 ## Stories completed (15) — all committed, TDD red→green, `tsc` strict clean
 | Story | AF | What | Invariants |
@@ -51,8 +53,9 @@ NG-1 (wire isolation, §8 10-turn + per-turn), NG-2/NG-10 (pseudonyms + no raw t
 
 ## What is next
 - **Sprint 3 — DONE** (US-016/017/031/019/021/023).
-- **Sprint 4** — E6 briefing (US-020, needs E7), FP-queue (US-022, AF-604), two-rooms context (US-024, AF-606); E7 features + MinHash (US-025/026).
-- **Sprint 4–5** — E7 recurring-work (carries the **NG-21** non-attributability gate and the real kg-gen stability measurement).
+- **Sprint 4 — DONE** (US-022/024/025/026 + US-020 partial).
+- **Sprint 5** — E7 Stage 2: US-027 semantic clustering (AF-703, **pinned local embedding model** — needs the model; flag if unavailable), US-028 pseudonym resolution (AF-704), US-029 temporal patterns (AF-705), US-030 hours-saved synthesis (AF-706 — carries the **NG-21** `assert_non_attributable` gate, SF-7065). Then complete US-020 briefing themes by wiring AF-706 findings into `composeWeeklyBriefing`.
+- **Deferred figures:** the real kg-gen stability measurement (E2) and the FP-narrowing after-count (US-022) are measured out-of-band; E7 semantic clustering needs the pinned embedding model — all flagged, none block the deterministic code.
 - **Sprint 6** — E5 governed chat surface (React SPA over this core).
 - **Integration** — assign canonical area slugs in E2 `mapGraphToAreas`; wire a real kg-gen sidecar to measure stability on a real policy; swap a pinned PDF lib into `extractPdfText`.
 - **Before GA** — escalate the E7 AI Act Annex III exposure to counsel (open legal risk, DECISION-REGISTER §8 A5).
