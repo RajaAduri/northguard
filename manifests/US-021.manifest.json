@@ -1,0 +1,28 @@
+{
+  "id": "US-021",
+  "title": "Aggregated activity log (no per-person breakdown, NG-13)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/management/activity/aggregateActivityRows.ts", "reason": "rows by date+area+verdict, counts aggregated", "sf_id": "SF-6031", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/activity/aggregateActivityRows.test.ts", "reason": "TDD stub", "sf_id": "SF-6031" },
+    { "file": "core/src/features/management/activity/applyAggregationGuard.ts", "reason": "assert no userId field (NG-13) → AggregationLeakError", "sf_id": "SF-6032" },
+    { "file": "core/src/features/management/activity/applyAggregationGuard.test.ts", "reason": "TDD stub", "sf_id": "SF-6032" },
+    { "file": "core/src/features/management/activity/index.ts", "reason": "AF-603 entry point", "sf_id": "AF-603" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/management/activity/aggregateActivityRows.test.ts",
+    "core/src/features/management/activity/applyAggregationGuard.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.3", "app_functions": ["AF-603"], "sw_functions": ["SF-6031", "SF-6032"], "acceptance_criteria": ["US-021 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-6031", "reason": "aggregate rows" },
+    { "sf_id": "SF-6032", "reason": "guard against a person dimension" }
+  ],
+  "agent_prompt": "Implement US-021 (AF-603 activity log) per specs/EP-06. NG-13: rows aggregated by date/area/verdict; no per-person breakdown; applyAggregationGuard throws AggregationLeakError if a userId field appears. TDD."
+}
