@@ -1,4 +1,4 @@
-import type { DisplayPlaceholder, PseudonymSpan } from '../../../../../lib/types'
+import type { DisplayPlaceholder, PseudonymSpan, RedactionSpan } from '../../../../../lib/types'
 import { classifyEntityType } from './classifyEntityType'
 import { assignSemanticPlaceholder } from './assignSemanticPlaceholder'
 import { indexCollidingEntities } from './indexCollidingEntities'
@@ -10,7 +10,7 @@ import { indexCollidingEntities } from './indexCollidingEntities'
 export function buildWireText(
   prompt: string,
   spans: PseudonymSpan[],
-): { wireText: string; displayPlaceholders: DisplayPlaceholder[] } {
+): { wireText: string; displayPlaceholders: DisplayPlaceholder[]; spans: RedactionSpan[] } {
   const ordinals = indexCollidingEntities(spans)
   // distinct count per type = max ordinal seen for that type
   const distinctByType = new Map<string, number>()
@@ -50,5 +50,20 @@ export function buildWireText(
       index: count === 1 ? 0 : ord,
     })
   }
-  return { wireText, displayPlaceholders }
+  // Enrich each detected span with its placeholder → full RedactionSpan (for the verdict + ledger).
+  const enriched: RedactionSpan[] = spans.map((span) => {
+    const base: RedactionSpan = {
+      offset: span.offset,
+      length: span.length,
+      area: span.area,
+      layer: span.layer,
+      placeholder: placeholderFor(span),
+      pseudonym: span.pseudonym,
+      keyEpoch: span.keyEpoch,
+    }
+    if (span.ruleId !== undefined) base.ruleId = span.ruleId
+    return base
+  })
+
+  return { wireText, displayPlaceholders, spans: enriched }
 }
