@@ -38,3 +38,9 @@ class FeatureDoc:
 
 class PrivacyViolation(Exception):
     """Raised if an original entity value (raw prompt/response text) is encountered."""
+
+
+# A MinHash signature is a fixed-length tuple of min-hash values (deterministic given a
+# pinned seed + permutation family). A Bucket is the sorted entry-ids that collided.
+MinHash = tuple[int, ...]
+Bucket = tuple[str, ...]

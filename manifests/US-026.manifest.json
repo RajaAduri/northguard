@@ -1,0 +1,34 @@
+{
+  "id": "US-026",
+  "title": "Near-duplicate blocking (MinHash-LSH, Stage 1) (AF-702, Python)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-07 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "recurring/types.py", "reason": "MinHash + Bucket type aliases", "sf_id": "shared" }
+  ],
+  "create": [
+    { "file": "recurring/minhash/__init__.py", "reason": "AF-702 entry point (block_near_duplicates)", "sf_id": "AF-702", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/minhash/compute_signatures.py", "reason": "fixed-permutation MinHash per doc (seed pinned, NG-15)", "sf_id": "SF-7021" },
+    { "file": "recurring/minhash/test_compute_signatures.py", "reason": "TDD stub", "sf_id": "SF-7021" },
+    { "file": "recurring/minhash/lsh_bucketize.py", "reason": "banded LSH; near-verbatim share a bucket; deterministic", "sf_id": "SF-7022" },
+    { "file": "recurring/minhash/test_lsh_bucketize.py", "reason": "TDD stub", "sf_id": "SF-7022" },
+    { "file": "recurring/minhash/emit_candidate_pairs.py", "reason": "bucket → candidate pairs, sorted/stable", "sf_id": "SF-7023" },
+    { "file": "recurring/minhash/test_emit_candidate_pairs.py", "reason": "TDD stub", "sf_id": "SF-7023" }
+  ],
+  "protected": [
+    { "file": "recurring/features/**", "reason": "consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "recurring/minhash/test_compute_signatures.py",
+    "recurring/minhash/test_lsh_bucketize.py",
+    "recurring/minhash/test_emit_candidate_pairs.py"
+  ],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.2", "app_functions": ["AF-702"], "sw_functions": ["SF-7021", "SF-7022", "SF-7023"], "acceptance_criteria": ["US-026 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-7021", "reason": "MinHash signatures" },
+    { "sf_id": "SF-7022", "reason": "LSH bucketize" },
+    { "sf_id": "SF-7023", "reason": "emit candidate pairs" }
+  ],
+  "agent_prompt": "Implement US-026 (AF-702) per specs/EP-07, Python + pytest. NG-15: fixed seed + permutation family → identical signatures every run; fixed threshold → deterministic buckets. Near-verbatim docs share a bucket; unrelated ones do not. TDD. No external deps (implement MinHash + banded LSH directly)."
+}
