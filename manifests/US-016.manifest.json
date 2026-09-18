@@ -1,0 +1,33 @@
+{
+  "id": "US-016",
+  "title": "Query ledger by date and area (management/export projections)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-04 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/ledger/query/parseLedgerStream.ts", "reason": "Stream entries; malformed line → ChainError (never skip)", "sf_id": "SF-4041", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/query/parseLedgerStream.test.ts", "reason": "TDD stub", "sf_id": "SF-4041" },
+    { "file": "core/src/features/ledger/query/filterByDateArea.ts", "reason": "Filter by date range + area", "sf_id": "SF-4042" },
+    { "file": "core/src/features/ledger/query/filterByDateArea.test.ts", "reason": "TDD stub", "sf_id": "SF-4042" },
+    { "file": "core/src/features/ledger/query/projectSafeFields.ts", "reason": "management strips the actor dimension (NG-13); export keeps actorPseudonym, never plaintext (NG-19)", "sf_id": "SF-4043" },
+    { "file": "core/src/features/ledger/query/projectSafeFields.test.ts", "reason": "TDD stub", "sf_id": "SF-4043" },
+    { "file": "core/src/features/ledger/query/index.ts", "reason": "AF-404 entry point", "sf_id": "AF-404" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "Consumed read-only" },
+    { "file": "core/src/features/ledger/request/**", "reason": "Not modified" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/query/parseLedgerStream.test.ts",
+    "core/src/features/ledger/query/filterByDateArea.test.ts",
+    "core/src/features/ledger/query/projectSafeFields.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.4", "app_functions": ["AF-404"], "sw_functions": ["SF-4041", "SF-4042", "SF-4043"], "acceptance_criteria": ["US-016 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-4041", "reason": "parse/stream the ledger" },
+    { "sf_id": "SF-4042", "reason": "filter by date/area" },
+    { "sf_id": "SF-4043", "reason": "project safe fields per context" }
+  ],
+  "agent_prompt": "Implement US-016 (AF-404 query) per specs/EP-04. NG-13: the management projection drops the actor dimension entirely (no person column); the export projection keeps actorPseudonym (never plaintext, NG-19). A malformed ledger line throws ChainError (never skipped silently). TDD."
+}
