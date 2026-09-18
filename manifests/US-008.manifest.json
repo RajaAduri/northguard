@@ -1,0 +1,38 @@
+{
+  "id": "US-008",
+  "title": "Assemble verdict with span-level attribution and per-area mode (decision core)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-03 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/verdict/resolveTouchedAreas.ts", "reason": "Group rule+llm hits into area attributions with layers", "sf_id": "SF-3031", "template": "specs/EP-03-inspection-redaction/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/inspection/verdict/resolveTouchedAreas.test.ts", "reason": "TDD stub", "sf_id": "SF-3031" },
+    { "file": "core/src/features/inspection/verdict/computeSpans.ts", "reason": "Merge overlapping rule+llm spans; span-level attribution (NG-8)", "sf_id": "SF-3032" },
+    { "file": "core/src/features/inspection/verdict/computeSpans.test.ts", "reason": "TDD stub", "sf_id": "SF-3032" },
+    { "file": "core/src/features/inspection/verdict/decideVerdictMode.ts", "reason": "block-area touch → block; redact-only → redact; none → clean", "sf_id": "SF-3033" },
+    { "file": "core/src/features/inspection/verdict/decideVerdictMode.test.ts", "reason": "TDD stub", "sf_id": "SF-3033" },
+    { "file": "core/src/features/inspection/verdict/computeConfidence.ts", "reason": "rule → high; llm-only → reported; none → 1.0", "sf_id": "SF-3034" },
+    { "file": "core/src/features/inspection/verdict/computeConfidence.test.ts", "reason": "TDD stub", "sf_id": "SF-3034" },
+    { "file": "core/src/features/inspection/verdict/index.ts", "reason": "AF-303 entry point — assembleDecision now; full assembleVerdict (SF-3035, +transcript +ledger) completed in US-011", "sf_id": "AF-303" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not modified (the ledger bridge is wired in US-011/US-014)" },
+    { "file": "core/src/features/inspection/rules/**", "reason": "Consumed read-only" },
+    { "file": "core/src/features/inspection/backstop/**", "reason": "Consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/verdict/resolveTouchedAreas.test.ts",
+    "core/src/features/inspection/verdict/computeSpans.test.ts",
+    "core/src/features/inspection/verdict/decideVerdictMode.test.ts",
+    "core/src/features/inspection/verdict/computeConfidence.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.3", "app_functions": ["AF-303"], "sw_functions": ["SF-3031", "SF-3032", "SF-3033", "SF-3034"], "acceptance_criteria": ["US-008 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-3031", "reason": "touched areas + layers" },
+    { "sf_id": "SF-3032", "reason": "spans (span-level attribution)" },
+    { "sf_id": "SF-3033", "reason": "verdict from area modes" },
+    { "sf_id": "SF-3034", "reason": "confidence" }
+  ],
+  "agent_prompt": "Implement US-008 (AF-303 decision core) per specs/EP-03. Deliver SF-3031..3034 + assembleDecision. NG-8: spans carry {area,layer,ruleId?}. block-area touch → block (no redacted variant). SF-3035 (full assembleVerdict with placeholders/pseudonyms/wire + ledger write, NG-5) is completed in US-011 once AF-304/305/306 exist. TDD."
+}

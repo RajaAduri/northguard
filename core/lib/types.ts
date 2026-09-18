@@ -183,6 +183,27 @@ export interface BackstopResult {
   coverage: Coverage
 }
 
+// The span shape produced by detection/decision (AF-303), before AF-304/305 enrich
+// it with a placeholder + pseudonym into a full RedactionSpan.
+export interface DetectedSpan {
+  offset: number
+  length: number
+  area: string
+  layer: Layer
+  ruleId?: string
+}
+
+// The decision half of AF-303 (verdict + attribution + spans + confidence), before
+// the transcript engine (placeholders/pseudonyms/wire) and the ledger write.
+export interface VerdictDecision {
+  verdict: Verdict
+  touchedAreas: AreaAttribution[]
+  spans: DetectedSpan[]
+  confidence: number
+  caughtBy: string | null
+  coverage: Coverage
+}
+
 export interface BackstopMessages {
   system: string
   user: string
