@@ -251,6 +251,27 @@ export interface RehydrateResult {
   unresolved: string[]
 }
 
+// ── E6 management read-models (all use the management projection — no user, NG-13) ──
+export type Trend = 'rising' | 'steady' | 'falling'
+export interface AreaExposure {
+  area: string
+  mode: AreaMode
+  touches: number
+  trend: Trend
+  series: number[]
+}
+export interface ActivityRow {
+  date: string
+  area: string
+  verdict: string
+  count: number
+}
+export interface ExportRequest {
+  from: string
+  to: string
+  reason: string
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'

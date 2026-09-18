@@ -1,0 +1,32 @@
+{
+  "id": "US-019",
+  "title": "Exposure concentration over time (no person column, NG-13)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-06 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/management/exposure/aggregateTouchesByArea.ts", "reason": "per-area weekly touch counts", "sf_id": "SF-6011", "template": "specs/EP-06-management-view/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/management/exposure/aggregateTouchesByArea.test.ts", "reason": "TDD stub", "sf_id": "SF-6011" },
+    { "file": "core/src/features/management/exposure/computeAreaTrend.ts", "reason": "rising/steady/falling", "sf_id": "SF-6012" },
+    { "file": "core/src/features/management/exposure/computeAreaTrend.test.ts", "reason": "TDD stub", "sf_id": "SF-6012" },
+    { "file": "core/src/features/management/exposure/orderByConcentration.ts", "reason": "sort desc by touches, stable by label", "sf_id": "SF-6013" },
+    { "file": "core/src/features/management/exposure/orderByConcentration.test.ts", "reason": "TDD stub", "sf_id": "SF-6013" },
+    { "file": "core/src/features/management/exposure/index.ts", "reason": "AF-601 entry point", "sf_id": "AF-601" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Consumed read-only via AF-404 management projection" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/management/exposure/aggregateTouchesByArea.test.ts",
+    "core/src/features/management/exposure/computeAreaTrend.test.ts",
+    "core/src/features/management/exposure/orderByConcentration.test.ts"
+  ],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.1", "app_functions": ["AF-601"], "sw_functions": ["SF-6011", "SF-6012", "SF-6013"], "acceptance_criteria": ["US-019 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-6011", "reason": "aggregate touches by area/week" },
+    { "sf_id": "SF-6012", "reason": "classify the trend" },
+    { "sf_id": "SF-6013", "reason": "order by concentration" }
+  ],
+  "agent_prompt": "Implement US-019 (AF-601 exposure) per specs/EP-06. NG-13: aggregated across the team; NO user dimension anywhere. Trend rising/steady/falling with a per-week series; ordered by concentration. Reads the ledger via the management projection. TDD."
+}
