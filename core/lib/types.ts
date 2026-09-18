@@ -193,6 +193,10 @@ export interface DetectedSpan {
   ruleId?: string
 }
 
+// A detected span once AF-305 has attached its keyed pseudonym; AF-304 indexes
+// colliding entities by pseudonym to assign semantic placeholders.
+export type PseudonymSpan = DetectedSpan & { pseudonym: string; keyEpoch: number }
+
 // The decision half of AF-303 (verdict + attribution + spans + confidence), before
 // the transcript engine (placeholders/pseudonyms/wire) and the ledger write.
 export interface VerdictDecision {

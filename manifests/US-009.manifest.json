@@ -1,0 +1,37 @@
+{
+  "id": "US-009",
+  "title": "Generate semantic, indexed placeholders (pure, NG-11)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-03 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/transcript/placeholders/classifyEntityType.ts", "reason": "area/rule → entity type; never [REDACTED]", "sf_id": "SF-3041", "template": "specs/EP-03-inspection-redaction/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/inspection/transcript/placeholders/classifyEntityType.test.ts", "reason": "TDD stub", "sf_id": "SF-3041" },
+    { "file": "core/src/features/inspection/transcript/placeholders/assignSemanticPlaceholder.ts", "reason": "⟨Type⟩ / ⟨Type N⟩; opaque token forbidden (NG-11)", "sf_id": "SF-3042" },
+    { "file": "core/src/features/inspection/transcript/placeholders/assignSemanticPlaceholder.test.ts", "reason": "TDD stub", "sf_id": "SF-3042" },
+    { "file": "core/src/features/inspection/transcript/placeholders/indexCollidingEntities.ts", "reason": "index distinct same-type entities by pseudonym", "sf_id": "SF-3043" },
+    { "file": "core/src/features/inspection/transcript/placeholders/indexCollidingEntities.test.ts", "reason": "TDD stub", "sf_id": "SF-3043" },
+    { "file": "core/src/features/inspection/transcript/placeholders/buildWireText.ts", "reason": "replace spans right-to-left → wireText + displayPlaceholders (no originals, NG-14)", "sf_id": "SF-3044" },
+    { "file": "core/src/features/inspection/transcript/placeholders/buildWireText.test.ts", "reason": "TDD stub", "sf_id": "SF-3044" },
+    { "file": "core/src/features/inspection/transcript/placeholders/index.ts", "reason": "AF-304 entry point", "sf_id": "AF-304" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not modified" },
+    { "file": "core/src/features/inspection/verdict/**", "reason": "Consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/transcript/placeholders/classifyEntityType.test.ts",
+    "core/src/features/inspection/transcript/placeholders/assignSemanticPlaceholder.test.ts",
+    "core/src/features/inspection/transcript/placeholders/indexCollidingEntities.test.ts",
+    "core/src/features/inspection/transcript/placeholders/buildWireText.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.4", "app_functions": ["AF-304"], "sw_functions": ["SF-3041", "SF-3042", "SF-3043", "SF-3044"], "acceptance_criteria": ["US-009 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-3041", "reason": "classify entity type" },
+    { "sf_id": "SF-3043", "reason": "index colliding entities (by pseudonym)" },
+    { "sf_id": "SF-3042", "reason": "assign the semantic placeholder" },
+    { "sf_id": "SF-3044", "reason": "build wire text (right-to-left)" }
+  ],
+  "agent_prompt": "Implement US-009 (AF-304 placeholders) per specs/EP-03. Pure (no fs/db/network, NG-14). NG-11: semantic labels, never [REDACTED]; distinct same-type entities indexed ⟨Lieferant 1⟩/⟨2⟩, same entity → same placeholder. buildWireText replaces right-to-left; output contains no original span text; displayPlaceholders carry NO original value. TDD."
+}
