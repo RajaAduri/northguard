@@ -1,0 +1,45 @@
+{
+  "id": "US-017",
+  "title": "Export a verifiable evidence bundle (AF-405; verify via AF-406)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-04 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/ledger/export/collectRange.ts", "reason": "collect entries over a range via AF-404", "sf_id": "SF-4051", "template": "specs/EP-04-audit-ledger/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/ledger/export/collectRange.test.ts", "reason": "TDD stub", "sf_id": "SF-4051" },
+    { "file": "core/src/features/ledger/export/buildCsv.ts", "reason": "CSV: ts, area, mode, verdict, caughtBy — no text columns", "sf_id": "SF-4052" },
+    { "file": "core/src/features/ledger/export/buildCsv.test.ts", "reason": "TDD stub", "sf_id": "SF-4052" },
+    { "file": "core/src/features/ledger/export/buildJsonl.ts", "reason": "verifiable JSONL incl prevHash/hash", "sf_id": "SF-4053" },
+    { "file": "core/src/features/ledger/export/buildJsonl.test.ts", "reason": "TDD stub", "sf_id": "SF-4053" },
+    { "file": "core/src/features/ledger/export/computeBundleChecksum.ts", "reason": "SHA-256 over both artefacts", "sf_id": "SF-4054" },
+    { "file": "core/src/features/ledger/export/computeBundleChecksum.test.ts", "reason": "TDD stub", "sf_id": "SF-4054" },
+    { "file": "core/src/features/ledger/export/assertExportPrivacy.ts", "reason": "FR-25 pseudonyms not names; FR-23/NG-17 no key; NG-19 no plaintext user id", "sf_id": "SF-4056" },
+    { "file": "core/src/features/ledger/export/assertExportPrivacy.test.ts", "reason": "TDD stub", "sf_id": "SF-4056" },
+    { "file": "core/src/features/ledger/export/writeExportGovernanceEvent.ts", "reason": "export is itself logged (NG-12); reason mandatory", "sf_id": "SF-4055" },
+    { "file": "core/src/features/ledger/export/writeExportGovernanceEvent.test.ts", "reason": "TDD stub", "sf_id": "SF-4055" },
+    { "file": "core/src/features/ledger/export/index.ts", "reason": "AF-405 entry point (exportEvidenceBundle)", "sf_id": "AF-405" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "Consumed read-only" },
+    { "file": "core/src/features/ledger/verify/**", "reason": "AF-406 reused read-only" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/ledger/export/collectRange.test.ts",
+    "core/src/features/ledger/export/buildCsv.test.ts",
+    "core/src/features/ledger/export/buildJsonl.test.ts",
+    "core/src/features/ledger/export/computeBundleChecksum.test.ts",
+    "core/src/features/ledger/export/assertExportPrivacy.test.ts",
+    "core/src/features/ledger/export/writeExportGovernanceEvent.test.ts"
+  ],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.5", "app_functions": ["AF-405", "AF-406"], "sw_functions": ["SF-4051", "SF-4052", "SF-4053", "SF-4054", "SF-4056", "SF-4055"], "acceptance_criteria": ["US-017 AC-1..3"] },
+  "chain_order": [
+    { "sf_id": "SF-4051", "reason": "collect the range" },
+    { "sf_id": "SF-4052", "reason": "CSV" },
+    { "sf_id": "SF-4053", "reason": "JSONL" },
+    { "sf_id": "SF-4056", "reason": "privacy gate (runs before emit)" },
+    { "sf_id": "SF-4054", "reason": "bundle checksum" },
+    { "sf_id": "SF-4055", "reason": "log the export as a governance event" }
+  ],
+  "agent_prompt": "Implement US-017 (AF-405 export) per specs/EP-04. FR-25: pseudonyms, never entity names. FR-23/NG-17: no key material/preimage. NG-19: actorPseudonym only, never a plaintext user id. NG-12: export is itself logged with a mandatory reason. Chain verifies via AF-406 (recomputeChain, already built). TDD."
+}
