@@ -1,7 +1,9 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprint 1 → Sprint 2.
-**Outcome:** **Sprint 1 and Sprint 2 COMPLETE.** One stop condition was hit mid-run (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed to completion. Full per-story trace in `SESSION-LOG.md`.
+**Run:** continuous build from the amended specs, Sprint 1 → Sprint 2 → (continued) Sprint 3.
+**Outcome:** **Sprints 1, 2 and 3 COMPLETE.** One stop condition was hit mid-run (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed to completion. Full per-story trace in `SESSION-LOG.md`.
+
+**21 stories, 265 tests green, `tsc` strict clean.** Sprint 3 (continued on "continue please") added: US-016 query (AF-404), US-017 verifiable export bundle (AF-405, re-verifies via AF-406), US-031 dual-key unmask (AF-408, **NG-20**), US-019 exposure (AF-601), US-021 activity log (AF-603), US-023 export view (AF-605) — all E4 query/export/unmask + E6 read-models under the management projection (NG-13). Commits through `4bb9bd9`.
 
 ## Stories completed (15) — all committed, TDD red→green, `tsc` strict clean
 | Story | AF | What | Invariants |
@@ -48,7 +50,8 @@ NG-1 (wire isolation, §8 10-turn + per-turn), NG-2/NG-10 (pseudonyms + no raw t
 - Governance-write signatures gained a `key` param (NG-19 postdates the pre-amendment spec).
 
 ## What is next
-- **Sprint 3** — E4 query/export (US-016/017), **US-031 dual-key unmask (AF-408, NG-20)**, E6 read-models (US-019/021/023). (US-014 already done; US-031 manifest already exists.)
+- **Sprint 3 — DONE** (US-016/017/031/019/021/023).
+- **Sprint 4** — E6 briefing (US-020, needs E7), FP-queue (US-022, AF-604), two-rooms context (US-024, AF-606); E7 features + MinHash (US-025/026).
 - **Sprint 4–5** — E7 recurring-work (carries the **NG-21** non-attributability gate and the real kg-gen stability measurement).
 - **Sprint 6** — E5 governed chat surface (React SPA over this core).
 - **Integration** — assign canonical area slugs in E2 `mapGraphToAreas`; wire a real kg-gen sidecar to measure stability on a real policy; swap a pinned PDF lib into `extractPdfText`.
