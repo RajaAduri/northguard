@@ -135,6 +135,54 @@ export interface ActivePolicy {
   activatedBy: string
 }
 
+// ── E3 inspection / rules ────────────────────────────────────────────────────
+export interface LexEntry {
+  id: string
+  canonical: string
+  area: string
+  variants: string[]
+}
+export interface RuleFamily {
+  id: string
+  area: string
+  labelDe: string
+  labelEn: string
+}
+export interface Lexicons {
+  entries: LexEntry[]
+  ruleFamilies: RuleFamily[]
+}
+
+export interface RawHit {
+  offset: number
+  length: number
+  value: string
+  ruleId?: string
+  area?: string
+}
+
+export interface RuleHit {
+  area: string
+  ruleId?: string
+  offset: number
+  length: number
+  value: string
+}
+
+export interface LlmFinding {
+  area: string
+  offset: number
+  length: number
+  value: string
+  layer: 'llm'
+  confidence?: number
+}
+
+export interface BackstopResult {
+  findings: LlmFinding[]
+  coverage: Coverage
+}
+
 // ── E4 ledger ─────────────────────────────────────────────────────────────────
 export type GovKind =
   | 'activation'

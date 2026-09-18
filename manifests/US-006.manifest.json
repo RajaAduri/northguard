@@ -1,0 +1,39 @@
+{
+  "id": "US-006",
+  "title": "Deterministic rules detection (DE+EN, <50ms p95, no network)",
+  "created": "2026-09-17T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-03 in the Part B build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "core/src/features/inspection/rules/loadLexicons.ts", "reason": "Load + validate DE/EN YAML once at boot", "sf_id": "SF-3011", "template": "specs/EP-03-inspection-redaction/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/inspection/rules/loadLexicons.test.ts", "reason": "TDD stub", "sf_id": "SF-3011" },
+    { "file": "core/src/features/inspection/rules/matchRulePatterns.ts", "reason": "Validated regex families incl. German identifiers (IBAN MOD-97, Steuernummer, HRN) — §8 A4", "sf_id": "SF-3012" },
+    { "file": "core/src/features/inspection/rules/matchRulePatterns.test.ts", "reason": "TDD stub", "sf_id": "SF-3012" },
+    { "file": "core/src/features/inspection/rules/matchLexiconTerms.ts", "reason": "Bilingual longest-match over lexicon variants", "sf_id": "SF-3013" },
+    { "file": "core/src/features/inspection/rules/matchLexiconTerms.test.ts", "reason": "TDD stub", "sf_id": "SF-3013" },
+    { "file": "core/src/features/inspection/rules/mapHitsToAreas.ts", "reason": "Hits → active-policy areas; span-level (NG-8)", "sf_id": "SF-3014" },
+    { "file": "core/src/features/inspection/rules/mapHitsToAreas.test.ts", "reason": "TDD stub", "sf_id": "SF-3014" },
+    { "file": "core/src/features/inspection/rules/rulesLatency.test.ts", "reason": "NFR-01 p95 <50ms benchmark on German test text (stop condition)", "sf_id": "AF-301" },
+    { "file": "core/src/features/inspection/rules/index.ts", "reason": "AF-301 entry point (runRulesLayer)", "sf_id": "AF-301" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/**", "reason": "Not modified" },
+    { "file": "core/src/features/policy/**", "reason": "Consumes ActivePolicy read-only; not modified" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/inspection/rules/loadLexicons.test.ts",
+    "core/src/features/inspection/rules/matchRulePatterns.test.ts",
+    "core/src/features/inspection/rules/matchLexiconTerms.test.ts",
+    "core/src/features/inspection/rules/mapHitsToAreas.test.ts",
+    "core/src/features/inspection/rules/rulesLatency.test.ts"
+  ],
+  "traceability": { "epic": "EP-03", "feature": "FT-3.1", "app_functions": ["AF-301"], "sw_functions": ["SF-3011", "SF-3012", "SF-3013", "SF-3014"], "acceptance_criteria": ["US-006 AC-1..4"] },
+  "chain_order": [
+    { "sf_id": "SF-3011", "reason": "load lexicons at boot (§8 A4: lexicons first)" },
+    { "sf_id": "SF-3013", "reason": "lexicon term matching" },
+    { "sf_id": "SF-3012", "reason": "regex families incl. German identifiers" },
+    { "sf_id": "SF-3014", "reason": "map hits to active areas" }
+  ],
+  "agent_prompt": "Implement US-006 (AF-301 rules layer) per specs/EP-03. NG-7: no network, deterministic, p95 <50ms. §8 A4: lexicons + validated German identifiers (IBAN MOD-97, Steuernummer, HRN) — precision-first, not an open pattern zoo. NG-16: DE+EN. TDD; include a p95 latency benchmark on German text."
+}
