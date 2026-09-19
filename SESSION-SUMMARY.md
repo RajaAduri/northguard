@@ -1,11 +1,12 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4.
-**Outcome:** **Sprints 1, 2, 3 and 4 COMPLETE** (Sprint 4 = US-020 partial per plan). One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
+**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4 → 5.
+**Outcome:** **Sprints 1–5 COMPLETE** (all 30 build stories + US-031 unmask). One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
 
-**26 stories, 301 vitest + 18 pytest green, `tsc` strict clean.**
+**31 stories, 301 vitest + 55 pytest green, `tsc` strict clean.**
 - **Sprint 3** added US-016/017/031/019/021/023 (E4 query/export/unmask + E6 read-models; **NG-20** dual-key unmask).
-- **Sprint 4** added US-022 FP-queue (AF-604), US-024 two-rooms context (AF-606), US-025 E7 feature extraction (AF-701, Python), US-026 E7 MinHash-LSH blocking (AF-702, Python), US-020 briefing (AF-602, **partial** — E7 themes land in Sprint 5). `recurring/` (Python) now live. Commits through `aee69a9`.
+- **Sprint 4** added US-022 FP-queue, US-024 context, US-025 E7 features + US-026 E7 MinHash (Python), US-020 briefing (partial).
+- **Sprint 5** added US-027 semantic clustering (AF-703, **pinned intfloat/multilingual-e5-base**, recorded per NG-15), US-028 pseudonym resolution (AF-704), US-029 temporal patterns (AF-705), US-030 hours-saved synthesis (AF-706, **NG-21** `assert_non_attributable` gate). E7 is complete end-to-end. Commits through `6cfd157`.
 
 ## Stories completed (15) — all committed, TDD red→green, `tsc` strict clean
 | Story | AF | What | Invariants |
@@ -52,10 +53,14 @@ NG-1 (wire isolation, §8 10-turn + per-turn), NG-2/NG-10 (pseudonyms + no raw t
 - Governance-write signatures gained a `key` param (NG-19 postdates the pre-amendment spec).
 
 ## What is next
-- **Sprint 3 — DONE** (US-016/017/031/019/021/023).
-- **Sprint 4 — DONE** (US-022/024/025/026 + US-020 partial).
-- **Sprint 5** — E7 Stage 2: US-027 semantic clustering (AF-703, **pinned local embedding model** — needs the model; flag if unavailable), US-028 pseudonym resolution (AF-704), US-029 temporal patterns (AF-705), US-030 hours-saved synthesis (AF-706 — carries the **NG-21** `assert_non_attributable` gate, SF-7065). Then complete US-020 briefing themes by wiring AF-706 findings into `composeWeeklyBriefing`.
-- **Deferred figures:** the real kg-gen stability measurement (E2) and the FP-narrowing after-count (US-022) are measured out-of-band; E7 semantic clustering needs the pinned embedding model — all flagged, none block the deterministic code.
+- **Sprints 1–5 — DONE.** All 30 build stories + US-031 (unmask) are implemented and green. The buildable SLC core (E2, E3, E4, E6, E7) is complete.
+- **Sprint 6 — E5 governed chat surface** (US-032…US-039, React SPA over the solved core): composer/mirror/reply/provider-view/i18n/tokens/FP-report/two-rooms. The only remaining decomposed epic. After E5, decompose the E1 browser extension.
+- **Integration / deployment (E8-class, flagged not blocking):**
+  - **Bridge B4** (Python E7 → TS briefing): wire `synthesize_recurring_work` output into `composeWeeklyBriefing` over the localhost JSON interface, to populate real briefing themes.
+  - **Pinned embedding model:** fetch `intfloat/multilingual-e5-base` on the backstop host so E7 semantic clustering runs on real data (the pipeline + tests are proven with a deterministic fake).
+  - **Measured figures out-of-band:** real kg-gen stability on a 3-page German policy (E2); the FP-narrowing after-count (US-022); dual-key unmask secret store + role binding (E8).
+  - Assign canonical area slugs in E2 `mapGraphToAreas`; swap a pinned PDF lib into `extractPdfText`.
+- **Before GA** — escalate the E7 AI Act Annex III exposure to counsel (open legal risk, DECISION-REGISTER §8 A5).
 - **Sprint 6** — E5 governed chat surface (React SPA over this core).
 - **Integration** — assign canonical area slugs in E2 `mapGraphToAreas`; wire a real kg-gen sidecar to measure stability on a real policy; swap a pinned PDF lib into `extractPdfText`.
 - **Before GA** — escalate the E7 AI Act Annex III exposure to counsel (open legal risk, DECISION-REGISTER §8 A5).
