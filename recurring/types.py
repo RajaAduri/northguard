@@ -44,3 +44,15 @@ class PrivacyViolation(Exception):
 # pinned seed + permutation family). A Bucket is the sorted entry-ids that collided.
 MinHash = tuple[int, ...]
 Bucket = tuple[str, ...]
+
+# A pinned-model embedding vector.
+Vector = tuple[float, ...]
+
+
+@dataclass(frozen=True)
+class Cluster:
+    id: str                       # deterministic (sorted member hash)
+    members: tuple[str, ...]      # entry_ids
+    key_epoch: int
+    model_version: str            # provenance (NG-15)
+    threshold: float

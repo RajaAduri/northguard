@@ -1,25 +1,28 @@
 {
   "id": "US-027",
-  "title": "Semantic clustering via pinned local embeddings (Stage 2, deterministic)",
+  "title": "Semantic clustering (pinned local embeddings, Stage 2) (AF-703, Python)",
   "created": "2026-09-13T00:00:00Z",
-  "author": "dev-blueprint",
+  "updated": "2026-09-19T00:00:00Z",
+  "author": "dev-blueprint (regenerated for the Part B build; model pinned to intfloat/multilingual-e5-base)",
   "status": "planned",
-  "modify": [],
+  "modify": [
+    { "file": "recurring/types.py", "reason": "Vector + Cluster types", "sf_id": "shared" }
+  ],
   "create": [
-    { "file": "recurring/semantic/embed_documents.py", "reason": "Pinned local embedder; vectors cached by text hash", "sf_id": "SF-7031" },
-    { "file": "recurring/semantic/test_embed_documents.py", "reason": "TDD stub", "sf_id": "SF-7031" },
-    { "file": "recurring/semantic/cosine_within_threshold.py", "reason": "Fixed cosine threshold", "sf_id": "SF-7032" },
+    { "file": "recurring/config.py", "reason": "pinned model name + revision + cosine threshold (recorded per NG-15)", "sf_id": "shared", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/semantic/pinned_embedder.py", "reason": "PinnedEmbedder protocol + E5MultilingualEmbedder (lazy sentence-transformers)", "sf_id": "shared" },
+    { "file": "recurring/semantic/embed_documents.py", "reason": "cached by text hash; deterministic (NG-15)", "sf_id": "SF-7031" },
+    { "file": "recurring/semantic/test_embed_documents.py", "reason": "TDD stub (fake embedder)", "sf_id": "SF-7031" },
+    { "file": "recurring/semantic/cosine_within_threshold.py", "reason": "cosine gate", "sf_id": "SF-7032" },
     { "file": "recurring/semantic/test_cosine_within_threshold.py", "reason": "TDD stub", "sf_id": "SF-7032" },
-    { "file": "recurring/semantic/connected_components_cluster.py", "reason": "Deterministic clustering; stable cluster ids", "sf_id": "SF-7033" },
-    { "file": "recurring/semantic/test_connected_components_cluster.py", "reason": "TDD stub incl. paraphrase-caught-by-Stage-2", "sf_id": "SF-7033" },
-    { "file": "recurring/semantic/record_model_provenance.py", "reason": "Attach model version + threshold (audit, NG-15)", "sf_id": "SF-7034" },
+    { "file": "recurring/semantic/connected_components_cluster.py", "reason": "MinHash pairs + semantic edges → components; deterministic cluster id", "sf_id": "SF-7033" },
+    { "file": "recurring/semantic/test_connected_components_cluster.py", "reason": "TDD stub (headline case)", "sf_id": "SF-7033" },
+    { "file": "recurring/semantic/record_model_provenance.py", "reason": "model_version + threshold on every cluster (NG-15)", "sf_id": "SF-7034" },
     { "file": "recurring/semantic/test_record_model_provenance.py", "reason": "TDD stub", "sf_id": "SF-7034" },
-    { "file": "recurring/semantic/__init__.py", "reason": "AF-703 entry point", "sf_id": "AF-703" }
+    { "file": "recurring/semantic/__init__.py", "reason": "AF-703 entry point (cluster_semantic)", "sf_id": "AF-703" }
   ],
   "protected": [
-    { "file": "recurring/features/**", "reason": "US-025; consumed read-only" },
-    { "file": "recurring/minhash/**", "reason": "US-026; provides candidate pairs, not modified here" },
-    { "file": "core/**", "reason": "Ledger is read via the query contract, never modified from Python" }
+    { "file": "recurring/minhash/**", "reason": "Stage-1 candidate pairs consumed read-only" }
   ],
   "tests_must_pass": [
     "recurring/semantic/test_embed_documents.py",
@@ -27,12 +30,12 @@
     "recurring/semantic/test_connected_components_cluster.py",
     "recurring/semantic/test_record_model_provenance.py"
   ],
-  "traceability": { "epic": "EP-07", "feature": "FT-7.3", "app_functions": ["AF-703"], "sw_functions": ["SF-7031", "SF-7032", "SF-7033", "SF-7034"], "acceptance_criteria": ["US-027 AC-1..3", "NG-15 determinism"] },
+  "traceability": { "epic": "EP-07", "feature": "FT-7.3", "app_functions": ["AF-703"], "sw_functions": ["SF-7031", "SF-7032", "SF-7033", "SF-7034"], "acceptance_criteria": ["US-027 AC"] },
   "chain_order": [
     { "sf_id": "SF-7031", "reason": "embed (cached)" },
-    { "sf_id": "SF-7032", "reason": "cosine threshold" },
-    { "sf_id": "SF-7033", "reason": "cluster" },
+    { "sf_id": "SF-7032", "reason": "cosine gate" },
+    { "sf_id": "SF-7033", "reason": "connected components" },
     { "sf_id": "SF-7034", "reason": "record provenance" }
   ],
-  "agent_prompt": "CONTEXT:\n- Project: NorthGuard recurring-work intelligence. Tech: Python 3.11 + pytest. Runs on the backstop host. Input: FeatureDocs (US-025) + MinHash candidate pairs (US-026), both read-only.\n- This is the reproducibility-critical stage. Embeddings are ALLOWED here precisely because they are pinned and deterministic (see DECISION-REGISTER R2/R3, AGENT-RULES NG-15).\n\nTASK:\nImplement US-027 (AF-703): cluster prompts that are about the same thing phrased differently — the headline case MinHash alone misses — using a PINNED local embedding model with cached vectors and a FIXED cosine threshold. Record model version + threshold on every cluster.\n\nCREATE FILES: per manifest.create. Signatures exactly per specs/EP-07-recurring-work/APP-FUNCTIONS.md (AF-703).\n\nRULES:\n1. TDD first. Include: (a) two paraphrases of the same document cluster together even though MinHash did NOT pair them; (b) running the whole stage twice over the same input yields IDENTICAL cluster ids (NG-15 determinism test).\n2. Determinism is mandatory: pin the model version (from env/config), disable sampling, cache vectors by sha256(redacted_text), fix the threshold. No wall-clock, no randomness (seed anything that needs seeding).\n3. NG-10: never read an original value — only redacted text + pseudonyms already on the FeatureDocs.\n4. NFR-04/NFR-05: the model is local and small; nothing leaves the host.\n5. Cluster id is a deterministic function of sorted member ids (stable across runs).\n6. record_model_provenance stamps every cluster with model_version + threshold so results are comparable only within a model version.\n7. Do not modify features/, minhash/, or core/ (protected). Report the two determinism/paraphrase tests explicitly."
+  "agent_prompt": "Implement US-027 (AF-703) per specs/EP-07, Python + pytest. Model pinned to intfloat/multilingual-e5-base (MIT; Jina v5 is CC BY-NC — not shippable). NG-15: deterministic inference, vectors cached by text hash, fixed cosine threshold, model_version recorded on every cluster. Catch the headline case (paraphrase MinHash missed) via semantic edges. Real model inference is an integration step behind PinnedEmbedder — tests use a deterministic fake; flag if the model is unavailable. TDD."
 }
