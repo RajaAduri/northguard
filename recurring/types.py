@@ -42,6 +42,26 @@ class PrivacyViolation(Exception):
     """Raised if an original entity value (raw prompt/response text) is encountered."""
 
 
+@dataclass(frozen=True)
+class TimeBucket:
+    period: str    # a day, ISO 'YYYY-MM-DD'
+    count: int
+    weekday: int   # 0=Mon … 6=Sun
+
+
+@dataclass(frozen=True)
+class Cadence:
+    kind: str      # 'weekly'
+    weekday: int
+    label: str     # e.g. 'weekly-Friday'
+
+
+@dataclass(frozen=True)
+class Cessation:
+    last_day: str
+    label: str     # 'no request since <day> — likely solved'
+
+
 # A MinHash signature is a fixed-length tuple of min-hash values (deterministic given a
 # pinned seed + permutation family). A Bucket is the sorted entry-ids that collided.
 MinHash = tuple[int, ...]

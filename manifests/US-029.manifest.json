@@ -1,0 +1,30 @@
+{
+  "id": "US-029",
+  "title": "Temporal pattern detection (AF-705, Python)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-07 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "recurring/types.py", "reason": "TimeBucket / Cadence / Cessation", "sf_id": "shared" }
+  ],
+  "create": [
+    { "file": "recurring/temporal/bucket_by_time.py", "reason": "counts per day, zeros preserved; trailing zeros to window end", "sf_id": "SF-7051", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/temporal/classify_trend.py", "reason": "rising/steady/falling", "sf_id": "SF-7052" },
+    { "file": "recurring/temporal/detect_cadence.py", "reason": "weekly cadence (Friday-CI)", "sf_id": "SF-7053" },
+    { "file": "recurring/temporal/detect_cessation.py", "reason": "activity stopped → likely solved", "sf_id": "SF-7054" },
+    { "file": "recurring/temporal/test_temporal.py", "reason": "TDD stubs for SF-7051..7054", "sf_id": "AF-705" },
+    { "file": "recurring/temporal/__init__.py", "reason": "AF-705 entry point", "sf_id": "AF-705" }
+  ],
+  "protected": [
+    { "file": "recurring/resolve/**", "reason": "resolved clusters consumed read-only" }
+  ],
+  "tests_must_pass": ["recurring/temporal/test_temporal.py"],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.5", "app_functions": ["AF-705"], "sw_functions": ["SF-7051", "SF-7052", "SF-7053", "SF-7054"], "acceptance_criteria": ["US-029 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-7051", "reason": "bucket by time" },
+    { "sf_id": "SF-7052", "reason": "trend" },
+    { "sf_id": "SF-7053", "reason": "cadence" },
+    { "sf_id": "SF-7054", "reason": "cessation" }
+  ],
+  "agent_prompt": "Implement US-029 (AF-705) per specs/EP-07, Python + pytest. Deterministic trend/cadence/cessation. bucket_by_time takes docs (per-member ts not on ResolvedCluster) + a window_end so trailing zeros enable cessation. Weekly-Friday cadence (the CI pattern); cessation = activity stopped mid-window (>1 active day); single active day → None. TDD."
+}
