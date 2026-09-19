@@ -1,0 +1,33 @@
+{
+  "id": "US-030",
+  "title": "Hours-saved & artefact synthesis (AF-706, Python) — the briefing headline + NG-21 gate",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-07 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "recurring/types.py", "reason": "DuplicatedEffort / Artefact / RecurringWorkFinding / AttributionViolation", "sf_id": "shared" }
+  ],
+  "create": [
+    { "file": "recurring/synthesis/estimate_duplicated_effort.py", "reason": "N members → N-1 redundant; single → 0", "sf_id": "SF-7061", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/synthesis/estimate_hours_saved.py", "reason": "redundant × minutes ÷ 60; configurable", "sf_id": "SF-7062" },
+    { "file": "recurring/synthesis/name_removing_artefact.py", "reason": "artefact per area; solved cadence noted", "sf_id": "SF-7063" },
+    { "file": "recurring/synthesis/rank_findings.py", "reason": "hours desc, ties by cluster size (NG-15)", "sf_id": "SF-7064" },
+    { "file": "recurring/synthesis/assert_non_attributable.py", "reason": "NG-21 gate: no person dimension / score / sentiment", "sf_id": "SF-7065" },
+    { "file": "recurring/synthesis/test_synthesis.py", "reason": "TDD stubs SF-7061..7065 + AF-706 integration", "sf_id": "AF-706" },
+    { "file": "recurring/synthesis/__init__.py", "reason": "AF-706 entry point (synthesize_recurring_work)", "sf_id": "AF-706" }
+  ],
+  "protected": [
+    { "file": "recurring/temporal/**", "reason": "consumed read-only" },
+    { "file": "recurring/resolve/**", "reason": "consumed read-only" }
+  ],
+  "tests_must_pass": ["recurring/synthesis/test_synthesis.py"],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.6", "app_functions": ["AF-706"], "sw_functions": ["SF-7061", "SF-7062", "SF-7063", "SF-7064", "SF-7065"], "acceptance_criteria": ["US-030 AC-1..2"] },
+  "chain_order": [
+    { "sf_id": "SF-7061", "reason": "duplicated effort" },
+    { "sf_id": "SF-7062", "reason": "hours saved" },
+    { "sf_id": "SF-7063", "reason": "name the artefact" },
+    { "sf_id": "SF-7064", "reason": "rank" },
+    { "sf_id": "SF-7065", "reason": "NG-21 non-attributability gate (last)" }
+  ],
+  "agent_prompt": "Implement US-030 (AF-706) per specs/EP-07, Python + pytest. Reported in hours saved (a range), names the artefact that removes the repetition. NG-21: assert_non_attributable fails the synthesis if any finding carries a person dimension / per-individual score/rank / sentiment field — topics + artefacts only. Deterministic ranking (NG-15). TDD."
+}

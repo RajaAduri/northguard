@@ -62,6 +62,35 @@ class Cessation:
     label: str     # 'no request since <day> — likely solved'
 
 
+@dataclass(frozen=True)
+class DuplicatedEffort:
+    cluster_size: int
+    redundant_instances: int
+
+
+@dataclass(frozen=True)
+class Artefact:
+    description: str
+    likely_resolved: bool
+
+
+@dataclass(frozen=True)
+class RecurringWorkFinding:
+    """AF-706 output → E6 briefing (bridge B4). Non-attributable (NG-21): topics/
+    artefacts, never people; no score/rank/sentiment field exists here."""
+    theme: str
+    area: str
+    cluster_size: int
+    hours_saved_low: float
+    hours_saved_high: float
+    artefact: str
+    cadence: str | None = None
+
+
+class AttributionViolation(Exception):
+    """Raised if an E7 finding carries a person dimension / score / sentiment (NG-21)."""
+
+
 # A MinHash signature is a fixed-length tuple of min-hash values (deterministic given a
 # pinned seed + permutation family). A Bucket is the sorted entry-ids that collided.
 MinHash = tuple[int, ...]
