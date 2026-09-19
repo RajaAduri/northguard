@@ -16,6 +16,7 @@ def attach_pseudonyms(doc: RawDoc, k: int = 5) -> FeatureDoc:
         ts=doc.ts,
         redacted_text=doc.redacted_text,
         pseudonyms=doc.pseudonyms,
+        pseudonym_areas=doc.pseudonym_areas,
         key_epoch=doc.key_epoch,
         shingles=tokenize_and_shingle(doc.redacted_text, k),
     )

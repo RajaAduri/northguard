@@ -15,7 +15,7 @@ class FakeEmbedder:
 
 
 def _doc(entry_id, text):
-    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text=text, pseudonyms=(), key_epoch=1, shingles=frozenset())
+    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text=text, pseudonyms=(), pseudonym_areas=(), key_epoch=1, shingles=frozenset())
 
 
 def test_a_cached_vector_per_doc_keyed_by_text_hash():

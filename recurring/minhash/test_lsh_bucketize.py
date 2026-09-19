@@ -4,7 +4,7 @@ from recurring.types import FeatureDoc
 
 
 def _doc(entry_id, shingles):
-    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text="", pseudonyms=(), key_epoch=1, shingles=frozenset(shingles))
+    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text="", pseudonyms=(), pseudonym_areas=(), key_epoch=1, shingles=frozenset(shingles))
 
 
 # a & b: Jaccard ~0.9 (near-verbatim); c: disjoint

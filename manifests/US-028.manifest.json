@@ -1,0 +1,36 @@
+{
+  "id": "US-028",
+  "title": "Pseudonym-based entity resolution across conversations (AF-704, Python)",
+  "created": "2026-09-18T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-07 in the Part B build)",
+  "status": "planned",
+  "modify": [
+    { "file": "recurring/types.py", "reason": "RawDoc/FeatureDoc gain pseudonym_areas; ResolvedEntity + ResolvedCluster", "sf_id": "shared" },
+    { "file": "recurring/features/load_redacted_corpus.py", "reason": "capture (pseudonym, area) pairs for resolution", "sf_id": "SF-7011" },
+    { "file": "recurring/features/attach_pseudonyms.py", "reason": "carry pseudonym_areas through", "sf_id": "SF-7013" }
+  ],
+  "create": [
+    { "file": "recurring/resolve/group_by_pseudonym.py", "reason": "same pseudonym across conversations → one entity (NG-10)", "sf_id": "SF-7041", "template": "specs/EP-07-recurring-work/APP-FUNCTIONS.md" },
+    { "file": "recurring/resolve/test_group_by_pseudonym.py", "reason": "TDD stub", "sf_id": "SF-7041" },
+    { "file": "recurring/resolve/merge_pseudonym_across_cluster.py", "reason": "collapse duplicate pseudonyms; count merges; never an original", "sf_id": "SF-7042" },
+    { "file": "recurring/resolve/test_merge_pseudonym_across_cluster.py", "reason": "TDD stub", "sf_id": "SF-7042" },
+    { "file": "recurring/resolve/guard_key_epoch.py", "reason": "clustering never crosses a keyEpoch; rotation → caveat (R5)", "sf_id": "SF-7043" },
+    { "file": "recurring/resolve/test_guard_key_epoch.py", "reason": "TDD stub", "sf_id": "SF-7043" },
+    { "file": "recurring/resolve/__init__.py", "reason": "AF-704 entry point (resolve_entities)", "sf_id": "AF-704" }
+  ],
+  "protected": [
+    { "file": "recurring/semantic/**", "reason": "clusters consumed read-only" }
+  ],
+  "tests_must_pass": [
+    "recurring/resolve/test_group_by_pseudonym.py",
+    "recurring/resolve/test_merge_pseudonym_across_cluster.py",
+    "recurring/resolve/test_guard_key_epoch.py"
+  ],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.4", "app_functions": ["AF-704"], "sw_functions": ["SF-7041", "SF-7042", "SF-7043"], "acceptance_criteria": ["US-028 AC-1..2"] },
+  "chain_order": [
+    { "sf_id": "SF-7043", "reason": "guard key epoch first (never cross, R5)" },
+    { "sf_id": "SF-7041", "reason": "group by pseudonym" },
+    { "sf_id": "SF-7042", "reason": "merge duplicates" }
+  ],
+  "agent_prompt": "Implement US-028 (AF-704) per specs/EP-07, Python + pytest. NG-10: resolve on pseudonyms only, never an original value. R5: guard_key_epoch splits any cluster spanning >1 keyEpoch (never cross) and reports the rotation so the briefing can carry a caveat. Deviation: guard_key_epoch takes docs (per-member epoch not on Cluster) — recorded. TDD."
+}

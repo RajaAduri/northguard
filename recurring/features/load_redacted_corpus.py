@@ -20,6 +20,7 @@ def load_redacted_corpus(window: LedgerWindow) -> list[RawDoc]:
                 raise PrivacyViolation(f"raw text field '{field}' present in ledger entry {e.get('id')}")
         spans = e.get("spanPseudonyms", []) or []
         pseudonyms = tuple(s["pseudonym"] for s in spans if "pseudonym" in s)
+        pseudonym_areas = tuple((s["pseudonym"], s.get("area", "")) for s in spans if "pseudonym" in s)
         key_epoch = next((int(s["keyEpoch"]) for s in spans if "keyEpoch" in s), int(e.get("actorEpoch", 0)))
         docs.append(
             RawDoc(
@@ -28,6 +29,7 @@ def load_redacted_corpus(window: LedgerWindow) -> list[RawDoc]:
                 ts=str(e.get("ts", "")),
                 redacted_text=str(e.get("redactedText", "")),
                 pseudonyms=pseudonyms,
+                pseudonym_areas=pseudonym_areas,
                 key_epoch=key_epoch,
             )
         )

@@ -4,7 +4,7 @@ from recurring.types import FeatureDoc, RawDoc
 
 
 def _doc(entry_id, shingles):
-    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text="", pseudonyms=(), key_epoch=1, shingles=frozenset(shingles))
+    return FeatureDoc(entry_id=entry_id, conversation_id="c", ts="t", redacted_text="", pseudonyms=(), pseudonym_areas=(), key_epoch=1, shingles=frozenset(shingles))
 
 
 def test_a_signature_per_doc_with_pinned_permutations():

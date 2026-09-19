@@ -22,6 +22,7 @@ class RawDoc:
     ts: str
     redacted_text: str            # from the ledger (never an original)
     pseudonyms: tuple[str, ...]   # HMAC tokens present in this prompt
+    pseudonym_areas: tuple[tuple[str, str], ...]  # (pseudonym, area) — area for resolution, never an original
     key_epoch: int
 
 
@@ -32,6 +33,7 @@ class FeatureDoc:
     ts: str
     redacted_text: str
     pseudonyms: tuple[str, ...]
+    pseudonym_areas: tuple[tuple[str, str], ...]
     key_epoch: int
     shingles: frozenset[int]      # hashed token shingles (deterministic)
 
@@ -56,3 +58,18 @@ class Cluster:
     key_epoch: int
     model_version: str            # provenance (NG-15)
     threshold: float
+
+
+@dataclass(frozen=True)
+class ResolvedEntity:
+    pseudonym: str                # never an original value (NG-10)
+    area: str
+    count: int                    # distinct conversations touching this entity in the cluster
+
+
+@dataclass(frozen=True)
+class ResolvedCluster:
+    cluster_id: str
+    members: tuple[str, ...]
+    entities: tuple[ResolvedEntity, ...]
+    key_epoch: int
