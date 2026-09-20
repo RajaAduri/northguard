@@ -39,6 +39,13 @@ export interface RestoreSuggestion {
   keepKey: string
 }
 
+// ── Provider-view toggle (AF-504) ─────────────────────────────────────────────
+export interface WireView {
+  turns: { role: 'user' | 'assistant' | 'system'; content: string }[]
+  footerKey: string
+  containsOriginal: false // the wire is the only thing that leaves the building (NG-1)
+}
+
 // ── Composer (AF-501) ─────────────────────────────────────────────────────────
 export type ComposerState =
   | 'idle'

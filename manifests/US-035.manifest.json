@@ -1,0 +1,21 @@
+{
+  "id": "US-035",
+  "title": "Provider-view toggle + wire transcript (AF-504)",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [{ "file": "web/src/i18n/catalogue.ts", "reason": "reply.wire_footer (parity)", "sf_id": "SF-5051" }],
+  "create": [
+    { "file": "web/src/provider-view/buildWireTranscriptView.ts", "reason": "exactly the wire turns; no original (NG-1)", "sf_id": "SF-5041", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/provider-view/selectFootnote.ts", "reason": "default/restored/provider-view (§1.4)", "sf_id": "SF-5042" },
+    { "file": "web/src/provider-view/ViewToggle.tsx", "reason": "hidden until first sent; provider view = wire only", "sf_id": "SF-5043" },
+    { "file": "web/src/provider-view/provider-view.test.ts", "reason": "TDD stubs", "sf_id": "AF-504" },
+    { "file": "web/src/provider-view/ViewToggle.test.tsx", "reason": "jsdom render smoke", "sf_id": "SF-5043" },
+    { "file": "web/src/provider-view/index.ts", "reason": "AF-504 entry point", "sf_id": "AF-504" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "wire consumed read-only" }],
+  "tests_must_pass": ["web/src/provider-view/provider-view.test.ts", "web/src/provider-view/ViewToggle.test.tsx"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.4", "app_functions": ["AF-504"], "sw_functions": ["SF-5041", "SF-5042", "SF-5043"], "acceptance_criteria": ["US-035 AC"] },
+  "chain_order": [{ "sf_id": "SF-5041", "reason": "wire view" }, { "sf_id": "SF-5042", "reason": "footnote" }, { "sf_id": "SF-5043", "reason": "toggle" }],
+  "agent_prompt": "Implement US-035 (AF-504) per specs/EP-05. Provider view shows ONLY the wire transcript incl. history (NG-1); toggle hidden until the first sent message; state-dependent footnote. TDD."
+}
