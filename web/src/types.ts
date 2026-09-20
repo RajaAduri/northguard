@@ -39,6 +39,28 @@ export interface ComposerView {
   degraded: boolean
 }
 
+// ── Submission mirror (AF-502) ────────────────────────────────────────────────
+export interface AttributionRow {
+  placeholder: string
+  area: string
+  layerLabelKey: string // 'mirror.layer_rule' | 'mirror.layer_ai'
+  ruleId?: string
+  reportActionKey: string // 'mirror.report'
+}
+export interface MirrorModel {
+  headerKey: string
+  summary: { count: number; areas: string[] }
+  wireText: string // byte-identical to InspectionVerdict.redactedPrompt (FR-08)
+  rows: AttributionRow[]
+}
+export interface BlockModel {
+  headerKey: string
+  areas: string[]
+  detected: { value: string; layerLabelKey: string; ruleId?: string }[]
+  ledgerNoteKey: string
+  noApprovalKey: string // there is no per-prompt approval (Handoff rule 7)
+}
+
 // The base lifecycle events. The `degraded` overlay is tracked separately (it applies
 // on top of any base state — Handoff "Overlay auf alle"), surfaced by deriveComposerView.
 export type ComposerEvent =

@@ -1,0 +1,22 @@
+{
+  "id": "US-033",
+  "title": "Submission mirror view-model (AF-502) — read-only mirror of redactedPrompt",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [{ "file": "web/src/i18n/catalogue.ts", "reason": "add mirror.layer_rule/layer_ai + block.ledger_note (DE/EN parity)", "sf_id": "SF-5051" }],
+  "create": [
+    { "file": "web/src/mirror/buildMirrorModel.ts", "reason": "wireText = redactedPrompt verbatim (FR-08); rows per span", "sf_id": "SF-5021", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/mirror/buildBlockModel.ts", "reason": "no send; quoted spans; ledger note; no-approval (rule 7)", "sf_id": "SF-5022" },
+    { "file": "web/src/mirror/buildAttributionRow.ts", "reason": "placeholder · layer · area · report (NG-8)", "sf_id": "SF-5023" },
+    { "file": "web/src/mirror/SubmissionMirror.tsx", "reason": "read-only render of the wire text", "sf_id": "SF-5024" },
+    { "file": "web/src/mirror/mirror.test.ts", "reason": "TDD stubs", "sf_id": "AF-502" },
+    { "file": "web/src/mirror/SubmissionMirror.test.tsx", "reason": "jsdom render smoke", "sf_id": "SF-5024" },
+    { "file": "web/src/mirror/index.ts", "reason": "AF-502 entry point", "sf_id": "AF-502" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "verdict consumed read-only" }],
+  "tests_must_pass": ["web/src/mirror/mirror.test.ts", "web/src/mirror/SubmissionMirror.test.tsx"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.2", "app_functions": ["AF-502"], "sw_functions": ["SF-5021", "SF-5022", "SF-5023", "SF-5024"], "acceptance_criteria": ["US-033 AC"] },
+  "chain_order": [{ "sf_id": "SF-5021", "reason": "mirror model" }, { "sf_id": "SF-5022", "reason": "block model" }, { "sf_id": "SF-5023", "reason": "attribution row" }, { "sf_id": "SF-5024", "reason": "component" }],
+  "agent_prompt": "Implement US-033 (AF-502) per specs/EP-05. FR-08: the mirror is a byte-identical read-only mirror of redactedPrompt; NG-8 span-level attribution; the blocked variant has no send + states no per-prompt approval. TDD."
+}
