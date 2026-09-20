@@ -1,7 +1,9 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4 → 5.
-**Outcome:** **Sprints 1–5 COMPLETE** (all 30 build stories + US-031 unmask). One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
+**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4 → 5 → 6, plus Amendment B (spec only).
+**Outcome:** **Sprints 1–6 COMPLETE.** All 30 core stories + US-031 (unmask) + US-032…039 (E5). Amendment B (baselined Schutzprofil) applied as a spec amendment — NG-22/NG-23, E2/E4/E6/E7 spec changes, US-040…044 spec'd, **not built** (four flagged contradictions F1–F4 recorded for its build). Sprint 6 built the E5 governed chat surface (React SPA) over the solved core. **~39 stories, 301 core vitest + 52 web vitest + 55 pytest green, tsc strict clean across core + web.** Commits through `268c783`.
+
+*(Historical note: the tables below track the core build through Sprint 5; Sprint 6 (E5) and Amendment B are summarised in this header and in SESSION-LOG.)* One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
 
 **31 stories, 301 vitest + 55 pytest green, `tsc` strict clean.**
 - **Sprint 3** added US-016/017/031/019/021/023 (E4 query/export/unmask + E6 read-models; **NG-20** dual-key unmask).
@@ -53,8 +55,9 @@ NG-1 (wire isolation, §8 10-turn + per-turn), NG-2/NG-10 (pseudonyms + no raw t
 - Governance-write signatures gained a `key` param (NG-19 postdates the pre-amendment spec).
 
 ## What is next
-- **Sprints 1–5 — DONE.** All 30 build stories + US-031 (unmask) are implemented and green. The buildable SLC core (E2, E3, E4, E6, E7) is complete.
-- **Sprint 6 — E5 governed chat surface** (US-032…US-039, React SPA over the solved core): composer/mirror/reply/provider-view/i18n/tokens/FP-report/two-rooms. The only remaining decomposed epic. After E5, decompose the E1 browser extension.
+- **Sprints 1–6 — DONE.** Core (E2/E3/E4/E6/E7) + E5 governed chat surface all implemented and green.
+- **Amendment B build (Sprint 7, spec'd not built)** — US-040…044 + the re-opens (US-014a/022a/025a/036a); resolve flags F1–F4 (guardActivation stability→onboarding baseline; NG-6 wording; previewRuleNarrowing real before/after; publishActivePolicy→AF-209 versioned baseline). Manifests: sprint-7, US-042 (rest generate on demand).
+- **E1 browser extension** — decompose now that E5 has shipped (block-and-warn coverage surface, DECISION-REGISTER §8 A1).
 - **Integration / deployment (E8-class, flagged not blocking):**
   - **Bridge B4** (Python E7 → TS briefing): wire `synthesize_recurring_work` output into `composeWeeklyBriefing` over the localhost JSON interface, to populate real briefing themes.
   - **Pinned embedding model:** fetch `intfloat/multilingual-e5-base` on the backstop host so E7 semantic clustering runs on real data (the pipeline + tests are proven with a deterministic fake).
