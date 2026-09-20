@@ -1,0 +1,21 @@
+{
+  "id": "US-037",
+  "title": "Motion & design tokens (AF-506) — the prototype timings ARE the spec",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "web/src/design/motionTokens.ts", "reason": "Handoff §2 timing table as typed tokens", "sf_id": "SF-5061", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/design/colorTokens.ts", "reason": "§4 palette; no green; only the sweep gradient", "sf_id": "SF-5062" },
+    { "file": "web/src/design/typeScale.ts", "reason": "system=Mono / human=Inter / title=Fraunces", "sf_id": "SF-5063" },
+    { "file": "web/src/design/inspectionSweep.ts", "reason": "2px teal sweep, period=duration, min 400ms", "sf_id": "SF-5064" },
+    { "file": "web/src/design/design.test.ts", "reason": "TDD stubs SF-5061..5064", "sf_id": "AF-506" },
+    { "file": "web/src/design/index.ts", "reason": "AF-506 entry point", "sf_id": "AF-506" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "E5 renders the core; never modifies it" }],
+  "tests_must_pass": ["web/src/design/design.test.ts"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.6", "app_functions": ["AF-506"], "sw_functions": ["SF-5061", "SF-5062", "SF-5063", "SF-5064"], "acceptance_criteria": ["US-037 AC"] },
+  "chain_order": [{ "sf_id": "SF-5061", "reason": "motion" }, { "sf_id": "SF-5062", "reason": "colour" }, { "sf_id": "SF-5063", "reason": "type" }, { "sf_id": "SF-5064", "reason": "sweep" }],
+  "agent_prompt": "Implement US-037 (AF-506) per specs/EP-05. Encode the Handoff §2 timings + §4 palette as typed tokens; no green, no gradient except the inspection sweep; system-says-Mono/humans-read-Inter type rule. TDD."
+}
