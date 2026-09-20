@@ -22,9 +22,13 @@ export interface LedgerEntry {
   provider?: string
   latencyMs?: number
   coverage?: Coverage
-  spanPseudonyms?: { area: string; layer: Layer; pseudonym: string; keyEpoch: number }[]  // NG-10
+  spanPseudonyms?: { area: string; layer: Layer; ruleId?: string; pseudonym: string; keyEpoch: number }[]  // NG-10 (ruleId added US-022)
+  // Amendment B (§9 B5, NG-23) — the business-event record: WHAT the business was doing, not who.
+  features?: { name: string; value: string | number | boolean }[]  // structural features that decided it (percentPresent, priceTermInSentence, …) — never text
+  workTopic?: string        // coarse, non-attributable topic label — never an original value
+  baselineVersion?: string  // the Schutzprofil baseline in force for this event
   // governance entries:
-  govKind?: 'activation'|'rule-narrow'|'term-exclude'|'mode-change'|'dismiss'|'export'|'key-rotate'|'unmask'
+  govKind?: 'activation'|'rule-narrow'|'term-exclude'|'mode-change'|'dismiss'|'export'|'key-rotate'|'unmask'|'baseline'|'change-request'
   reason?: string
   payload?: unknown
   // unmask entries (AF-408, NG-20): who authorised a de-anonymisation
@@ -39,6 +43,16 @@ export interface LedgerEntry {
 > is stable and, when a person genuinely must be identified, recoverable only via the
 > dual-key unmask (AF-408). An unmask entry records *who authorised it* (`unmaskAuthorisers`)
 > and *which pseudonym* (`unmaskTarget`) — never the recovered identity itself.
+>
+> **NG-23 note (Amendment B §9 B5, spec only — not built).** A request entry is the
+> **business-event record**: `features` (structural — what decided the verdict, never
+> text) + `workTopic` + `baselineVersion`, alongside the existing pseudonyms. **This
+> one record serves both the E6 narrowing preview (AF-604) and E7 recurring-work
+> (AF-701) — never two parallel stores.** The `features` make `previewRuleNarrowing`
+> return a real before/after (resolves F3). Governance `govKind:'baseline'` records a
+> Schutzprofil supersede (NG-22); `govKind:'change-request'` records an approved
+> Änderungsantrag. A query window spanning a `baseline` change carries a coverage note
+> (as a key-epoch crossing does).
 
 ---
 
@@ -119,6 +133,7 @@ export function buildRequestEntry(v: InspectionVerdict, meta: RequestMeta): Part
 // 1. GIVEN a verdict THEN entry has verdict, mode, caughtBy, coverage, touchedAreas
 // 2. GIVEN spans THEN spanPseudonyms attached (pseudonym+keyEpoch), no originals
 // 3. GIVEN meta THEN actorPseudonym (via SF-4024), actorEpoch, promptHash, provider, latencyMs set — the raw userId never lands on the entry (NG-19)
+// 4. AMENDMENT B (§9 B5, NG-23): GIVEN a verdict THEN features (structural, from AF-303) + workTopic + baselineVersion are recorded — the business-event record; never raw text
 // deps: SF-4024
 
 // SF-4022  request/redactBeforeWrite.ts

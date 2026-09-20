@@ -1,0 +1,40 @@
+{
+  "id": "US-042",
+  "title": "Baseline the Schutzprofil — configuration item, immutable between baselines (NG-22)",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (Amendment B §9 B1 — spec only, not built)",
+  "status": "spec-only",
+  "modify": [
+    { "file": "core/lib/types.ts", "reason": "Baseline type (version/createdAt/approver/changeRequestId/areas/questionsAnswered)", "sf_id": "shared" },
+    { "file": "core/src/features/policy/activate/publishActivePolicy.ts", "reason": "F4 — AF-209 supersedes in-memory publish with a versioned, supersede-logged baseline", "sf_id": "SF-2063" },
+    { "file": "core/src/features/policy/activate/guardActivation.ts", "reason": "F1 — stability gates the initial (onboarding) baseline only; change-request baselines are approval-gated", "sf_id": "SF-2061" }
+  ],
+  "create": [
+    { "file": "core/src/features/policy/baseline/buildBaseline.ts", "reason": "fresh version, createdAt, approver, changeRequestId (null for initial), area set + modes", "sf_id": "SF-2091", "template": "specs/EP-02-policy-intake/APP-FUNCTIONS.md" },
+    { "file": "core/src/features/policy/baseline/buildBaseline.test.ts", "reason": "TDD stub", "sf_id": "SF-2091" },
+    { "file": "core/src/features/policy/baseline/publishBaseline.ts", "reason": "become active; supersede writes govKind:'baseline'; prior stays readable; immutable (NG-22)", "sf_id": "SF-2092" },
+    { "file": "core/src/features/policy/baseline/publishBaseline.test.ts", "reason": "TDD stub — baseline-immutability", "sf_id": "SF-2092" },
+    { "file": "core/src/features/policy/baseline/getActiveBaseline.ts", "reason": "active profile read + prior versions retrievable (evidence)", "sf_id": "SF-2093" },
+    { "file": "core/src/features/policy/baseline/getActiveBaseline.test.ts", "reason": "TDD stub", "sf_id": "SF-2093" },
+    { "file": "core/src/features/policy/baseline/index.ts", "reason": "AF-209 entry point (baselineProfile)", "sf_id": "AF-209" }
+  ],
+  "protected": [
+    { "file": "core/src/features/ledger/append/**", "reason": "governance writer consumed read-only via AF-403" }
+  ],
+  "tests_must_pass": [
+    "core/src/features/policy/baseline/buildBaseline.test.ts",
+    "core/src/features/policy/baseline/publishBaseline.test.ts",
+    "core/src/features/policy/baseline/getActiveBaseline.test.ts"
+  ],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.8", "app_functions": ["AF-209"], "sw_functions": ["SF-2091", "SF-2092", "SF-2093"], "acceptance_criteria": ["US-042 AC"] },
+  "chain_order": [
+    { "sf_id": "SF-2091", "reason": "build the baseline object" },
+    { "sf_id": "SF-2092", "reason": "publish + supersede governance event (NG-22)" },
+    { "sf_id": "SF-2093", "reason": "active read + history retrieval" }
+  ],
+  "flags": [
+    "F1 — guardActivation stability gate narrows to the initial baseline (see modify).",
+    "F4 — publishBaseline supersedes the built publishActivePolicy as the activation path."
+  ],
+  "agent_prompt": "SPEC ONLY until the owner schedules Amendment B. When built: implement US-042 (AF-209 baselineProfile) per specs/EP-02 (Amendment B §9 B1). NG-22: the active profile is immutable between baselines; a supersede writes a govKind:'baseline' governance event (E4 AF-403) and the prior baseline stays queryable. Reconcile F1 (stability gates the initial baseline only) and F4 (this supersedes publishActivePolicy). TDD."
+}

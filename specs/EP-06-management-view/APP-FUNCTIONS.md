@@ -131,6 +131,10 @@ export function previewRuleNarrowing(rule: RuleId, narrowing: Narrowing, window:
 // 1. GIVEN "% only with a price term" THEN "41 → 12 Treffer / 30 T., 4 of 11 reports gone"
 // 2. GIVEN a narrowing THEN residual risk stated ("% without price term no longer blocked")
 // 3. GIVEN no matches THEN preview shows 0 impact
+// ⚠ AMENDMENT B (§9 B5, NG-23, F3): the after-count is computed for real by re-applying
+//    the narrowing predicate over each entry's structural `features` (percentPresent,
+//    priceTermInSentence, …) — NO prompt text needed. The built code returns
+//    `measured:false`; this becomes a real before/after at the Amendment-B build.
 
 // SF-6044  fp-queue/applyResolution.ts
 export async function applyResolution(action: FpResolution, actor: string): Promise<string>
@@ -185,3 +189,72 @@ export function buildThresholdModel(week: string, people: number): ThresholdMode
 // 2. GIVEN the threshold THEN states structural aggregation ("keine Namen ... strukturell so gebaut")
 // 3. GIVEN return THEN the way back is a word in the header, not a tab
 ```
+
+---
+
+# Amendment B (§9) — the review cycle
+
+**Spec only — not built in this pass.** New app functions AF-609, AF-610. Shared
+types (extend `core/lib/types.ts`): `ReviewCadence = 'fortnightly'|'monthly'|'quarterly'`;
+`Proposal { kind: 'synonym'|'coverage-gap'|'dormant-area'|'mode-mismatch'|'new-activity'; areaRef?; evidence: { metric: string; count: number; period: string }; businessValue: string; priority: number }`;
+`ReviewVorschlag { period: string; cadence: ReviewCadence; proposals: Proposal[] }`;
+`ChangeRequest { id; proposals: Proposal[]; justification: string; approver: string }`.
+All user-visible strings use **Schutzprofil / Review-Vorschlag / Änderungsantrag** (§9 B6, DE+EN).
+
+## AF-609: composeReviewProposal  *(FT-6.7, the review cycle)*
+**Entry:** `core/src/features/management/review/index.ts`
+**Business Rules (§9 B4):** evidence accumulates between reviews; proposals are made
+at the review, never applied automatically. **Cadence decays** — fortnightly (first
+quarter) → monthly → quarterly, configurable. **A review must be able to propose
+nothing** (held to the quiet-week discipline). Every proposal states evidence in
+numbers + period; never a bare recommendation. Reads the business-event record (NG-23),
+not two stores.
+
+```ts
+// SF-6091  review/resolveCadence.ts
+export function resolveCadence(baselineAgeDays: number, override?: ReviewCadence): ReviewCadence
+// 1. GIVEN age < ~90d THEN 'fortnightly'; < ~180d THEN 'monthly'; else 'quarterly'
+// 2. GIVEN an override THEN it wins (configurable)
+// 3. GIVEN determinism THEN same age → same cadence
+
+// SF-6092  review/detectProposals.ts
+export function detectProposals(window: BusinessEventRecord[], profile: Baseline): Proposal[]
+// 1. GIVEN a short form recurring in traffic that no area recognises THEN a 'synonym' proposal (highest value in DE engineering)
+// 2. GIVEN repeated prompts touching a concept no area covers THEN a 'coverage-gap' proposal
+// 3. GIVEN an area with no hits over a long window THEN a 'dormant-area' proposal (states BOTH readings: unused, or recognition failing)
+// 4. GIVEN a block-mode area with recurring FP reports THEN a 'mode-mismatch' proposal (→ redact), report count as evidence
+// 5. GIVEN a supplier/product/project never seen before THEN a 'new-activity' proposal
+// 6. GIVEN each proposal THEN evidence is numeric + period-bound (never a bare recommendation)
+
+// SF-6093  review/composeReviewProposal.ts
+export function composeReviewProposal(window: BusinessEventRecord[], profile: Baseline, cadence: ReviewCadence): ReviewVorschlag
+// 1. GIVEN detected proposals THEN ordered by priority into a Review-Vorschlag
+// 2. GIVEN NO material change THEN proposals:[] — "Nichts vorzuschlagen" is a valid, healthy outcome
+// 3. GIVEN the output THEN nothing is applied — proposals await approval (NG-22)
+// deps: SF-6091, SF-6092
+```
+
+## AF-610: processChangeRequest  *(FT-6.8, Änderungsantrag → next baseline)*
+**Entry:** `core/src/features/management/change-request/index.ts`
+**BRIDGE:** governance events (E4 AF-403) + baseline creation (E2 AF-209).
+**Business Rules (§9 B4, NG-22):** approving a proposal creates a change request;
+approving the change request creates the next baseline. Both are ledger entries with
+approver + justification. **This is the only path that changes an active profile (NG-22).**
+
+```ts
+// SF-6101  change-request/openChangeRequest.ts
+export async function openChangeRequest(proposals: Proposal[], justification: string, approver: string): Promise<string>
+// 1. GIVEN approved proposals + a justification THEN a govKind:'change-request' entry, id returned
+// 2. GIVEN an empty justification THEN throws (a change must state its business value — NG-12)
+// 3. GIVEN the entry THEN it records approver + the proposals' evidence
+
+// SF-6102  change-request/approveChangeRequest.ts
+export async function approveChangeRequest(changeRequestId: string, approver: string): Promise<Baseline>
+// 1. GIVEN an approved change request THEN a new Schutzprofil baseline is created (E2 AF-209) citing it
+// 2. GIVEN approval THEN a govKind:'baseline' supersede entry is written; the prior baseline stays readable (NG-22)
+// 3. GIVEN no approval THEN the active profile is unchanged (NG-22)
+// deps: E2 AF-209 [BRIDGE], E4 AF-403 [BRIDGE]
+```
+
+**Chain order:** AF-609 composeReviewProposal → (human approves) → AF-610
+openChangeRequest → approveChangeRequest → E2 AF-209 baselineProfile.

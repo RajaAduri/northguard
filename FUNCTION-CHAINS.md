@@ -245,3 +245,29 @@ ENGINEER types a prompt (original)
   E7 AF-706 reads the redacted+pseudonymised ledger window  ═══ B3
         └─► clusters, resolves, dates → findings ═══ B4 ─► E6 AF-602 Monday briefing
 ```
+
+---
+
+## Amendment B (§9) — baselined Schutzprofil (spec only, not built)
+
+```
+ONBOARDING (E2):
+  AF-207 convergeExtraction  (multi-pass until hasConverged; working set INERT)
+        → AF-208 generateClarifyingQuestions (5–8, from real ambiguities; answers = provenance)
+        → AF-204 confirm → AF-205 modes
+        → AF-209 baselineProfile  ═══ BRIDGE → E4 AF-403 (govKind:'baseline')  [supersedes publishActivePolicy — F4]
+  NG-22: the active baseline is immutable; only an approved Änderungsantrag makes a new one.
+
+REVIEW CYCLE (E6, cadence fortnightly→monthly→quarterly):
+  AF-609 composeReviewProposal  (reads the business-event record; may propose NOTHING)
+        → (human approves) → AF-610 openChangeRequest ═══ BRIDGE → E4 (govKind:'change-request')
+        → approveChangeRequest ═══ BRIDGE → E2 AF-209 (next baseline)
+
+BUSINESS-EVENT RECORD (E4, NG-23): the request entry carries features + workTopic +
+baselineVersion — one store read by BOTH E6 previewRuleNarrowing (real before/after, F3)
+AND E7 AF-701. Never two parallel stores.
+
+FLAGS to reconcile at the build: F1 (guardActivation stability → onboarding baseline only),
+F2 (NG-6 "once" → "one convergence run per version"), F3 (previewRuleNarrowing real count),
+F4 (AF-209 supersedes publishActivePolicy).
+```

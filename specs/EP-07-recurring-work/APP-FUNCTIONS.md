@@ -45,6 +45,9 @@ def load_redacted_corpus(window: LedgerWindow) -> list[RawDoc]: ...
 # 1. GIVEN a ledger window THEN returns redacted text + pseudonyms per request entry
 # 2. GIVEN an entry with a raw-text field (opt-in disabled) THEN raises PrivacyViolation (NG-10)
 # 3. GIVEN governance/ops entries THEN skipped (only requests)
+# 4. AMENDMENT B (§9 B5, NG-23): the SAME business-event record also carries structural
+#    `features` + `workTopic`; load them alongside pseudonyms (one store, shared with E6).
+#    Built loader reads redactedText + pseudonym_areas; extend to features + workTopic at the build.
 
 # SF-7012  features/tokenize_and_shingle.py
 def tokenize_and_shingle(text: str, k: int = 5) -> frozenset[int]: ...

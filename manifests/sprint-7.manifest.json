@@ -1,0 +1,17 @@
+{
+  "sprint": "Sprint 7 — Baselined Schutzprofil (Amendment B, §9)",
+  "story_sequence": ["US-014a", "US-042", "US-040", "US-041", "US-022a", "US-043", "US-044", "US-025a", "US-036a"],
+  "rationale": "Amendment B applies ASPICE change control to the protection profile. Land the shared substrate first: the E4 business-event record (US-014a — features/workTopic/baselineVersion, NG-23) that both E6 and E7 read. Then E2 onboarding: baseline (US-042, NG-22 — the load-bearing story; supersedes publishActivePolicy and reconciles flags F1/F4), multi-pass convergence (US-040, reconciles F2 on NG-6), clarifying questions (US-041). Then E6: previewRuleNarrowing becomes a real before/after over features (US-022a, resolves F3), the review cycle (US-043, Review-Vorschlag), and change-request → next baseline (US-044). Finally the shared-record read in E7 (US-025a) and the E5 terminology strings (US-036a, B6). Suffix 'a' marks a re-open of a built story.",
+  "estimated_agent_hours": 9,
+  "total_stories": 9,
+  "critical_path": ["US-014a", "US-042", "US-043", "US-044"],
+  "acceptance_gate": ["baseline-immutability (NG-22)", "business-event-record (NG-23)", "review-may-propose-nothing", "change-request-only-path-to-a-new-baseline"],
+  "flags": [
+    "F1 — narrow guardActivation stability gate to the initial (onboarding) baseline; change-request baselines are approval-gated (NG-22), not stability-gated.",
+    "F2 — amend NG-6 wording to 'one convergence run (multiple passes) per policy version'.",
+    "F3 — reimplement previewRuleNarrowing after-count over the stored structural features (drop measured:false).",
+    "F4 — AF-209 baselineProfile supersedes publishActivePolicy as the activation path (versioned, supersede-logged, prior readable)."
+  ],
+  "notes": "SPEC ONLY at this point — NOT built. Manifests for US-040/041/043/044 + the re-open stories (US-014a/022a/025a/036a) generate on demand from the amended specs (templates: US-042 here, or any existing US-*.manifest.json). Build only when the owner schedules Amendment B; Sprint 6 (E5) comes first.",
+  "language": "TypeScript (core E2/E4/E6, web E5 strings) + Python (recurring E7 loader)"
+}

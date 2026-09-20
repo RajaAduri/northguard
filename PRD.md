@@ -12,8 +12,9 @@
 > plus a governed chat surface (E5, the full experience)**. E5 is now decomposed; E1
 > stays a contract (decompose after E5); E8 Operations stays deferred. See
 > `DECISION-REGISTER.md` for the epic renumber and locked decisions, and
-> `AGENT-RULES.md` for binding invariants (NG-1…**NG-21**, incl. NG-19 actor
-> pseudonymisation, NG-20 dual-key unmask, NG-21 E7 non-attributability).
+> `AGENT-RULES.md` for binding invariants (NG-1…**NG-23**, incl. NG-19 actor
+> pseudonymisation, NG-20 dual-key unmask, NG-21 E7 non-attributability, **NG-22
+> baselined Schutzprofil, NG-23 business-event record** — Amendment B, §9, spec only).
 
 ---
 
@@ -262,6 +263,25 @@ file-level decomposition in `specs/EP-05-chat-surface/APP-FUNCTIONS.md`.
 **US-039 — Two-rooms threshold + management shell** — AF-508 · P1 · Sprint 6
 - AC: a named, dated threshold (320 ms fade, no slide) separates the workspace (tool) from the management view (720 px document); the management surface has **no person column** (NG-13); estimates carry a "≈" range and their formula (rule 12); the briefing names pseudonymised clusters + areas, never a person or an original entity (C1, NG-21).
 
+### Amendment B · Baselined Schutzprofil  *(§9 — spec only, NOT built in this pass)*
+
+**US-040 — Multi-pass extraction convergence (onboarding)** — AF-207 · P0 · Amendment B
+- AC: extraction re-runs over the same policy version until a pass adds nothing above a materiality threshold (or a pass ceiling); passes run + last-added are recorded and shown to the user; the working set is never active (NG-6 amended — F2).
+
+**US-041 — Clarifying questions (onboarding)** — AF-208 · P0 · Amendment B
+- AC: 5–8 questions generated from real ambiguities (never a fixed questionnaire), answerable by a quality lead alone; each answer recorded with the baseline as provenance.
+
+**US-042 — Baseline the Schutzprofil (configuration item)** — AF-209 · P0 · Amendment B
+- AC: the confirmed profile is a baseline (version/date/approver/change-request/area-set+modes), immutable between baselines (NG-22); a supersede writes a `govKind:'baseline'` event and the prior stays readable. ⚠ Supersedes built `publishActivePolicy` (F4); stability gates the initial baseline only (F1).
+
+**US-043 — Review cycle → Review-Vorschlag** — AF-609 · P0 · Amendment B
+- AC: a periodic review (cadence fortnightly→monthly→quarterly, configurable) produces prioritised proposals (synonym / coverage-gap / dormant-area / mode-mismatch / new-activity), each with numeric evidence + period; **it may propose nothing**; nothing is applied automatically.
+
+**US-044 — Change request → next baseline (Änderungsantrag)** — AF-610 · P0 · Amendment B
+- AC: approving a proposal opens a change request (approver + justification, logged); approving the change request creates the next baseline (AF-209) — the only path that changes an active profile (NG-22).
+
+*Amendment B also amends built stories:* **US-014** (request entry gains `features`+`workTopic`+`baselineVersion`, NG-23), **US-022** (`previewRuleNarrowing` returns a real before/after from `features`, F3), **US-025** (E7 loader reads the same business-event record), **US-036** (E5 strings use Schutzprofil/Review-Vorschlag/Änderungsantrag, B6). These are re-opened at the Amendment-B build, not now.
+
 ### Deferred epics (contract/spec only — NOT decomposed)
 
 - **US-C1 (E1 Gateway — browser extension, block-and-warn)** — interception surface **decided** (§8 A1): a browser extension. The Interception Adapter Contract (`submitForInspection` / `forwardToProvider`, request/verdict types, failure→ledger rule) lives in `core/lib/types.ts`; **the extension implementation is a contract for now and decomposes after E5 ships.** See `specs/EP-01-gateway-adapter/EPIC.md`.
@@ -281,7 +301,7 @@ file-level decomposition in `specs/EP-05-chat-surface/APP-FUNCTIONS.md`.
 | NFR-04 | Single host, ≤ 8 GB RAM (incl. local embedding model) | Deployment | Memory profile of sidecar + embeddings |
 | NFR-05 | No prompt content leaves customer infra except to the provider (wire only) | Security | `wire-isolation` egress test (NG-1/NG-2) |
 | NFR-06 | Ledger survives process restart with no gap | Data | `US-018` restart test |
-| NFR-07 | Policy stability index ≥ 0.80 before activation | Correctness | `activation-guard` test (NG-3) |
+| NFR-07 | Policy stability index ≥ 0.80 — **Amendment B (§9 B1): an onboarding convergence signal, not a per-activation gate.** Gates the initial baseline; a change-request baseline is approval-gated (NG-22). Measurement kept, not deleted. | Correctness | `activation-guard` test (NG-3) — onboarding baseline; ⚠ F1 to reconcile at the Amendment-B build |
 | NFR-08 | Graceful degradation: backstop down → rules-only, coverage recorded | Reliability | `degradation-recorded` test (NG-4) |
 | NFR-09 | Recurring-work results reproducible: same input → same clusters | Correctness | `resolution-determinism` test (NG-15) |
 | NFR-10 | Bilingual DE/EN throughout (UI + lexicons) | i18n | Lexicon completeness check (NG-16) |
@@ -296,6 +316,10 @@ file-level decomposition in `specs/EP-05-chat-surface/APP-FUNCTIONS.md`.
 | FR-26 | Actor pseudonymisation: the ledger stores `actorPseudonym`, never a plaintext user id — even in an export (BAG *objektive Eignung*, §87(1) Nr. 6 BetrVG) | `actor-pseudonymisation` test (NG-19); `assertNoPlaintextActor` at append |
 | FR-27 | Dual-key actor unmask: recovering a person requires the Vier-Augen-Prinzip (two distinct-role authorisers) and is itself a logged ledger entry | `unmask-dual-authorisation` test (NG-20); interface in E4 (AF-408), secret store in E8 |
 | FR-28 | Recurring-work intelligence is aggregate and non-attributable — no person dimension, scoring, ranking, or sentiment (AI Act posture; open legal risk) | `e7-non-attributable` test (NG-21); `assert_non_attributable` gates synthesis |
+| FR-29 | The protection profile is a **baselined configuration item** (version/date/approver/change-request/area-set), immutable between baselines; the only change path is an approved Änderungsantrag (Amendment B §9 B1) | `baseline-immutability` test (NG-22) |
+| FR-30 | Onboarding **converges over multiple passes** and asks **5–8** clarifying questions generated from real ambiguities; convergence is shown to the user; answers are baseline provenance (§9 B2/B3) | AF-207/AF-208 tests; onboarding < ~20 min |
+| FR-31 | A periodic **review** produces a Review-Vorschlag (evidence in numbers + period, may propose nothing); proposals become an Änderungsantrag → next baseline (§9 B4) | AF-609/AF-610 tests; cadence fortnightly→monthly→quarterly |
+| FR-32 | The inspection record is a **business-event record** (features + work topic, never who) serving both the E6 narrowing preview and E7 — one store (§9 B5) | `business-event-record` test (NG-23) |
 
 ---
 
@@ -335,6 +359,9 @@ v1 ships when all are true (SLC pack §5.8):
 | Risk | Impact | Prob. | Mitigation |
 |------|--------|-------|------------|
 | **AI Act Annex III (high-risk) applies to recurring-work detection (E7/FR-21)** | **H** | **M** | **OPEN LEGAL RISK (§8 A5) — not resolved in code.** E7 constrained to topics/artefacts, non-attributable, no scoring/ranking/sentiment (NG-21), to keep the Art. 6(3) reading available; no AI-Act effective-date stated anywhere until verified. Escalate to counsel before GA. |
+| Profile drifts silently as extraction re-runs | H | M | **Amendment B (§9 B1):** the profile is a baselined configuration item, immutable between baselines (NG-22); the only change path is a reviewed Änderungsantrag. |
+| Onboarding too long → a 60-person supplier abandons it | H | M | Multi-pass convergence shown as earned (AF-207); 5–8 questions from real ambiguities, onboarding < ~20 min (AF-208, §9 B3). |
+| A person-level log undermines the Betriebsvereinbarung | M | M | **Amendment B (§9 B5):** the record is a business-event record (features + work topic, never who — NG-23), materially easier to defend than an aggregated-after-the-fact person log. |
 | Works-council co-determination (§87(1) Nr. 6 BetrVG) blocks deployment | H | M | Actor pseudonymisation (NG-19) + dual-key unmask (NG-20) make the Betriebsvereinbarung signable; co-determination is not avoidable (*objektive Eignung*), so the design makes it easy to agree to (§8 A2/A3) |
 | Interception surface (extension) can't do in-place redaction | M | M–H | **Decided (§8 A1):** E5 governed chat surface delivers the full experience; the E1 extension is block-and-warn coverage — "use ours and it's better; go elsewhere and we still catch you" |
 | Interception decision changes the surface | L | L | Now decided (browser extension + E5); core stays architecture-independent, so a later change is contained |
@@ -378,11 +405,11 @@ Phase 6 and lives in `manifests/traceability-matrix.md`. Epic-level summary:
 | Epic | Status | Features | App Functions | ~SW Functions |
 |------|--------|----------|---------------|---------------|
 | E1 Gateway (browser extension, block-and-warn) | Decided; contract only (decompose after E5) | — | — (interface only) | — |
-| E2 Policy Intake | Decomposed | 5 | AF-201…206 (6) | ~20 |
+| E2 Policy Intake (+ baselined Schutzprofil, §9) | Decomposed | 8 | AF-201…209 (9; AF-207/208/209 spec'd, not built) | ~29 |
 | E3 Inspection + Transcript | Decomposed | 7 | AF-301…307 (7) | ~28 |
 | E4 Audit Ledger | Decomposed | 7 | AF-401…408 (8) | ~29 |
 | E5 Chat Surface (governed) | **Decomposed** | 8 | AF-501…508 (8) | ~35 |
-| E6 Management View | Decomposed | 6 | AF-601…606 (6) | ~22 |
+| E6 Management View (+ review cycle, §9) | Decomposed | 8 | AF-601…610 (8; AF-609/610 spec'd, not built) | ~30 |
 | E7 Recurring-Work | Decomposed | 6 | AF-701…706 (6) | ~23 |
 | E8 Operations | Deferred | — | — | — |
 

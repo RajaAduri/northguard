@@ -1,5 +1,12 @@
 # EP-04: Audit Ledger
-**Status:** DECOMPOSED
+**Status:** DECOMPOSED · **Amended:** 2026-09-20 (Amendment B §9 — spec only, not built)
+
+> **Amendment B (§9 B5, NG-23):** the request entry is the **business-event record** —
+> `features` (structural signals that decided the verdict, never text) + `workTopic` +
+> `baselineVersion`, alongside pseudonyms. One record serves both the E6 narrowing
+> preview and E7 recurring-work (never two stores). New governance kinds: `baseline`
+> (a Schutzprofil supersede, NG-22) and `change-request` (an approved Änderungsantrag).
+> A window spanning a `baseline` change carries a coverage note. Not built this pass.
 
 ## Business Context
 The ledger is the product's evidence. It is designed as an audit artefact, not

@@ -159,6 +159,29 @@ Python files under `sidecar/` and `recurring/` (E7).
 | US-039 | FT-5.8 | AF-508 | SF-5083 | web/src/rooms/buildBriefingView.ts | .test.ts |
 | US-039 | FT-5.8 | AF-508 | SF-5084 | web/src/rooms/ManagementView.tsx | .test.tsx |
 
+**Amendment B (§9) — SPEC ONLY, not built in this pass:**
+| US | FT | AF | SF | Implementation file | Test file |
+|----|----|----|----|--------------------|-----------|
+| US-040 | FT-2.6 | AF-207 | SF-2071 | core/src/features/policy/converge/runExtractionPass.ts | .test.ts |
+| US-040 | FT-2.6 | AF-207 | SF-2072 | core/src/features/policy/converge/hasConverged.ts | .test.ts |
+| US-040 | FT-2.6 | AF-207 | SF-2073 | core/src/features/policy/converge/convergeExtraction.ts | .test.ts |
+| US-041 | FT-2.7 | AF-208 | SF-2081 | core/src/features/policy/questions/detectAmbiguities.ts | .test.ts |
+| US-041 | FT-2.7 | AF-208 | SF-2082 | core/src/features/policy/questions/generateClarifyingQuestions.ts | .test.ts |
+| US-041 | FT-2.7 | AF-208 | SF-2083 | core/src/features/policy/questions/recordAnswers.ts | .test.ts |
+| US-042 | FT-2.8 | AF-209 | SF-2091 | core/src/features/policy/baseline/buildBaseline.ts | .test.ts |
+| US-042 | FT-2.8 | AF-209 | SF-2092 | core/src/features/policy/baseline/publishBaseline.ts | .test.ts |
+| US-042 | FT-2.8 | AF-209 | SF-2093 | core/src/features/policy/baseline/getActiveBaseline.ts | .test.ts |
+| US-043 | FT-6.7 | AF-609 | SF-6091 | core/src/features/management/review/resolveCadence.ts | .test.ts |
+| US-043 | FT-6.7 | AF-609 | SF-6092 | core/src/features/management/review/detectProposals.ts | .test.ts |
+| US-043 | FT-6.7 | AF-609 | SF-6093 | core/src/features/management/review/composeReviewProposal.ts | .test.ts |
+| US-044 | FT-6.8 | AF-610 | SF-6101 | core/src/features/management/change-request/openChangeRequest.ts | .test.ts |
+| US-044 | FT-6.8 | AF-610 | SF-6102 | core/src/features/management/change-request/approveChangeRequest.ts | .test.ts |
+
+*Amendment B also re-opens built stories (schema/behaviour changes, not new files):
+US-014 (request entry `features`/`workTopic`/`baselineVersion`), US-022 (`previewRuleNarrowing`
+real before/after), US-025 (E7 loader reads the same record), US-036 (E5 strings B6).
+Flags F1 (guardActivation), F4 (publishActivePolicy→AF-209) reconciled at the build.*
+
 **Deferred (contract only, no SF rows):**
 | US | Epic | Artifact |
 |----|------|----------|

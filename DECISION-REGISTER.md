@@ -1,7 +1,7 @@
 # NorthGuard — Decision Register
 **Project:** NorthGuard — LLM prompt governance gateway
 **Owner:** Raja Aduri · Saatwika UG (ShiftNorth)
-**Date:** 2026-09-13 · **Amended:** 2026-09-17 (architecture research — see §8) · **Status:** LOCKED for decomposition
+**Date:** 2026-09-13 · **Amended:** 2026-09-17 (architecture research — §8), 2026-09-20 (baselined Schutzprofil — §9) · **Status:** LOCKED for decomposition
 
 > Phase 0 of the dev-blueprint methodology. Every decision a coding agent might
 > otherwise have to guess is answered here. No `TBD` entries are permitted; if a
@@ -19,11 +19,11 @@ restructured. **E1–E6 keep their original SLC-pack meaning.** Two changes:
 | New ID | Name | Origin |
 |--------|------|--------|
 | E1 | Gateway (browser extension — block-and-warn coverage) | SLC E1 — interception surface **decided** (§8 A1): browser extension. **Contract only for now; decompose after E5 ships.** |
-| E2 | Policy Intake | SLC E2 — decomposed |
+| E2 | Policy Intake (→ **baselined Schutzprofil**) | SLC E2 — decomposed. **Amendment B (§9): the confirmed profile is a baselined configuration item (NG-22); adds multi-pass convergence (AF-207), clarifying questions (AF-208), baseline (AF-209).** |
 | E3 | Inspection & Decision + Redaction/Rehydration Engine | SLC E3, **absorbs the transcript engine logic** that would otherwise be trapped in E5 — decomposed |
 | E4 | Audit Ledger | SLC E4, **absorbs ledger durability/backup**; **now carries actor pseudonymisation (NG-19) + dual-key unmask (NG-20)** — decomposed |
 | E5 | Chat Surface (governed chat surface — the full experience) | SLC E5 — **now DECOMPOSED to file level** (§8 A1): our DOM, in-place redaction, the reply that proves work continues. Logic still comes from the E3 core. |
-| E6 | Management View | SLC E6 **minus recurring-work** — decomposed |
+| E6 | Management View (→ **review cycle**) | SLC E6 **minus recurring-work** — decomposed. **Amendment B (§9): adds the review cycle (AF-609, Review-Vorschlag) and change-request → baseline (AF-610).** |
 | **E7** | **Recurring-Work Intelligence** | **NEW** — split out of SLC E6 FR-21 — decomposed. **AI Act exposure flagged (§8 A5).** |
 | **E8** | **Operations** | **was SLC E7** — not decomposed (coupled to interception architecture; holds dual-key secret storage + role binding) |
 
@@ -217,3 +217,108 @@ decomposed against this spec.
 | A4 E3 rebalance | — (R12) | E3 build-order note; AF-301 German-identifier cases | US-006/007 | Applied |
 | A5 AI Act exposure | NG-21 | E7 non-attributability guard (SF-7065); open legal risk logged | US-030 | **Open legal risk** |
 | A6 E5 design spec | — | EP-05 decomposed against the Handoff | US-032…US-039 | Applied |
+
+---
+
+## 9. Amendment B — the baselined Schutzprofil (2026-09-20)
+
+A product decision applied as a specification amendment (spec only; **not built** in
+this pass). ASPICE change control applied to the data policy: **the protection
+profile is the customer's own model of their business, baselined once and changed
+only through a reviewed change request with stated business justification.** It
+replaces the implicit behaviour where extraction could re-run and quietly produce a
+different map. Affects E2, E4, E6, E7. Full spec in `AMENDMENT-B.md`.
+
+### B1 · The profile is a baselined configuration item — NG-22
+The confirmed result is a **baseline**: version, created date, named approver, the
+change request that produced it (null for the initial baseline), and the full area
+set with modes. It does not change on its own. Superseding a baseline is a
+governance event; the previous version stays readable (history is evidence). A
+briefing/export window spanning a baseline change carries a coverage note (as a
+key-epoch crossing does). New AF: E2 `AF-209 baselineProfile`. Story US-042.
+
+**Consequence — stability gate (NFR-07):** the 0.80 index stops being a
+per-activation gate and becomes a **convergence signal during onboarding only**.
+Once a baseline is set nothing re-extracts, so stability is moot. NFR-07 is updated
+(not deleted). **⚠ FLAGGED contradiction — see below (F1).**
+
+### B2 · Multi-pass convergence at onboarding — AF-207
+Extraction runs repeatedly over the same policy, each pass refining the working set,
+with a stopping rule (a pass adds nothing above a materiality threshold, or a hard
+pass ceiling). Record passes run + what the last added; show convergence to the user
+as a fact. The working set is never active. New AF: E2 `AF-207 convergeExtraction`.
+Story US-040. **⚠ FLAGGED — interacts with NG-6 (F2).**
+
+### B3 · Clarifying questions — AF-208
+Questions generated from ambiguities extraction actually hit (never a fixed
+questionnaire); hard budget **5–8**; answerable by a quality lead alone; each answer
+recorded with the baseline as provenance. New AF: E2 `AF-208 generateClarifyingQuestions`.
+Story US-041.
+
+### B4 · The review cycle — AF-609 / AF-610
+Evidence accumulates between reviews; proposals are made at the review, never applied
+automatically. **Cadence decays:** fortnightly (first quarter) → monthly → quarterly
+(configurable). A review produces a **Review-Vorschlag** (proposals with evidence in
+numbers + period, ordered by priority). **A review must be able to propose nothing**
+(held to the quiet-week discipline). Approving a proposal → an **Änderungsantrag**
+(change request); approving the change request → the next baseline (E2 AF-209). Both
+are ledger entries with approver + justification. Proposal types: synonym/abbrev
+extension, coverage gap, dormant area, mode mismatch, new business activity. New AFs:
+E6 `AF-609 composeReviewProposal`, `AF-610 processChangeRequest`. Stories US-043, US-044.
+
+### B5 · The business-event record — replaces "rule-hit features" — NG-23
+Per inspection event, store: the area, the rule/layer that decided it, the
+**structural features** that decided it (percentage present, price term in sentence
+— features, never text), and the **work topic**. **NG-23:** the inspection record is
+structured around what the business was doing, not who did it; **one record serves
+both E6 narrowing preview and E7 recurring-work — never two parallel stores.**
+Amends E4 request-entry schema (`features`, `workTopic`); feeds E7 (single source).
+**⚠ FLAGGED — changes built behaviour of `previewRuleNarrowing` (F3).**
+
+### B6 · Language
+Customer-facing strings never say "the model suggests" or name a graph. The artefact
+is the **Schutzprofil**; the periodic output a **Review-Vorschlag**; a change an
+**Änderungsantrag** against the current baseline. Apply to every user-visible string
+(DE + EN) — E5 catalogue (AF-505) + E6 review surfaces.
+
+### ⚠ Flagged contradictions with existing (built) invariants — NOT resolved silently
+These are recorded for the Amendment-B build to resolve; the built code is unchanged
+in this pass.
+
+- **F1 · NG-3 / `guardActivation` (built, US-005) vs B1.** `guardActivation`
+  (SF-2061) throws `ActivationBlockedError('unstable')` unless `stability.stable ===
+  true`, on **every** activation. B1 makes stability an onboarding-only convergence
+  signal and makes a change-request baseline a **reviewed human decision** that may
+  carry no fresh stability measure — which the current guard would wrongly block.
+  *Proposed resolution (for the build, not applied now):* gate stability only at the
+  **initial (onboarding) baseline**; gate a change-request baseline on approval +
+  justification (NG-22), not on a stability re-measure. NG-3 wording to be narrowed
+  to "onboarding baseline."
+- **F2 · NG-6 (extraction once per policy version) vs B2 multi-pass convergence.**
+  NG-6 says "extraction runs once per policy version, keyed by content hash." B2 runs
+  **several passes** over the same version at onboarding. *Proposed resolution:* NG-6
+  becomes "one convergence run (which may be multiple passes) per policy version,
+  cached by content hash — never per request." The anti-per-request intent is intact;
+  the "once" wording needs amending.
+- **F3 · `previewRuleNarrowing` (built, US-022) returns `measured:false` vs B5.** The
+  structural-features record makes the after-count computable, so the SF should return
+  a real before/after. *Proposed resolution:* re-implement the after-count over the
+  stored `features` when the business-event record lands; the current `measured:false`
+  fallback stays only until then.
+- **F4 · `publishActivePolicy` (built, US-005) vs NG-22.** The built publisher swaps
+  the active policy in memory with no versioned baseline record and no supersede
+  governance event. NG-22 requires versioned baselines, a supersede governance event,
+  and the prior version staying readable. *Proposed resolution:* `AF-209
+  baselineProfile` supersedes `publishActivePolicy` as the activation path; the
+  in-memory swap becomes baseline-aware.
+
+### Amendment B log
+| Item | New invariant | New/changed AFs | Stories | Status |
+|------|---------------|-----------------|---------|--------|
+| B1 baselined profile | **NG-22** | E2 `AF-209`; NFR-07 reframed | US-042 | Spec'd (not built) |
+| B2 multi-pass convergence | — | E2 `AF-207` | US-040 | Spec'd; ⚠ F2 |
+| B3 clarifying questions | — | E2 `AF-208` | US-041 | Spec'd |
+| B4 review cycle | — | E6 `AF-609`, `AF-610` | US-043, US-044 | Spec'd |
+| B5 business-event record | **NG-23** | E4 request-entry (`features`,`workTopic`); E7 single source | amends US-014/022/025 | Spec'd; ⚠ F3 |
+| B6 language | — | E5 `AF-505` + E6 strings (Schutzprofil/Review-Vorschlag/Änderungsantrag) | US-036 (amended) | Spec'd |
+| Flags | — | F1 (NG-3/guardActivation), F4 (publishActivePolicy) | US-042 build | **Flagged, unresolved** |

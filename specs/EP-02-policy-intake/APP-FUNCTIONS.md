@@ -126,6 +126,13 @@ export function readCachedGraph(policyHash: string): ExtractedGraph | null
 1. Threshold is 0.80 (NFR-07). Core re-enforces even if the sidecar said `stable`.
 2. `index === null` (stability not run) is treated as **not stable**.
 
+> **⚠ Amendment B (§9 B1):** the 0.80 index is reframed as an **onboarding
+> convergence signal** — a low index means the passes (AF-207) have not settled, so
+> keep reading or ask a question (AF-208). It gates the **initial baseline only**; a
+> change-request baseline (E6 AF-610) is approval-gated, not stability-gated. The
+> measurement is kept, not deleted. **Built `guardActivation` still gates every
+> activation on stability — F1, to reconcile at the Amendment-B build.**
+
 ```ts
 // SF-2031  stability/readStabilityIndex.ts
 export function readStabilityIndex(g: ExtractedGraph): number | null
@@ -240,3 +247,102 @@ export function publishActivePolicy(p: ActivePolicy): void
 ```
 
 **Chain order:** guardActivation → writeActivationGovernanceEvent → publishActivePolicy.
+
+---
+
+# Amendment B (§9) — onboarding convergence, questions, and the baseline
+
+**Spec only — not built in this pass.** New app functions AF-207, AF-208, AF-209.
+Shared types (extend `core/lib/types.ts`): `WorkingSet` (areas under construction,
+never active), `ConvergenceReport { passes: number; lastAdded: number; converged:
+boolean }`, `ClarifyingQuestion { id; text; areaRef?; source: 'ambiguity' }`,
+`Baseline { version: string; createdAt: string; approver: string; changeRequestId:
+string | null; areas: Area[]; questionsAnswered: {q: string; a: string}[] }`.
+
+## AF-207: convergeExtraction  *(FT-2.6, onboarding multi-pass)*
+**Entry:** `core/src/features/policy/converge/index.ts`
+**Business Rules (§9 B2):** extraction runs repeatedly over the same policy version
+(NG-6: one convergence run per version, cached by hash — never per request). Each
+pass proposes additions/refinements to the working set. **Stopping rule:** converge
+when a pass adds nothing above a materiality threshold, or at a hard pass ceiling.
+Record passes run + what the last added. The working set is never active.
+
+```ts
+// SF-2071  converge/runExtractionPass.ts
+export async function runExtractionPass(policy: string, working: WorkingSet, passIndex: number): Promise<WorkingSet>
+// 1. GIVEN a policy + working set THEN a pass proposes additions/refinements (via AF-202 sidecar)
+// 2. GIVEN a re-read THEN the set deepens (a later pass may add what an earlier missed)
+// 3. GIVEN the same inputs THEN deterministic within a pinned sidecar model
+
+// SF-2072  converge/hasConverged.ts
+export function hasConverged(added: number, materiality: number, passIndex: number, ceiling: number): boolean
+// 1. GIVEN a pass added nothing above materiality THEN true (converged)
+// 2. GIVEN the pass ceiling reached THEN true (stop regardless)
+// 3. GIVEN a substantive addition below the ceiling THEN false (keep reading)
+
+// SF-2073  converge/convergeExtraction.ts
+export async function convergeExtraction(policy: string): Promise<{ working: WorkingSet; report: ConvergenceReport }>
+// 1. GIVEN a policy THEN passes run until hasConverged; report carries passes + lastAdded
+// 2. GIVEN convergence THEN the working set is returned INERT (never active — NG-3/NG-22)
+// 3. GIVEN the report THEN it is legible to the user ("3 passes, the last added nothing new")
+// deps: SF-2071, SF-2072, AF-202
+```
+
+## AF-208: generateClarifyingQuestions  *(FT-2.7, onboarding)*
+**Entry:** `core/src/features/policy/questions/index.ts`
+**Business Rules (§9 B3):** questions come from ambiguities the extraction actually
+hit — never a fixed questionnaire. Hard budget **5–8**. Answerable by a quality lead
+alone. Each answer is recorded with the baseline as provenance.
+
+```ts
+// SF-2081  questions/detectAmbiguities.ts
+export function detectAmbiguities(working: WorkingSet): Ambiguity[]
+// 1. GIVEN an area that could include/exclude a neighbour concept THEN an ambiguity is raised
+// 2. GIVEN something that could have been a static checkbox THEN NOT raised (not worth asking)
+// 3. GIVEN a clean, unambiguous set THEN [] (no questions)
+
+// SF-2082  questions/generateClarifyingQuestions.ts
+export function generateClarifyingQuestions(ambiguities: Ambiguity[]): ClarifyingQuestion[]
+// 1. GIVEN ambiguities THEN concrete questions ("Kundendaten — does that include supplier contacts?")
+// 2. GIVEN more than 8 candidates THEN capped at 8, highest-value first (budget 5–8)
+// 3. GIVEN each question THEN answerable by a quality lead without consulting anyone
+
+// SF-2083  questions/recordAnswers.ts
+export function recordAnswers(working: WorkingSet, answers: {q: string; a: string}[]): WorkingSet
+// 1. GIVEN answers THEN folded into the working set + retained as provenance for the baseline
+// 2. GIVEN an answer THEN it never activates anything on its own (NG-22)
+// 3. GIVEN the provenance THEN an auditor can see why an area is defined the way it is
+```
+
+## AF-209: baselineProfile  *(FT-2.8, the configuration item — NG-22)*
+**Entry:** `core/src/features/policy/baseline/index.ts`
+**BRIDGE:** writes a `govKind:'baseline'` governance event (E4 AF-403).
+**Business Rules (§9 B1, NG-22):** a baseline is immutable once active. Superseding
+records a governance event and keeps the prior version readable. The initial baseline
+has `changeRequestId: null`; every later baseline is produced by an approved change
+request (E6 AF-610). **This supersedes `publishActivePolicy` as the activation path
+(F4).**
+
+```ts
+// SF-2091  baseline/buildBaseline.ts
+export function buildBaseline(areas: Area[], approver: string, changeRequestId: string | null, prev?: Baseline): Baseline
+// 1. GIVEN a confirmed area set + approver THEN a Baseline with a fresh version, createdAt, area set + modes
+// 2. GIVEN the initial baseline THEN changeRequestId === null
+// 3. GIVEN a prior baseline THEN the new version supersedes it (monotonic version)
+
+// SF-2092  baseline/publishBaseline.ts
+export async function publishBaseline(b: Baseline): Promise<void>
+// 1. GIVEN a baseline THEN it becomes the active profile; inspection reads it
+// 2. GIVEN a superseding baseline THEN a govKind:'baseline' entry is written and the prior stays queryable (NG-22)
+// 3. GIVEN an active baseline THEN NO code path mutates it in place (immutable — NG-22)
+// deps: E4 AF-403 [BRIDGE]
+
+// SF-2093  baseline/getActiveBaseline.ts
+export function getActiveBaseline(): Baseline | null
+// 1. GIVEN a published baseline THEN returned as the active profile
+// 2. GIVEN none THEN null (fresh-install lock)
+// 3. GIVEN history THEN prior baselines remain retrievable by version (evidence)
+```
+
+**Chain order (onboarding):** AF-207 convergeExtraction → AF-208 questions →
+AF-204 confirm → AF-205 modes → AF-209 baselineProfile (replaces AF-206 publish, F4).

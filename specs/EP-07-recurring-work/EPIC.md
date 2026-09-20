@@ -1,5 +1,12 @@
 # EP-07: Recurring-Work Intelligence
-**Status:** DECOMPOSED — the deepest component in the build. Real machinery, not a report generator.
+**Status:** DECOMPOSED — the deepest component in the build. Real machinery, not a report generator. · **Amended:** 2026-09-20 (Amendment B §9 — spec only, not built)
+
+> **Amendment B (§9 B5, NG-23):** E7 reads the **business-event record** — the same
+> single ledger record the E6 narrowing preview reads (redacted text + pseudonyms +
+> structural `features` + `workTopic`). **There are never two parallel stores.** The
+> `workTopic` makes a finding legible as business activity (reinforcing NG-21: topics,
+> not people); `AF-701` loads it alongside the existing fields. No new AF — an
+> amendment to the corpus the pipeline already consumes. Not built this pass.
 
 ## Business Context
 This is the product's only *value-creating* rather than loss-preventing output —
