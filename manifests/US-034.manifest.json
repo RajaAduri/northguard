@@ -1,0 +1,25 @@
+{
+  "id": "US-034",
+  "title": "Reply rehydration view (AF-503) — consumes E3 AF-307; never guess",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [{ "file": "web/src/i18n/catalogue.ts", "reason": "reply.restored_partial/not_rendered/copied_warning + restore.apply/keep (parity)", "sf_id": "SF-5051" }],
+  "create": [
+    { "file": "web/src/reply/buildReplyView.ts", "reason": "full/partial/not-rendered from AF-307 output", "sf_id": "SF-5031", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/reply/buildCopyModel.ts", "reason": "copy line + real-customer-data warning + redacted copy", "sf_id": "SF-5032" },
+    { "file": "web/src/reply/buildRestoreSuggestion.ts", "reason": "insert/leave; never auto-apply (NG-9)", "sf_id": "SF-5033" },
+    { "file": "web/src/reply/ReplyMessage.tsx", "reason": "display-only render; unresolved stays visible; never re-enters wire (NG-1)", "sf_id": "SF-5034" },
+    { "file": "web/src/reply/reply.test.ts", "reason": "TDD stubs", "sf_id": "AF-503" },
+    { "file": "web/src/reply/ReplyMessage.test.tsx", "reason": "jsdom render smoke", "sf_id": "SF-5034" },
+    { "file": "web/src/reply/index.ts", "reason": "AF-503 entry point", "sf_id": "AF-503" }
+  ],
+  "protected": [
+    { "file": "core/src/features/inspection/transcript/rehydrate/**", "reason": "AF-307 consumed read-only" },
+    { "file": "core/**", "reason": "never modified from E5" }
+  ],
+  "tests_must_pass": ["web/src/reply/reply.test.ts", "web/src/reply/ReplyMessage.test.tsx"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.3", "app_functions": ["AF-503"], "sw_functions": ["SF-5031", "SF-5032", "SF-5033", "SF-5034"], "acceptance_criteria": ["US-034 AC"] },
+  "chain_order": [{ "sf_id": "SF-5031", "reason": "reply view" }, { "sf_id": "SF-5032", "reason": "copy model" }, { "sf_id": "SF-5033", "reason": "restore suggestion" }, { "sf_id": "SF-5034", "reason": "component" }],
+  "agent_prompt": "Implement US-034 (AF-503) per specs/EP-05. Consume E3 AF-307 RehydrateResult; full/partial/not-rendered; unresolved stays visible + explicit insert/leave (never guess, NG-9); copy warns of real customer data; restored content is display-only, never re-enters the wire (NG-1). TDD."
+}

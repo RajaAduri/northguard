@@ -13,7 +13,31 @@ export type {
   DisplayPlaceholder,
   InspectionVerdict,
   RedactionSpan as Span,
+  RehydrateResult,
+  RestoredSpan,
+  PlaceholderMapping,
 } from '../../core/lib/types'
+
+// ── Reply rehydration view (AF-503) ───────────────────────────────────────────
+export type ReplyMode = 'full' | 'partial' | 'not-rendered'
+export interface ReplyView {
+  mode: ReplyMode
+  footerKey: string
+  openCount: number
+  restoredCount: number
+}
+export interface CopyModel {
+  lineKey: string
+  warningKey: string | null // set when the clipboard would hold real customer data
+  redactedKey: string
+  restoredCount: number
+}
+export interface RestoreSuggestion {
+  placeholder: string
+  suggestion: string | null
+  applyKey: string
+  keepKey: string
+}
 
 // ── Composer (AF-501) ─────────────────────────────────────────────────────────
 export type ComposerState =
