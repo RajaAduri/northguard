@@ -1,0 +1,23 @@
+{
+  "id": "US-038",
+  "title": "False-positive report flow (AF-507) — bridges E6 AF-604",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [{ "file": "web/src/i18n/catalogue.ts", "reason": "report.* + notice.* strings (parity)", "sf_id": "SF-5051" }],
+  "create": [
+    { "file": "web/src/report/buildReportForm.ts", "reason": "prefilled form; share-context OFF by default", "sf_id": "SF-5071", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/report/submitReport.ts", "reason": "bridge B8 → E6 AF-604; context only on opt-in", "sf_id": "SF-5072" },
+    { "file": "web/src/report/buildReportDone.ts", "reason": "rule stays; path forward (rephrase/redact)", "sf_id": "SF-5073" },
+    { "file": "web/src/report/buildReporterNotice.ts", "reason": "pending/applied/declined — a no comes back", "sf_id": "SF-5074" },
+    { "file": "web/src/report/ReportPanel.tsx", "reason": "form replaces the mirror slot; explicit opt-in", "sf_id": "SF-5075" },
+    { "file": "web/src/report/report.test.ts", "reason": "TDD stubs", "sf_id": "AF-507" },
+    { "file": "web/src/report/ReportPanel.test.tsx", "reason": "jsdom render smoke", "sf_id": "SF-5075" },
+    { "file": "web/src/report/index.ts", "reason": "AF-507 entry point", "sf_id": "AF-507" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "not modified from E5" }],
+  "tests_must_pass": ["web/src/report/report.test.ts", "web/src/report/ReportPanel.test.tsx"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.7", "app_functions": ["AF-507"], "sw_functions": ["SF-5071", "SF-5072", "SF-5073", "SF-5074", "SF-5075"], "acceptance_criteria": ["US-038 AC"] },
+  "chain_order": [{ "sf_id": "SF-5071", "reason": "form" }, { "sf_id": "SF-5072", "reason": "submit" }, { "sf_id": "SF-5073", "reason": "done" }, { "sf_id": "SF-5074", "reason": "notice" }, { "sf_id": "SF-5075", "reason": "panel" }],
+  "agent_prompt": "Implement US-038 (AF-507) per specs/EP-05. Context shared only on explicit opt-in (report.privacy); submit bridges to E6 AF-604 (B8) with only span+rule+area unless opted in; report-done states the rule stays active + a path forward; every report gets a quiet in-conversation reply (a no comes back). TDD."
+}

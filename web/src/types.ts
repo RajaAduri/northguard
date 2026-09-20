@@ -39,6 +39,36 @@ export interface RestoreSuggestion {
   keepKey: string
 }
 
+// ── False-positive report flow (AF-507) ──────────────────────────────────────
+export interface ReportForm {
+  faSpan: string // the marked placeholder/span
+  detectedBy: string // layer label key
+  area: string
+  ruleId?: string
+  conversationId: string
+  shareContext: boolean // OFF by default (opt-in); the rest of the prompt only crosses if true
+  context?: string
+}
+// What crosses bridge B8 to E6 AF-604. Without opt-in, only span+rule+area (no context).
+export interface FpReportPayload {
+  faSpan: string
+  area: string
+  ruleId?: string
+  conversationId: string
+  context?: string
+}
+export interface ReportDone {
+  faId: string
+  doneKey: string
+  ruleStaysKey: string
+  pathForwardKey: string // report.rephrase (block) | report.continue_redacted (redact)
+  weekCount: number
+}
+export interface ReporterNoticeView {
+  state: 'pending' | 'applied' | 'declined'
+  messageKey: string
+}
+
 // ── Provider-view toggle (AF-504) ─────────────────────────────────────────────
 export interface WireView {
   turns: { role: 'user' | 'assistant' | 'system'; content: string }[]
