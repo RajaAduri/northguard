@@ -1,0 +1,24 @@
+{
+  "id": "US-036",
+  "title": "i18n catalogue + three-level language (AF-505)",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [],
+  "create": [
+    { "file": "web/src/types.ts", "reason": "E5 view types + re-export of the core E1 contract types (one place)", "sf_id": "shared", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/i18n/catalogue.ts", "reason": "DE/EN string catalogue (Handoff §3 subset)", "sf_id": "SF-5051" },
+    { "file": "web/src/i18n/loadStringCatalogue.ts", "reason": "load + assert DE/EN parity (NG-16)", "sf_id": "SF-5051" },
+    { "file": "web/src/i18n/resolveUiLocale.ts", "reason": "UI language per-user, DE default", "sf_id": "SF-5052" },
+    { "file": "web/src/i18n/formatMessage.ts", "reason": "interpolate + _one pluralisation", "sf_id": "SF-5053" },
+    { "file": "web/src/i18n/languageLevels.ts", "reason": "ui=user / policy-name=policy / wire+evidence=tenant", "sf_id": "SF-5054" },
+    { "file": "web/src/i18n/i18n.test.ts", "reason": "TDD stubs SF-5051..5054", "sf_id": "AF-505" },
+    { "file": "web/src/i18n/index.ts", "reason": "AF-505 entry point", "sf_id": "AF-505" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "contract types imported read-only; never modified" }],
+  "modify_note": "Amendment B §9 B6 (Schutzprofil/Review-Vorschlag/Änderungsantrag) is re-opened as US-036a at the Amendment-B build; NOT added here.",
+  "tests_must_pass": ["web/src/i18n/i18n.test.ts"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.5", "app_functions": ["AF-505"], "sw_functions": ["SF-5051", "SF-5052", "SF-5053", "SF-5054"], "acceptance_criteria": ["US-036 AC"] },
+  "chain_order": [{ "sf_id": "SF-5051", "reason": "catalogue + parity" }, { "sf_id": "SF-5052", "reason": "ui locale" }, { "sf_id": "SF-5053", "reason": "format" }, { "sf_id": "SF-5054", "reason": "levels" }],
+  "agent_prompt": "Implement US-036 (AF-505) per specs/EP-05. DE default; DE/EN key parity (NG-16); three language levels (rule 11). Build against the Handoff §3 strings; Amendment B terminology is out of scope here. TDD."
+}
