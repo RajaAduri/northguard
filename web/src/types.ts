@@ -69,6 +69,36 @@ export interface ReporterNoticeView {
   messageKey: string
 }
 
+// ── Two-rooms threshold + management shell (AF-508) ───────────────────────────
+export interface ThresholdView {
+  kickerKey: string
+  headlineKey: string
+  bodyKey: string // states structural, no-names aggregation (NG-13)
+  enterKey: string
+  week: string
+  people: number
+}
+export type MgmtTab = 'briefing' | 'density' | 'false-positives' | 'ledger' | 'evidence'
+export interface MgmtShell {
+  activeTab: MgmtTab
+  navKeys: string[]
+  maxWidthPx: 720
+  typeface: string
+  hasPersonColumn: false // structural (NG-13)
+}
+export interface BriefingRow {
+  observation: string // names a pseudonymised cluster + area, never a person/original (C1, NG-21)
+  scope: string
+  artefact: string
+}
+export interface BriefingView {
+  week: string
+  people: number
+  rows: BriefingRow[]
+  estimate: { low: number; high: number; approx: true; noteKey: string }
+  hasPersonColumn: false
+}
+
 // ── Provider-view toggle (AF-504) ─────────────────────────────────────────────
 export interface WireView {
   turns: { role: 'user' | 'assistant' | 'system'; content: string }[]

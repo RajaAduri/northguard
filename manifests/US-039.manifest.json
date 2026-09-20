@@ -1,0 +1,22 @@
+{
+  "id": "US-039",
+  "title": "Two-rooms threshold + management shell (AF-508)",
+  "created": "2026-09-20T00:00:00Z",
+  "author": "dev-blueprint (generated from specs/EP-05 in the Sprint-6 build)",
+  "status": "planned",
+  "modify": [{ "file": "web/src/i18n/catalogue.ts", "reason": "threshold.* + mgmt.nav.* + briefing.estimate_note (parity)", "sf_id": "SF-5051" }],
+  "create": [
+    { "file": "web/src/rooms/buildThresholdModel.ts", "reason": "named, dated threshold; structural aggregation (NG-13)", "sf_id": "SF-5081", "template": "specs/EP-05-chat-surface/APP-FUNCTIONS.md" },
+    { "file": "web/src/rooms/buildManagementShell.ts", "reason": "720px Fraunces document; review nav; no person column", "sf_id": "SF-5082" },
+    { "file": "web/src/rooms/buildBriefingView.ts", "reason": "render E6 briefing; ≈ range + formula; pseudonymised clusters only (C1/NG-21)", "sf_id": "SF-5083" },
+    { "file": "web/src/rooms/ManagementView.tsx", "reason": "ThresholdGate + ManagementView components", "sf_id": "SF-5084" },
+    { "file": "web/src/rooms/rooms.test.ts", "reason": "TDD stubs", "sf_id": "AF-508" },
+    { "file": "web/src/rooms/ManagementView.test.tsx", "reason": "jsdom render smoke", "sf_id": "SF-5084" },
+    { "file": "web/src/rooms/index.ts", "reason": "AF-508 entry point", "sf_id": "AF-508" }
+  ],
+  "protected": [{ "file": "core/**", "reason": "E6 read-models consumed read-only" }],
+  "tests_must_pass": ["web/src/rooms/rooms.test.ts", "web/src/rooms/ManagementView.test.tsx"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.8", "app_functions": ["AF-508"], "sw_functions": ["SF-5081", "SF-5082", "SF-5083", "SF-5084"], "acceptance_criteria": ["US-039 AC"] },
+  "chain_order": [{ "sf_id": "SF-5081", "reason": "threshold" }, { "sf_id": "SF-5082", "reason": "shell" }, { "sf_id": "SF-5083", "reason": "briefing view" }, { "sf_id": "SF-5084", "reason": "components" }],
+  "agent_prompt": "Implement US-039 (AF-508) per specs/EP-05. Named/dated threshold stating structural aggregation (NG-13); 720px Fraunces management document with the review nav and NO person column; briefing rows name pseudonymised clusters + areas (never a person, C1/NG-21) with a ≈ range + formula. TDD."
+}
