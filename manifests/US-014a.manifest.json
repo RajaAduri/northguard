@@ -1,0 +1,21 @@
+{
+  "id": "US-014a",
+  "title": "Business-event record (NG-23) — features + workTopic + baselineVersion on the request entry",
+  "created": "2026-09-21T00:00:00Z",
+  "author": "dev-blueprint (Amendment B build, Sprint 7)",
+  "status": "planned",
+  "modify": [
+    { "file": "core/lib/types.ts", "reason": "LedgerEntry + RequestMeta gain features/workTopic/baselineVersion; Baseline type", "sf_id": "shared" },
+    { "file": "core/src/features/ledger/request/buildRequestEntry.ts", "reason": "write the business-event fields", "sf_id": "SF-4021" },
+    { "file": "core/src/features/inspection/verdict/index.ts", "reason": "assembleVerdict computes features + workTopic + baselineVersion", "sf_id": "SF-3035" }
+  ],
+  "create": [
+    { "file": "core/src/features/inspection/verdict/extractStructuralFeatures.ts", "reason": "structural features (percentPresent, priceTermInSentence, per-rule flags) — never text", "sf_id": "SF-3036" },
+    { "file": "core/src/features/inspection/verdict/extractStructuralFeatures.test.ts", "reason": "TDD stub", "sf_id": "SF-3036" }
+  ],
+  "protected": [],
+  "tests_must_pass": ["core/src/features/inspection/verdict/extractStructuralFeatures.test.ts"],
+  "traceability": { "epic": "EP-04", "feature": "FT-4.2", "app_functions": ["AF-402", "AF-303"], "sw_functions": ["SF-3036"], "acceptance_criteria": ["NG-23"] },
+  "chain_order": [{ "sf_id": "SF-3036", "reason": "structural features" }],
+  "agent_prompt": "Amendment B US-014a: the request entry is the business-event record (NG-23) — features (structural, never text) + workTopic + baselineVersion, one store read by E6 + E7. TDD."
+}

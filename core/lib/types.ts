@@ -414,6 +414,10 @@ export interface LedgerEntry {
   latencyMs?: number
   coverage?: Coverage
   spanPseudonyms?: { area: string; layer: Layer; ruleId?: string; pseudonym: string; keyEpoch: number }[]
+  // Amendment B (NG-23) — the business-event record: what the business was doing, not who.
+  features?: { name: string; value: string | number | boolean }[] // structural, never text
+  workTopic?: string
+  baselineVersion?: string
   // governance entries:
   govKind?: GovKind
   reason?: string
@@ -459,4 +463,19 @@ export interface RequestMeta {
   provider: string
   latencyMs: number
   key: KeyMaterial
+  features?: { name: string; value: string | number | boolean }[] // NG-23 (Amendment B)
+  workTopic?: string
+  baselineVersion?: string
+}
+
+// Amendment B — the baseline (Schutzprofil configuration item, NG-22).
+export interface Baseline {
+  version: string
+  createdAt: string
+  approver: string
+  basis: string // the change request that produced it; 'initial' for v1.0
+  changeRequestId: string | null
+  areas: Area[]
+  checksum: string
+  questionsAnswered?: { q: string; a: string }[]
 }

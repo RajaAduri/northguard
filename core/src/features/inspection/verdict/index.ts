@@ -17,6 +17,7 @@ import { resolveTouchedAreas } from './resolveTouchedAreas'
 import { computeSpans } from './computeSpans'
 import { decideVerdictMode } from './decideVerdictMode'
 import { computeConfidence } from './computeConfidence'
+import { extractStructuralFeatures } from './extractStructuralFeatures'
 import { runRulesLayer } from '../rules'
 import { runBackstop } from '../backstop'
 import { attachPseudonymToSpan } from '../transcript/pseudonym'
@@ -28,6 +29,7 @@ export { resolveTouchedAreas } from './resolveTouchedAreas'
 export { computeSpans } from './computeSpans'
 export { decideVerdictMode } from './decideVerdictMode'
 export { computeConfidence } from './computeConfidence'
+export { extractStructuralFeatures } from './extractStructuralFeatures'
 
 function deriveCaughtBy(areas: AreaAttribution[]): string | null {
   const layers = new Set<Layer>()
@@ -65,6 +67,7 @@ export interface InspectionContext {
   key: KeyMaterial
   userId: string
   provider: string
+  baselineVersion?: string // the active Schutzprofil baseline in force (Amendment B, NG-23)
 }
 
 // SF-3035 — the full inspection turn (the entry point the adapter calls). Orchestrates
@@ -103,10 +106,14 @@ export async function assembleVerdict(
 
   // NG-5: one ledger entry, written BEFORE the verdict returns (even in degraded mode).
   const promptHash = createHash('sha256').update(req.draftPrompt).digest('hex').slice(0, 32)
+  const workTopic = decision.touchedAreas[0]?.area ?? ''
   verdict.ledgerEntryId = await writeRequestEntry(verdict, {
     userId: ctx.userId,
     conversationId: req.conversationId,
     redactedText: verdict.redactedPrompt,
+    features: extractStructuralFeatures(req.draftPrompt, ruleHits), // NG-23 business-event record
+    workTopic,
+    baselineVersion: ctx.baselineVersion ?? 'v1.0',
     promptHash,
     provider: ctx.provider,
     latencyMs: Date.now() - t0,

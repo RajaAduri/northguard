@@ -312,6 +312,30 @@ in this pass.
   baselineProfile` supersedes `publishActivePolicy` as the activation path; the
   in-memory swap becomes baseline-aware.
 
+### B-build (Sprint 7) — flag resolutions + the self-approval decision (2026-09-21)
+Sprint 7 builds Amendment B and resolves F1–F4 (recorded, not silent):
+- **F1 resolved:** `guardActivation` gates stability only for the **initial baseline
+  (v1.0)** — it requires the convergence run to have converged. A later baseline from
+  an approved Änderungsantrag does not re-extract, so it carries **no** stability check.
+  The measurement is kept.
+- **F2 resolved:** NG-6 reworded to "one convergence run per policy version" (above).
+- **F3 resolved:** `previewRuleNarrowing` returns a real before/after when the narrowing
+  is expressible in the stored structural `features` (NG-23); otherwise `measured:false`
+  with a stated reason. The "41 → 12" figure appears only when actually computed.
+- **F4 resolved:** publishing produces a **versioned baseline** (version, date, approver,
+  basis, checksum); the previous baseline stays readable (AF-209 supersedes the built
+  `publishActivePolicy`).
+
+**Decision — same person as requester and approver of an Änderungsantrag.** In a
+60-person supplier the quality lead is often the only person qualified to judge a
+data-protection change, so mandatory four-eyes would block the target customer. Yet
+silent self-approval is what change control exists to prevent. Therefore:
+- **Allowed by default**, recorded in the ledger, and shown in the Schutzprofil version
+  history as *beantragt und freigegeben von derselben Person*.
+- **Separated in time as a real control:** approval may **not** occur in the same
+  session as the request (a same-session self-approval is rejected — tested).
+- **Four-eyes available** as a tenant setting for customers who require it.
+
 ### Amendment B log
 | Item | New invariant | New/changed AFs | Stories | Status |
 |------|---------------|-----------------|---------|--------|
