@@ -473,6 +473,7 @@ export interface RequestMeta {
 // Amendment B — onboarding convergence (AF-207). The working set is never active.
 export interface WorkingSet {
   areas: Area[]
+  answers?: { q: string; a: string }[] // clarifying-question provenance (never activates)
 }
 export interface ConvergenceReport {
   passes: number

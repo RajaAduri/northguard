@@ -1,0 +1,10 @@
+{ "id": "US-041", "title": "Clarifying questions (AF-208)", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "create": [
+    { "file": "core/src/features/policy/questions/detectAmbiguities.ts", "sf_id": "SF-2081" },
+    { "file": "core/src/features/policy/questions/generateClarifyingQuestions.ts", "sf_id": "SF-2082" },
+    { "file": "core/src/features/policy/questions/recordAnswers.ts", "sf_id": "SF-2083" },
+    { "file": "core/src/features/policy/questions/questions.test.ts", "sf_id": "AF-208" },
+    { "file": "core/src/features/policy/questions/index.ts", "sf_id": "AF-208" } ],
+  "tests_must_pass": ["core/src/features/policy/questions/questions.test.ts"],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.7", "app_functions": ["AF-208"], "sw_functions": ["SF-2081","SF-2082","SF-2083"] },
+  "agent_prompt": "AF-208 per specs/EP-02 (§9 B3): questions from real ambiguities, budget 5-8, answerable by a quality lead; answers = baseline provenance, never activate (NG-22). TDD." }
