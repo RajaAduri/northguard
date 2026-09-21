@@ -527,4 +527,26 @@ export interface Baseline {
   areas: Area[]
   checksum: string
   questionsAnswered?: { q: string; a: string }[]
+  // Amendment B decision — requester === approver is allowed by default and recorded;
+  // the version history shows it verbatim (approvalNote).
+  selfApproved?: boolean
+  approvalNote?: string
+}
+
+// Amendment B — the Änderungsantrag (change request, AF-610). The ONLY path to a new
+// baseline (NG-22). Same person as requester AND approver is allowed by default and
+// recorded; approval may never occur in the same session as the request (separated in
+// time); four-eyes is a per-tenant setting.
+export interface TenantPolicySettings {
+  fourEyes: boolean // true → requester and approver must be distinct people
+}
+export type ChangeRequestStatus = 'open' | 'approved'
+export interface ChangeRequest {
+  id: string
+  requester: string
+  requestSession: string
+  requestedAt: string
+  areas: Area[] // the proposed Schutzprofil
+  rationale: string
+  status: ChangeRequestStatus
 }

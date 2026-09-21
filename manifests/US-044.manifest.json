@@ -1,0 +1,11 @@
+{ "id": "US-044", "title": "change request / Änderungsantrag (AF-610)", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "create": [
+    { "file": "core/src/features/policy/change-request/openChangeRequest.ts", "reason": "open an Änderungsantrag; the only path to a new baseline (NG-22); stamps the requesting session", "sf_id": "SF-2101" },
+    { "file": "core/src/features/policy/change-request/approveChangeRequest.ts", "reason": "approve + cut new baseline; self-approval allowed & recorded, refused in the request's own session, four-eyes tenant setting", "sf_id": "SF-2102" },
+    { "file": "core/src/features/policy/change-request/index.ts", "reason": "AF-610 entry point", "sf_id": "AF-610" },
+    { "file": "core/src/features/policy/change-request/changeRequest.test.ts", "reason": "self-approval allowed cross-session & recorded; SAME-SESSION self-approval rejected; four-eyes refuses self-approval; re-approval refused", "sf_id": "AF-610" } ],
+  "modify": [
+    { "file": "core/lib/types.ts", "reason": "ChangeRequest, TenantPolicySettings; Baseline gains selfApproved/approvalNote", "sf_id": "shared" } ],
+  "tests_must_pass": ["core/src/features/policy/change-request/changeRequest.test.ts"],
+  "traceability": { "epic": "EP-02", "feature": "FT-2.10", "app_functions": ["AF-610"], "sw_functions": ["SF-2101", "SF-2102"] },
+  "agent_prompt": "The Änderungsantrag is the only path from one baseline to the next (NG-22). DECISION: the same person may be requester AND approver — allowed by default, recorded in the ledger, shown in the Schutzprofil version history as 'beantragt und freigegeben von derselben Person'. It is separated in time: a self-approval may NEVER occur in the same session as the request. Four-eyes (requester and approver must differ) is a per-tenant setting. Approval builds and publishes a new immutable baseline citing the change request as its basis. TDD; the same-session rejection has an explicit test." }
