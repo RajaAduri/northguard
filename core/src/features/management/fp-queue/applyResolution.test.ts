@@ -18,10 +18,10 @@ afterEach(() => rmSync(dir, { recursive: true, force: true }))
 
 describe('SF-6044 applyResolution', () => {
   it('1. a narrow writes a rule-narrow governance event with before/after in the payload', async () => {
-    await applyResolution({ kind: 'narrow', ruleId: 'RULE-PERCENT-PRICE', reason: 'zu viele Fehlalarme', narrowing: { description: '% only with price term', measuredBefore: 41, measuredAfter: 12 } }, 'lead', key)
+    await applyResolution({ kind: 'narrow', ruleId: 'RULE-PERCENT-PRICE', reason: 'zu viele Fehlalarme', narrowing: { description: '% only with price term', requiresFeature: 'priceTermInSentence' } }, 'lead', key)
     const e = JSON.parse(readFileSync(path, 'utf8').trim())
     expect(e.govKind).toBe('rule-narrow')
-    expect(e.payload.narrowing.measuredAfter).toBe(12)
+    expect(e.payload.narrowing.requiresFeature).toBe('priceTermInSentence')
     expect(e.actorPseudonym).toMatch(/^[0-9a-f]{64}$/)
   })
   it('2. a dismiss with an empty reason throws (reason mandatory)', async () => {

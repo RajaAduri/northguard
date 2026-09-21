@@ -1,0 +1,7 @@
+{ "id": "US-022a", "title": "previewRuleNarrowing real before/after from features (F3)", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "modify": [
+    { "file": "core/lib/types.ts", "reason": "Narrowing.requiresFeature replaces measuredBefore/after", "sf_id": "shared" },
+    { "file": "core/src/features/management/fp-queue/previewRuleNarrowing.ts", "reason": "real before/after over stored features; else measured:false", "sf_id": "SF-6043" } ],
+  "tests_must_pass": ["core/src/features/management/fp-queue/previewRuleNarrowing.test.ts"],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.4", "app_functions": ["AF-604"], "sw_functions": ["SF-6043"] },
+  "agent_prompt": "F3: previewRuleNarrowing computes a real before/after when the narrowing is expressible in the stored structural features (NG-23); else measured:false with a reason. Never fabricate the figure. TDD." }

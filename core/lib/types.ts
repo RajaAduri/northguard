@@ -311,8 +311,10 @@ export interface TriggerGroup {
 export type RuleId = string
 export interface Narrowing {
   description: string
-  measuredBefore?: number // from re-evaluation over originals (measured separately)
-  measuredAfter?: number
+  // Amendment B (F3): the structural feature the narrowing ADDS as a condition (e.g.
+  // 'priceTermInSentence'). If present in the stored business-event features (NG-23),
+  // the before/after is computed for real; otherwise the preview is not measurable.
+  requiresFeature?: string
   reportsResolved?: number
   residualRisk?: string
 }

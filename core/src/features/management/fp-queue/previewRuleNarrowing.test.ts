@@ -2,25 +2,35 @@ import { describe, it, expect } from 'vitest'
 import { previewRuleNarrowing } from './previewRuleNarrowing'
 import type { LedgerEntry } from '../../../../lib/types'
 
-const hit = (rule: string): LedgerEntry => ({ id: rule + Math.random(), ts: 't', kind: 'request', prevHash: 'p', hash: 'h', spanPseudonyms: [{ area: 'preise-margen', layer: 'rule', ruleId: rule, pseudonym: 'x', keyEpoch: 1 }] })
-const window: LedgerEntry[] = [hit('RULE-PERCENT-PRICE'), hit('RULE-PERCENT-PRICE'), hit('RULE-EMAIL')]
+// Entries where RULE-PERCENT-PRICE fired; `priceTermInSentence` distinguishes true
+// positives from the % that has no price term (the narrowing target — F3).
+function entry(id: string, priceTerm: boolean): LedgerEntry {
+  return {
+    id, ts: 't', kind: 'request', prevHash: 'p', hash: 'h',
+    spanPseudonyms: [{ area: 'preise-margen', layer: 'rule', ruleId: 'RULE-PERCENT-PRICE', pseudonym: 'x', keyEpoch: 1 }],
+    features: [{ name: 'percentPresent', value: true }, { name: 'priceTermInSentence', value: priceTerm }, { name: 'rule:RULE-PERCENT-PRICE', value: true }],
+  }
+}
 
-describe('SF-6043 previewRuleNarrowing', () => {
-  it('1. a measured narrowing reports before → after + reports resolved', () => {
-    const p = previewRuleNarrowing('RULE-PERCENT-PRICE', { description: '% only with a price term', measuredBefore: 41, measuredAfter: 12, reportsResolved: 4, residualRisk: '% without price term no longer blocked' }, window)
-    expect(p.before).toBe(41)
-    expect(p.after).toBe(12)
-    expect(p.reportsResolved).toBe(4)
+describe('SF-6043 previewRuleNarrowing (Amendment B F3)', () => {
+  const window: LedgerEntry[] = [entry('1', true), entry('2', true), entry('3', false), entry('4', false), entry('5', false)]
+
+  it('a feature-expressible narrowing returns a REAL before/after (measured:true)', () => {
+    const p = previewRuleNarrowing('RULE-PERCENT-PRICE', { description: '% only with a price term', requiresFeature: 'priceTermInSentence' }, window)
+    expect(p.before).toBe(5)
+    expect(p.after).toBe(2) // only the two with a price term still fire
+    expect(p.reportsResolved).toBe(3)
     expect(p.measured).toBe(true)
   })
-  it('2. without a measured after-count, before is counted from the ledger and the preview is flagged (not fabricated)', () => {
-    const p = previewRuleNarrowing('RULE-PERCENT-PRICE', { description: 'x' }, window)
-    expect(p.before).toBe(2) // two ledger hits of the rule
-    expect(p.after).toBe(2) // placeholder — flagged
+
+  it('a narrowing whose feature was never captured stays measured:false (never fabricated)', () => {
+    const p = previewRuleNarrowing('RULE-PERCENT-PRICE', { description: 'something not captured', requiresFeature: 'sentimentNegative' }, window)
     expect(p.measured).toBe(false)
-    expect(p.residualRisk).toMatch(/re-evaluation/i)
+    expect(p.after).toBe(p.before)
+    expect(p.residualRisk).toMatch(/not expressible|re-evaluation/i)
   })
-  it('3. a rule with no ledger hits → 0 impact', () => {
-    expect(previewRuleNarrowing('RULE-REPO', { description: 'x' }, window).before).toBe(0)
+
+  it('a rule with no hits → 0 before', () => {
+    expect(previewRuleNarrowing('RULE-REPO', { description: 'x', requiresFeature: 'priceTermInSentence' }, window).before).toBe(0)
   })
 })
