@@ -470,6 +470,27 @@ export interface RequestMeta {
   baselineVersion?: string
 }
 
+// Amendment B — onboarding convergence (AF-207). The working set is never active.
+export interface WorkingSet {
+  areas: Area[]
+}
+export interface ConvergenceReport {
+  passes: number
+  lastAdded: number
+  converged: boolean
+}
+export interface ClarifyingQuestion {
+  id: string
+  text: string
+  areaRef?: string
+  source: 'ambiguity'
+}
+export interface Ambiguity {
+  areaId: string
+  kind: string
+  question: string
+}
+
 // Amendment B — the baseline (Schutzprofil configuration item, NG-22).
 export interface Baseline {
   version: string
