@@ -25,7 +25,12 @@ Diese Liste ist der wichtigste Teil des Dokuments. Wenn eine Implementierungsent
 15. **Zwei Räume.** Arbeitsfläche = Werkzeug (Seitenleiste, Karten, Teal-Aktionen). Managementsicht = Dokument (eine Spalte 720 px, Fraunces, Haarlinien, keine Seitenleiste, kaum Farbe). Dazwischen die Schwelle (ein Klick, benannt, datiert). Rückweg ist ein Wort in der Kopfzeile.
 16. **Begriff „Maskieren“.** Der Vorgang heißt im UI Maskieren (Knopf „Maskiert senden“, Modus „Maskieren“, Meta „3 Stellen maskiert“). Im Nachweis und Briefing darf zusätzlich der DSGVO-Begriff „pseudonymisiert“ stehen; „Schwärzen“, „anonymisieren“ und „REDACTED“ kommen nicht vor. EN: redact / Send redacted.
 17. **Blockieren ist die Ausnahme, Maskieren die Regel.** Preise & Margen wird maskiert, nicht blockiert: die Preisfrage geht mit ⟨Marge⟩ raus, die Antwort rechnet mit dem Platzhalter, und lokal steht wieder „34 %“. Blockieren nur für Bereiche, in denen ein Platzhalter dem Modell nichts nützt (Zugangsdaten).
-18. **Keine echten Firmennamen** in Demo-Daten, Beispielen, Platzhaltertexten. Erfundene Mandanten (Nordwerk Systemtechnik GmbH, Brechtmann GmbH, Haltmayer & Söhne) sind in Ordnung. Der Anbieter heißt „EU-gehosteter Endpunkt“.
+18. **Das Schutzprofil ändert sich nie von selbst.** Es ist ein gelenktes Dokument mit Version, Datum, Freigebender, Grundlage und Prüfsumme. Jede Änderung läuft Review-Vorschlag → Änderungsantrag → Freigabe → neue Version; Ablehnungen werden gleichwertig protokolliert. Kundensprache: Schutzprofil, Review-Vorschlag, Änderungsantrag. Nie „das Modell schlägt vor“, nie „Graph“.
+19. **Einrichtung ist ein Modus des Management-Raums**, kein dritter Kontext: Dokumentbreite 720, Fraunces, Haarlinien, aber ohne Navigation — stattdessen Drei-Schritt-Leiste (Lesung · Rückfragen · Freigabe) und laufende Uhr. Budget 20 Minuten. Die Lesung läuft in Durchgängen und endet, wenn ein Durchgang nichts hinzufügt; jeder Durchgang ist eine protokollierte Zeile, kein Spinner.
+20. **Rückfragen zitieren die Richtlinie.** 5–8 Fragen, jede aus einer Stelle mit zwei Lesarten, mit Abschnitt/Seite, Zitat, vorgeschlagener Lesart und „Anders“. Die Antwort steht als Begründung im Profil. „Später entscheiden“ = strengere Lesart vorläufig, Frage geht in den ersten Review.
+21. **Briefing und Review sind vor dem Lesen unterscheidbar.** Briefing: Fraunces-Satz, Prosa, 720, kein Ausgang. Review: Inter-Tight-600-Sachtitel mit Version, Band „Entscheidung erforderlich · n Vorschläge“, nummerierte Posten mit Diff (− rot / + teal) und Wahl, 880, Aktionsleiste unten. Ein Review ohne Vorschlag hat kein Band und keine Leiste, listet aber alle fünf Prüfkategorien mit Zahlen.
+22. **Der ruhende Bereich trägt beide Lesarten** (niemand spricht darüber / Erkennung greift nicht) und schlägt keinen Diff vor, sondern eine Wahl.
+23. **Keine echten Firmennamen** in Demo-Daten, Beispielen, Platzhaltertexten. Erfundene Mandanten (Nordwerk Systemtechnik GmbH, Brechtmann GmbH, Haltmayer & Söhne) sind in Ordnung. Der Anbieter heißt „EU-gehosteter Endpunkt“.
 
 ---
 
@@ -263,6 +268,81 @@ Schlüssel in `snake_case`, für Sprachdateien. Platzhalter im Draht (⟨Kundenn
 | `setup.waiting` | wartet auf Schritt {k} | waiting for step {k} |
 | `setup.no_forwarding` | Ohne bestätigte Bereiche wird kein Prompt weitergeleitet. | Without confirmed areas, no prompt is forwarded. |
 
+### Einrichtung · Konvergenz
+| `setup.step_read` | Lesung | Reading |
+|---|---|---|
+| `setup.step_questions` | Rückfragen | Questions |
+| `setup.step_release` | Freigabe | Release |
+| `setup.started` | Einrichtung · {time} begonnen · {min} min | Setup · started {time} · {min} min |
+| `setup.reading_title` | Die Richtlinie wird gelesen. | The policy is being read. |
+| `setup.reading_body` | Mehrmals, bis ein Durchgang nichts Neues mehr findet. Das dauert einige Minuten und ist der Grund, warum das Profil danach trägt. | Several times, until a pass finds nothing new. This takes a few minutes and is why the profile holds afterwards. |
+| `setup.pass` | Durchgang {n} | Pass {n} |
+| `setup.pass_running` | läuft | running |
+| `setup.pass_nothing_new` | nichts Neues · Lesung abgeschlossen | nothing new · reading complete |
+| `setup.converged_title` | {n} Durchgänge. Der letzte hat nichts hinzugefügt. | {n} passes. The last one added nothing. |
+| `setup.two_readings` | Stellen mit zwei Lesarten | passages with two readings |
+| `setup.to_questions` | Zu den {n} Rückfragen | To the {n} questions |
+| `setup.question_of` | Rückfrage {k} von {n} · {area} | Question {k} of {n} · {area} |
+| `setup.our_reading` | Unsere Lesart · bitte bestätigen oder korrigieren | Our reading · please confirm or correct |
+| `setup.proposed` | vorgeschlagen | proposed |
+| `setup.other` | Anders — ich beschreibe es | Other — I will describe it |
+| `setup.decide_later` | Später entscheiden | Decide later |
+| `setup.answer_recorded` | Ihre Antwort steht im Profil unter „Begründung“, mit Zitat. | Your answer is recorded in the profile under “Justification”, with the quote. |
+| `setup.release_title` | Das ist Ihr Modell davon, was in diesem Haus geschützt ist. | This is your model of what is protected in this company. |
+| `setup.release_body` | Mit der Freigabe wird es zur Grundlage jeder Prüfung. Es ändert sich danach nicht von selbst: jede Änderung ist ein Änderungsantrag gegen diese Version, mit Begründung und Freigabe. | On release it becomes the basis of every inspection. It does not change on its own afterwards: every change is a change request against this version, with justification and approval. |
+| `setup.release_statement` | Ich habe die {n} Bereiche und ihre Modi geprüft. Mit der Freigabe werden sie als Schutzprofil Version 1.0 Grundlage aller Prüfungen in dieser Umgebung. | I have reviewed the {n} areas and their modes. On release they become Protection Profile version 1.0, the basis of all inspections in this environment. |
+| `setup.release_action` | Als Version 1.0 freigeben | Release as version 1.0 |
+
+### Schutzprofil
+| `profile.kicker` | Gelenktes Dokument · Schutzprofil | Controlled document · Protection profile |
+|---|---|---|
+| `profile.title` | Schutzprofil Version {v} | Protection profile version {v} |
+| `profile.valid_since` | Gültig seit | Valid since |
+| `profile.approved_by` | Freigegeben von | Approved by |
+| `profile.reason` | Anlass | Reason |
+| `profile.basis` | Grundlage | Basis |
+| `profile.checksum` | Prüfsumme | Checksum |
+| `profile.next_review` | Nächster Review | Next review |
+| `profile.request_change` | Änderungsantrag stellen | Submit change request |
+| `profile.history` | Versionsgeschichte | Version history |
+| `profile.new_in` | neu in v{v} | new in v{v} |
+| `profile.footer` | Dieses Dokument ändert sich nur durch einen freigegebenen Änderungsantrag. Abgelehnte Anträge bleiben in der Geschichte stehen. | This document changes only through an approved change request. Rejected requests remain in the history. |
+
+### Review-Vorschlag und Änderungsantrag
+| `review.band` | Entscheidung erforderlich | Decision required |
+|---|---|---|
+| `review.band_count` | {n} Vorschläge gegen Schutzprofil v{v} | {n} proposals against protection profile v{v} |
+| `review.no_deadline` | keine Frist · das Profil bleibt bis zur Entscheidung unverändert | no deadline · the profile stays unchanged until decided |
+| `review.title` | Vorschläge zur Änderung des Schutzprofils, Zeitraum {range} | Proposed changes to the protection profile, period {range} |
+| `review.type_synonym` | Kurzform ergänzen | Add short form |
+| `review.type_gap` | Abdeckungslücke | Coverage gap |
+| `review.type_dormant` | Ruhender Bereich | Dormant area |
+| `review.type_mode` | Modus passt nicht | Mode mismatch |
+| `review.type_new` | Neue Geschäftstätigkeit | New business activity |
+| `review.accept` | Annehmen | Accept |
+| `review.reject` | Ablehnen, mit Begründung | Reject, with reason |
+| `review.change_mode_first` | Modus vor Annahme ändern | Change mode before accepting |
+| `review.dormant_a` | Niemand spricht darüber | Nobody talks about it |
+| `review.dormant_b` | Die Erkennung greift nicht | Recognition is not catching it |
+| `review.checked_no_proposal` | Geprüft, ohne Vorschlag | Checked, no proposal |
+| `review.nothing_title` | Nichts vorzuschlagen. | Nothing to propose. |
+| `review.nothing_body` | Das Profil v{v} hat die Arbeit dieser zwei Wochen abgedeckt. Keine Entscheidung nötig; nichts wird geändert. | Profile v{v} covered the work of these two weeks. No decision needed; nothing changes. |
+| `review.cadence_note` | Nach drei Reviews ohne Vorschlag wechselt der Takt von 14 Tagen auf monatlich; das wird hier angekündigt, nicht stillschweigend umgestellt. | After three reviews without a proposal the cadence moves from 14 days to monthly; this is announced here, not changed silently. |
+| `review.tally` | {a} angenommen · {r} abgelehnt · {o} offen | {a} accepted · {r} rejected · {o} open |
+| `review.create_cr` | Änderungsantrag aus {n} Posten erzeugen | Create change request from {n} items |
+| `cr.band` | Freigabe erforderlich | Approval required |
+| `cr.against` | Änderungsantrag {id} gegen Schutzprofil v{v} | Change request {id} against protection profile v{v} |
+| `cr.before` | Vorher · v{v} · seit {date} | Before · v{v} · since {date} |
+| `cr.after` | Nachher · v{v} · Entwurf | After · v{v} · draft |
+| `cr.mode_unchanged` | Modus unverändert | Mode unchanged |
+| `cr.unchanged` | Unverändert: | Unchanged: |
+| `cr.full_diff` | vollständigen Vergleich v{a} → v{b} anzeigen | show full comparison v{a} → v{b} |
+| `cr.justification` | Begründung · aus dem Review übernommen, bearbeitbar | Justification · taken from the review, editable |
+| `cr.statement` | Ich gebe {id} frei. Das Schutzprofil wird zu Version {v}, gültig ab sofort für alle {n} Personen. | I approve {id}. The protection profile becomes version {v}, effective immediately for all {n} people. |
+| `cr.approve` | Freigeben · v{v} erzeugen | Approve · create v{v} |
+| `cr.later` | Später | Later |
+| `cr.both_logged` | Freigabe und Ablehnung erzeugen beide einen Protokolleintrag | Approval and rejection both create a log entry |
+
 ### Schwelle und Managementsicht
 | `threshold.kicker` | Managementsicht · Kalenderwoche {kw} | Management view · Week {kw} |
 |---|---|---|
@@ -274,6 +354,8 @@ Schlüssel in `snake_case`, für Sprachdateien. Platzhalter im Draht (⟨Kundenn
 | `mgmt.nav.briefing` | Briefing | Briefing |
 | `mgmt.nav.density` | Verdichtung | Density |
 | `mgmt.nav.false_positives` | Fehlalarme | False positives |
+| `mgmt.nav.profile` | Schutzprofil | Protection profile |
+| `mgmt.nav.review` | Review | Review |
 | `mgmt.nav.ledger` | Protokoll | Log |
 | `mgmt.nav.evidence` | Nachweis | Evidence |
 | `mgmt.to_workspace` | Zur Arbeitsfläche | To workspace |
@@ -337,6 +419,8 @@ Schlüssel in `snake_case`, für Sprachdateien. Platzhalter im Draht (⟨Kundenn
 ### Layout Managementsicht
 - Kopfzeile 16 40. Spalte max **720** (Verdichtung 880), Padding 44 40 40, Abschnitts-Gap 26, Haarlinie + Padding-top 22 zwischen Abschnitten.
 - Tabellen: Haarlinien, keine Zebra, Kopf in Caps-Mono 10, Zeilen-Padding 13 0.
+- Review-Vorschlag: Spalte max **880**, Band 12 40 auf `bg.raised` mit `line.strong` unten, Posten als Karten Radius 12 mit Grid `36px minmax(0,1fr) 220px`, Diff-Block Mono 12/1,8 auf `bg.surface` (− `red`, + `teal`), Aktionsleiste unten 14 40 auf `bg.raised`. Änderungsantrag: Vorher/Nachher zwei Spalten, Nachher-Rahmen `#3FBFB055`, ergänzte Begriffe `teal` auf `#3FBFB014`.
+- Einrichtung: Kopf 14 24 mit Uhr rechts, Drei-Schritt-Leiste Mono 10,5 mit 2-px-Teal-Unterstrich am aktiven Schritt, Durchgangs-Zeilen Grid `96px 1fr auto`, Fortschritt der Frage als sechs 2-px-Segmente.
 - Doppelte-Arbeit-Tabelle: Spalten `minmax(0,1.25fr) 150px minmax(0,1fr)`, Gap 20.
 
 ### Radien
