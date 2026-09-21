@@ -1,0 +1,10 @@
+{ "id": "US-043", "title": "review cycle (AF-609)", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "create": [
+    { "file": "core/src/features/management/review/resolveCadence.ts", "reason": "cadence decays with baseline age; override wins", "sf_id": "SF-6091" },
+    { "file": "core/src/features/management/review/detectProposals.ts", "reason": "detect proposals from business-event records (NG-23) with numeric evidence", "sf_id": "SF-6092" },
+    { "file": "core/src/features/management/review/composeReviewProposal.ts", "reason": "order by priority; apply nothing (NG-22); empty is valid", "sf_id": "SF-6093" },
+    { "file": "core/src/features/management/review/index.ts", "reason": "AF-609 runReview entry point", "sf_id": "AF-609" },
+    { "file": "core/src/features/management/review/review.test.ts", "reason": "dormant-area, mode-mismatch, new-activity, propose-nothing, cadence decay, ordering, no mutation", "sf_id": "AF-609" } ],
+  "tests_must_pass": ["core/src/features/management/review/review.test.ts"],
+  "traceability": { "epic": "EP-06", "feature": "FT-6.9", "app_functions": ["AF-609"], "sw_functions": ["SF-6091", "SF-6092", "SF-6093"] },
+  "agent_prompt": "The review cycle reads the accumulated business-event records (NG-23) plus the active Schutzprofil baseline and proposes changes with numeric evidence + period. It applies nothing — the only path to the profile is an approved Änderungsantrag (NG-22). Cadence decays with baseline age (fortnightly<90d, monthly<180d, else quarterly) unless overridden. Proposing nothing is a valid outcome. TDD." }

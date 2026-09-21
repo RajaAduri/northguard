@@ -494,6 +494,29 @@ export interface Ambiguity {
   question: string
 }
 
+// Amendment B — the review cycle (AF-609).
+export type ReviewCadence = 'fortnightly' | 'monthly' | 'quarterly'
+export type ProposalKind = 'synonym' | 'coverage-gap' | 'dormant-area' | 'mode-mismatch' | 'new-activity'
+export interface Proposal {
+  kind: ProposalKind
+  areaRef?: string
+  evidence: { metric: string; count: number; period: string }
+  businessValue: string
+  priority: number
+}
+export interface ReviewVorschlag {
+  period: string
+  cadence: ReviewCadence
+  proposals: Proposal[]
+}
+export interface ReviewContext {
+  period: string
+  fpReports?: { area: string; ruleId?: string; count: number }[] // block-area reports
+  knownPseudonyms?: string[] // entities the profile has seen before
+  unrecognisedTerms?: { term: string; count: number }[] // short forms no area recognises
+  uncoveredTopics?: { topic: string; count: number }[] // repeated topics no area covers
+}
+
 // Amendment B — the baseline (Schutzprofil configuration item, NG-22).
 export interface Baseline {
   version: string
