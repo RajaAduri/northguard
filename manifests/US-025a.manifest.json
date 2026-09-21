@@ -1,0 +1,8 @@
+{ "id": "US-025a", "title": "E7 loader reads the business-event record (NG-23)", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "modify": [
+    { "file": "recurring/types.py", "reason": "RawDoc + FeatureDoc gain features/work_topic (StructuralFeature)", "sf_id": "shared" },
+    { "file": "recurring/features/load_redacted_corpus.py", "reason": "read NG-23 features + workTopic; non-scalar feature value → PrivacyViolation", "sf_id": "SF-7011" },
+    { "file": "recurring/features/attach_pseudonyms.py", "reason": "carry features/work_topic through to FeatureDoc", "sf_id": "SF-7013" } ],
+  "tests_must_pass": ["recurring/features/test_load_redacted_corpus.py", "recurring/features/test_attach_pseudonyms.py"],
+  "traceability": { "epic": "EP-07", "feature": "FT-7.1", "app_functions": ["AF-701"], "sw_functions": ["SF-7011", "SF-7013"] },
+  "agent_prompt": "E7 reads the ONE business-event store (NG-23): the loader lifts the structural features + workTopic recorded on each request entry into RawDoc, and attach_pseudonyms carries them into FeatureDoc. Structural only — a feature value that is not a scalar (str/int/bool) is a PrivacyViolation (no original text can ride in). No person dimension (NG-21). TDD." }

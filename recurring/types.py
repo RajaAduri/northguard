@@ -15,6 +15,12 @@ class LedgerWindow:
     entries: tuple[dict, ...]
 
 
+# A structural feature from the business-event record (NG-23): a (name, value) pair
+# describing WHAT the business was doing, never text and never a person.
+FeatureValue = str | int | bool
+StructuralFeature = tuple[str, FeatureValue]
+
+
 @dataclass(frozen=True)
 class RawDoc:
     entry_id: str
@@ -24,6 +30,8 @@ class RawDoc:
     pseudonyms: tuple[str, ...]   # HMAC tokens present in this prompt
     pseudonym_areas: tuple[tuple[str, str], ...]  # (pseudonym, area) — area for resolution, never an original
     key_epoch: int
+    features: tuple[StructuralFeature, ...] = ()  # NG-23 business-event record (structural, never text)
+    work_topic: str = ""          # the dominant area of the request (NG-23) — a topic, never a person
 
 
 @dataclass(frozen=True)
@@ -36,6 +44,8 @@ class FeatureDoc:
     pseudonym_areas: tuple[tuple[str, str], ...]
     key_epoch: int
     shingles: frozenset[int]      # hashed token shingles (deterministic)
+    features: tuple[StructuralFeature, ...] = ()  # carried through from the business-event record (NG-23)
+    work_topic: str = ""
 
 
 class PrivacyViolation(Exception):

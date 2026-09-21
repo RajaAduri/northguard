@@ -33,3 +33,25 @@ def test_governance_and_ops_entries_are_skipped():
     ))
     docs = load_redacted_corpus(win)
     assert [d.entry_id for d in docs] == ["1"]
+
+
+def test_reads_business_event_features_and_work_topic_ng23():
+    e = _req("1", "Frage zu ⟨Lieferant⟩", [])
+    e["features"] = [{"name": "percentPresent", "value": True}, {"name": "priceTermInSentence", "value": False}]
+    e["workTopic"] = "lieferanten-konditionen"
+    docs = load_redacted_corpus(LedgerWindow(entries=(e,)))
+    assert docs[0].features == (("percentPresent", True), ("priceTermInSentence", False))
+    assert docs[0].work_topic == "lieferanten-konditionen"
+
+
+def test_features_default_empty_when_absent():
+    docs = load_redacted_corpus(LedgerWindow(entries=(_req("1", "x", []),)))
+    assert docs[0].features == ()
+    assert docs[0].work_topic == ""
+
+
+def test_non_structural_feature_value_raises_privacy_violation():
+    e = _req("1", "x", [])
+    e["features"] = [{"name": "smuggled", "value": {"nested": "the real prompt"}}]
+    with pytest.raises(PrivacyViolation):
+        load_redacted_corpus(LedgerWindow(entries=(e,)))
