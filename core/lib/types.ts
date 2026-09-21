@@ -391,6 +391,8 @@ export type GovKind =
   | 'export'
   | 'key-rotate'
   | 'unmask'
+  | 'baseline'
+  | 'change-request'
 
 export type LedgerKind = 'request' | 'governance' | 'ops'
 

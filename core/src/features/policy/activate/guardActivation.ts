@@ -15,8 +15,13 @@ export class ActivationBlockedError extends Error {
 
 // SF-2061 — the activation guard. There is no force path (NG-3). Order: stability,
 // then a valid area set, then every area has a mode.
-export function guardActivation(areas: Area[], stability: StabilityReport): void {
-  if (stability.stable !== true) throw new ActivationBlockedError('unstable')
+//
+// Amendment B (§9 F1): stability gates only the INITIAL baseline (requireStability=true,
+// the onboarding convergence must have converged). A later baseline from an approved
+// Änderungsantrag does not re-extract, so it carries no stability check — the caller
+// passes requireStability=false. The measurement is kept, not deleted (NG-22).
+export function guardActivation(areas: Area[], stability: StabilityReport, requireStability = true): void {
+  if (requireStability && stability.stable !== true) throw new ActivationBlockedError('unstable')
   if (!validateAreaSet(areas).valid) throw new ActivationBlockedError('invalid-areas')
   if (!validateModeConfig(areas).valid) throw new ActivationBlockedError('unassigned-mode')
 }
