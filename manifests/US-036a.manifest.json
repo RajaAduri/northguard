@@ -1,0 +1,6 @@
+{ "id": "US-036a", "title": "E5 strings: Einrichtung / Schutzprofil / Review-Vorschlag / Änderungsantrag", "status": "planned", "author": "dev-blueprint (Amendment B build)",
+  "modify": [
+    { "file": "web/src/i18n/catalogue.ts", "reason": "add the §9 B6 setup/profile/review/cr string namespaces (Handoff §3) + the self-approval annotation, DE+EN parity", "sf_id": "SF-5051" } ],
+  "tests_must_pass": ["web/src/i18n/i18n.test.ts"],
+  "traceability": { "epic": "EP-05", "feature": "FT-5.5", "app_functions": ["AF-505"], "sw_functions": ["SF-5051"] },
+  "agent_prompt": "Add the Amendment B §9 B6 strings to the web i18n catalogue from Handoff §3: setup.* (onboarding + convergence), profile.* (Schutzprofil, controlled document), review.* (Review-Vorschlag), cr.* (Änderungsantrag), plus the mgmt/threshold nav additions. Customer language: Schutzprofil, Review-Vorschlag, Änderungsantrag — never 'the model suggests', never 'graph'. Include the self-approval version-history annotation ('beantragt und freigegeben von derselben Person') and the same-session / four-eyes messages that surface the encoded decision. DE + EN at parity (NG-16) — the parity test asserts it." }
