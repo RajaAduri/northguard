@@ -1,7 +1,18 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4 → 5 → 6, plus Amendment B (spec only).
-**Outcome:** **Sprints 1–6 COMPLETE.** All 30 core stories + US-031 (unmask) + US-032…039 (E5). Amendment B (baselined Schutzprofil) applied as a spec amendment — NG-22/NG-23, E2/E4/E6/E7 spec changes, US-040…044 spec'd, **not built** (four flagged contradictions F1–F4 recorded for its build). Sprint 6 built the E5 governed chat surface (React SPA) over the solved core. **~39 stories, 301 core vitest + 52 web vitest + 55 pytest green, tsc strict clean across core + web.** Commits through `268c783`.
+**Run:** continuous build from the amended specs, Sprints 1 → 2 → 3 → 4 → 5 → 6 → 7 (Amendment B), plus Amendment B applied as a spec amendment before its build.
+**Outcome:** **Sprints 1–7 COMPLETE.** All 30 core stories + US-031 (unmask) + US-032…039 (E5) + Amendment B (US-040…044 and the re-opens US-014a/022a/025a/036a). Amendment B (baselined Schutzprofil) was first applied as a spec amendment (NG-22/NG-23, E2/E4/E6/E7), then **built in Sprint 7**: the four recorded contradictions F1–F4 are resolved, the self-approval decision is encoded with its same-session-rejection test, and the E5 strings landed. **~44 stories, 333 core vitest + 52 web vitest + 59 pytest green, tsc strict clean across core + web.** Commits through the US-036a commit on `main`.
+
+## Sprint 7 — Amendment B build (this run)
+- **F1** — `guardActivation(areas, stability, requireStability=true)`: the initial baseline requires convergence; a later Änderungsantrag baseline passes `requireStability=false` (no stability check, the measurement is kept). US-042.
+- **F2** — NG-6 reworded to "one convergence run per policy version" (multiple onboarding passes; a baselined version is never re-extracted). US-014a.
+- **F3** — `previewRuleNarrowing` computes a **real** before/after over the stored NG-23 structural features when the narrowing is feature-expressible (`measured:true`); otherwise `measured:false` with a stated reason. The figure is never fabricated. US-022a.
+- **F4** — the Schutzprofil is a **baseline-versioned** configuration item (AF-209): version/date/approver/basis/checksum, previous baseline stays readable (NG-22). US-042.
+- **Onboarding** — multi-pass convergence (AF-207, US-040) + clarifying questions that cite the policy (AF-208, US-041).
+- **Review cycle** (AF-609, US-043) — reads the business-event records + baseline, proposes changes with numeric evidence, **applies nothing**; cadence decays with baseline age; proposing nothing is valid.
+- **Änderungsantrag** (AF-610, US-044) — the only path to a new baseline. **Decision encoded:** same person as requester and approver is allowed by default and recorded ("beantragt und freigegeben von derselben Person"); a self-approval may not occur in the **same session** as the request (explicit test); four-eyes is a per-tenant setting.
+- **E7 one store** (US-025a) — the Python loader reads NG-23 features + workTopic off the ledger; a non-scalar feature value raises `PrivacyViolation`; no person dimension (NG-21).
+- **E5 strings** (US-036a) — Einrichtung / Schutzprofil / Review-Vorschlag / Änderungsantrag catalogue namespaces, DE+EN parity, incl. the self-approval + separated-in-time + four-eyes copy.
 
 *(Historical note: the tables below track the core build through Sprint 5; Sprint 6 (E5) and Amendment B are summarised in this header and in SESSION-LOG.)* One stop condition was hit early (NG-18 corpus contradiction, US-010), reported, resolved by the owner (dropped the bare "Nordwerk" form from ENT-004), and the run resumed. Full per-story trace in `SESSION-LOG.md`.
 
@@ -55,8 +66,8 @@ NG-1 (wire isolation, §8 10-turn + per-turn), NG-2/NG-10 (pseudonyms + no raw t
 - Governance-write signatures gained a `key` param (NG-19 postdates the pre-amendment spec).
 
 ## What is next
-- **Sprints 1–6 — DONE.** Core (E2/E3/E4/E6/E7) + E5 governed chat surface all implemented and green.
-- **Amendment B build (Sprint 7, spec'd not built)** — US-040…044 + the re-opens (US-014a/022a/025a/036a); resolve flags F1–F4 (guardActivation stability→onboarding baseline; NG-6 wording; previewRuleNarrowing real before/after; publishActivePolicy→AF-209 versioned baseline). Manifests: sprint-7, US-042 (rest generate on demand).
+- **Sprints 1–7 — DONE.** Core (E2/E3/E4/E6/E7) + E5 governed chat surface + Amendment B (baselined Schutzprofil, review cycle, Änderungsantrag) all implemented and green. Flags F1–F4 resolved; self-approval decision encoded + tested.
+- **Integration sprint (next) — STOPPED HERE at the sprint boundary.** It needs local services running first (kg-gen sidecar, the pinned embedder, the localhost bridge), which are not configured in this workspace. Do not start it until those are up.
 - **E1 browser extension** — decompose now that E5 has shipped (block-and-warn coverage surface, DECISION-REGISTER §8 A1).
 - **Integration / deployment (E8-class, flagged not blocking):**
   - **Bridge B4** (Python E7 → TS briefing): wire `synthesize_recurring_work` output into `composeWeeklyBriefing` over the localhost JSON interface, to populate real briefing themes.
