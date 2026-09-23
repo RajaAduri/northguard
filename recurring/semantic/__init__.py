@@ -10,6 +10,7 @@ from .record_model_provenance import record_model_provenance
 
 __all__ = [
     "cluster_semantic",
+    "default_embedder",
     "embed_documents",
     "cosine_within_threshold",
     "connected_components_cluster",
@@ -17,6 +18,12 @@ __all__ = [
     "PinnedEmbedder",
     "E5MultilingualEmbedder",
 ]
+
+
+def default_embedder() -> PinnedEmbedder:
+    """The production embedder: the pinned local e5 model (NG-15). Tests inject a
+    deterministic fake instead; real runs (step-10 clustering, the B4 bridge) call this."""
+    return E5MultilingualEmbedder()
 
 
 def cluster_semantic(

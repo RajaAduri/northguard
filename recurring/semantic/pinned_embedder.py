@@ -13,6 +13,22 @@ from .. import config
 from ..types import Vector
 
 
+def _resolve_cached_commit(repo_id: str) -> str | None:
+    """The commit hash of the locally cached snapshot (so 'main' resolves to an exact
+    revision for the audit record). None if it cannot be determined."""
+    try:
+        from huggingface_hub import scan_cache_dir
+
+        for repo in scan_cache_dir().repos:
+            if repo.repo_id == repo_id:
+                revs = sorted(repo.revisions, key=lambda r: r.last_modified or 0, reverse=True)
+                if revs:
+                    return revs[0].commit_hash[:12]
+    except Exception:  # noqa: BLE001 - provenance resolution is best-effort
+        return None
+    return None
+
+
 @runtime_checkable
 class PinnedEmbedder(Protocol):
     model_version: str
@@ -37,7 +53,10 @@ class E5MultilingualEmbedder:
                 "semantic clustering can run against real data."
             ) from exc
         self._model = SentenceTransformer(config.EMBEDDING_MODEL, revision=config.EMBEDDING_MODEL_REVISION)
-        self.model_version = config.MODEL_VERSION
+        # NG-15: record the RESOLVED commit the loader actually fetched, not the moving
+        # 'main' pointer, so a re-run is reproducible and the audit record is exact.
+        self.resolved_revision = _resolve_cached_commit(config.EMBEDDING_MODEL) or config.EMBEDDING_MODEL_REVISION
+        self.model_version = f"{config.EMBEDDING_MODEL}@{self.resolved_revision}"
 
     def embed(self, text: str) -> Vector:
         vec = self._model.encode(f"passage: {text}", normalize_embeddings=True, show_progress_bar=False)
