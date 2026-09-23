@@ -42,6 +42,15 @@ from ng_config import cfg
 MODEL = os.getenv("KG_MODEL", f"openai/{cfg.llm_model}")
 SI_THRESHOLD = float(os.getenv("KG_SI_THRESHOLD", "0.80"))
 STABILITY_RUNS = int(os.getenv("KG_STABILITY_RUNS", "5"))
+# A small local model (e.g. gemma3:4b) cannot emit reliable structured output over a
+# whole multi-page policy — dspy raises AdapterParseError. Chunking keeps each LLM call
+# small enough to parse. 0/empty disables chunking (large hosted models don't need it).
+CHUNK_SIZE = int(os.getenv("KG_CHUNK_SIZE", "1200"))
+# kg-gen's clustering step validates relations against a model-generated literal enum;
+# a small local model returns off-list tokens, triggering a dspy retry storm that never
+# converges. It is optional post-processing, so it is OFF by default here and ON for
+# large hosted models (KG_CLUSTER=1). Extraction quality is otherwise unaffected.
+CLUSTER = os.getenv("KG_CLUSTER", "0") == "1"
 CACHE_DIR = Path(os.getenv("KG_CACHE_DIR", ".kg-cache"))
 CACHE_DIR.mkdir(exist_ok=True)
 
@@ -99,7 +108,10 @@ def stability_index(graphs: list[dict]) -> float:
 
 
 def extract(policy: str, context: str) -> dict:
-    graph = kg.generate(input_data=policy, context=context, cluster=True)
+    kwargs: dict[str, Any] = {"input_data": policy, "context": context, "cluster": CLUSTER}
+    if CHUNK_SIZE > 0:
+        kwargs["chunk_size"] = CHUNK_SIZE
+    graph = kg.generate(**kwargs)
     return to_dict(graph)
 
 
