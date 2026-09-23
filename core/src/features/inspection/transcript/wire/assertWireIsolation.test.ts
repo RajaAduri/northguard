@@ -14,6 +14,16 @@ describe('SF-3062 assertWireIsolation', () => {
     const wire: WireMessage[] = [{ role: 'user', content: 'Frage zu ⟨Lieferant⟩' }]
     expect(() => assertWireIsolation(wire, ['Brechtmann GmbH'])).not.toThrow()
   })
+  it('2b. a placeholder LABEL that coincides with a protected original word is not a leak', () => {
+    // "Marge 30 %": the word "Marge" was redacted (→ ⟨Preis⟩) and the % → ⟨Marge⟩. The
+    // label ⟨Marge⟩ shares the word "Marge" with a protected original, but no value leaked.
+    const wire: WireMessage[] = [{ role: 'user', content: 'Angebot erstellen, ⟨Preis⟩ ⟨Marge⟩.' }]
+    expect(() => assertWireIsolation(wire, ['Marge', '30 %'])).not.toThrow()
+  })
+  it('2c. but the same word as BARE text outside a placeholder still throws', () => {
+    const wire: WireMessage[] = [{ role: 'user', content: 'Die Marge ist ⟨Marge⟩.' }]
+    expect(() => assertWireIsolation(wire, ['Marge'])).toThrow(WireLeakError)
+  })
 
   // §8 acceptance test — the load-bearing correctness check.
   it('3. a 10-turn conversation with redactions leaks NO original in ANY outbound message', () => {
