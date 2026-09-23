@@ -34,14 +34,19 @@ from pydantic import BaseModel
 
 from kg_gen import KGGen
 
-MODEL = os.getenv("KG_MODEL", "anthropic/claude-sonnet-4-6")
+from ng_config import cfg
+
+# Point kg-gen at the local OpenAI-compatible endpoint (litellm 'openai/<model>' +
+# api_base). KG_MODEL can override the model string; the endpoint + key come from the
+# single config surface. The key is passed to litellm, never logged.
+MODEL = os.getenv("KG_MODEL", f"openai/{cfg.llm_model}")
 SI_THRESHOLD = float(os.getenv("KG_SI_THRESHOLD", "0.80"))
 STABILITY_RUNS = int(os.getenv("KG_STABILITY_RUNS", "5"))
 CACHE_DIR = Path(os.getenv("KG_CACHE_DIR", ".kg-cache"))
 CACHE_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="NorthGuard kg-gen sidecar")
-kg = KGGen(model=MODEL, api_key=os.getenv("ANTHROPIC_API_KEY"))
+kg = KGGen(model=MODEL, api_key=cfg.llm_key, api_base=cfg.llm_url)
 
 
 class PolicyIn(BaseModel):
