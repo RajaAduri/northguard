@@ -43,9 +43,11 @@ async function main() {
   // A prompt with a conclusive rule hit (percent + price term) → rules-only, no model.
   const rulesPrompt = 'Unsere Zielmarge liegt bei 34 % und der Rabatt sollte 12 % nicht überschreiten.'
 
+  // NB (post NG-24 fix): the backstop runs on EVERY prompt now, so both prompts incur a
+  // model call. The two rows differ by how much the model generates, not by whether it runs.
   const modelHits = runRulesLayer({ prompt: modelPrompt, policy, locale: 'de' }).length
   const rulesHits = runRulesLayer({ prompt: rulesPrompt, policy, locale: 'de' }).length
-  console.log(`rule hits — modelPrompt: ${modelHits} (want 0), rulesPrompt: ${rulesHits} (want >0)`)
+  console.log(`rule hits — shortPrompt: ${modelHits}, marginPrompt: ${rulesHits} (both invoke the backstop)`)
 
   // Warm the model once (cold load excluded from the figures, noted separately).
   const wt0 = Date.now()
@@ -68,8 +70,8 @@ async function main() {
 
   console.log('\nRESULT ' + JSON.stringify({
     model: cfg_model(),
-    modelPath: stats('model (backstop invoked)', modelMs),
-    rulesPath: stats('rules-only (no model)', rulesMs),
+    shortPromptEmptyFindings: stats('backstop on, short prompt, no findings', modelMs),
+    findingInducingPrompt: stats('backstop on, prompt that makes the model generate more', rulesMs),
     nfr02BudgetMs: 800,
   }))
 }
