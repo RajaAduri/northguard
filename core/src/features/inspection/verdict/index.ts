@@ -81,8 +81,14 @@ export async function assembleVerdict(
 ): Promise<InspectionVerdict> {
   const t0 = Date.now()
   const ruleHits = runRulesLayer({ prompt: req.draftPrompt, policy, locale: req.locale })
-  const backstop = await runBackstop({ prompt: req.draftPrompt, ruleHits, policy })
-  const decision = assembleDecision({ ruleHits, llmFindings: backstop.findings, policy, coverage: backstop.coverage })
+  const backstop = await runBackstop({ prompt: req.draftPrompt, policy })
+  // A rule span is precision-first and already covers its text; drop any model finding
+  // that overlaps one (even in a different area) so the transcript engine never sees two
+  // spans over the same characters. The model's own value spans keep the rest.
+  const overlapsRule = (f: { offset: number; length: number }): boolean =>
+    ruleHits.some((h) => f.offset < h.offset + h.length && h.offset < f.offset + f.length)
+  const llmFindings = backstop.findings.filter((f) => !overlapsRule(f))
+  const decision = assembleDecision({ ruleHits, llmFindings, policy, coverage: backstop.coverage })
 
   const pseudonymSpans = attachPseudonymToSpan(decision.spans, req.draftPrompt, ctx.key)
   const { wireText, displayPlaceholders, spans } = buildWireText(req.draftPrompt, pseudonymSpans)

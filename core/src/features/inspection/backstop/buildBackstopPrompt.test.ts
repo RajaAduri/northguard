@@ -21,9 +21,10 @@ describe('SF-3023 buildBackstopPrompt', () => {
   it('2. the user content wraps the prompt', () => {
     expect(buildBackstopPrompt('geheime Marge', policy).user).toContain('geheime Marge')
   })
-  it('3. it asks for JSON only (touched areas + spans + reason)', () => {
+  it('3. it asks for JSON only, keyed by the exact value substring (not offsets)', () => {
     const m = buildBackstopPrompt('x', policy)
     expect(m.system.toLowerCase()).toContain('json')
-    expect(m.system.toLowerCase()).toContain('span')
+    expect(m.system.toLowerCase()).toContain('value')
+    expect(m.system).toContain('kundendaten') // area ids are given so the model returns valid ids
   })
 })

@@ -1,17 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { shouldInvokeBackstop } from './shouldInvokeBackstop'
-import type { RuleHit } from '../../../../lib/types'
+import type { ActivePolicy } from '../../../../lib/types'
 
-const hit: RuleHit = { area: 'kundendaten', ruleId: 'RULE-EMAIL', offset: 0, length: 5, value: 'a@b.c' }
+const policy = (areas: ActivePolicy['areas']): ActivePolicy => ({ policyVersion: 'v1', areas, activatedAt: 't', activatedBy: 'lead' })
+const withAreas = policy([{ id: 'kundendaten', label: 'Kundendaten', mode: 'redact' }])
+const noAreas = policy([])
 
-describe('SF-3022 shouldInvokeBackstop', () => {
-  it('1. conclusive rule hits → false (already decided)', () => {
-    expect(shouldInvokeBackstop('irgendein Text mit einer E-Mail', [hit])).toBe(false)
+describe('SF-3022 shouldInvokeBackstop (policy-based, NG-24)', () => {
+  it('1. a policy with a model-relevant area → true, regardless of the prompt or rule hits', () => {
+    expect(shouldInvokeBackstop(withAreas)).toBe(true)
   })
-  it('2. no hits but a substantive prompt → true', () => {
-    expect(shouldInvokeBackstop('Können wir die Konditionen mit dem Zulieferer neu verhandeln?', [])).toBe(true)
+  it('2. a policy with no areas → false (no model layer to run)', () => {
+    expect(shouldInvokeBackstop(noAreas)).toBe(false)
   })
-  it('3. a trivial clean prompt → false (latency budget)', () => {
-    expect(shouldInvokeBackstop('danke', [])).toBe(false)
+  it('3. it does NOT consult rule hits or prompt length — there is no skip heuristic', () => {
+    // Same policy → same answer whether the caller has rule hits or a one-word prompt.
+    expect(shouldInvokeBackstop(withAreas)).toBe(true)
   })
 })

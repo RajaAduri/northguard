@@ -1,22 +1,19 @@
-import type { LlmFinding } from '../../../../lib/types'
-
-interface RawFinding {
+// A raw model finding: the area id + the EXACT substring the model flagged. LLMs cannot
+// produce reliable character offsets, so the model returns the text; anchorBackstopFindings
+// locates it in the prompt (SF-3025b). `offset`/`length` from the model, if any, are ignored.
+export interface RawLlmFinding {
   area: string
-  offset: number
-  length: number
   value: string
-  confidence?: number
 }
 
-// SF-3025 — parse the model completion (fenced or plain JSON). Malformed → throws,
-// which the caller treats as inconclusive and records reduced coverage (NG-4).
-export function parseBackstopFindings(raw: string): LlmFinding[] {
+// SF-3025 — parse the model completion (fenced or plain JSON). Malformed → throws, which
+// the caller treats as inconclusive and records reduced coverage (NG-4/NG-24). Entries
+// without a non-empty area + value are dropped.
+export function parseBackstopFindings(raw: string): RawLlmFinding[] {
   const stripped = raw.replace(/```(?:json)?/gi, '').trim()
-  const parsed = JSON.parse(stripped) as { findings?: RawFinding[] }
+  const parsed = JSON.parse(stripped) as { findings?: { area?: unknown; value?: unknown }[] }
   const findings = parsed.findings ?? []
-  return findings.map((f) => {
-    const out: LlmFinding = { area: f.area, offset: f.offset, length: f.length, value: f.value, layer: 'llm' }
-    if (typeof f.confidence === 'number') out.confidence = f.confidence
-    return out
-  })
+  return findings
+    .filter((f): f is { area: string; value: string } => typeof f.area === 'string' && typeof f.value === 'string' && f.value.length > 0)
+    .map((f) => ({ area: f.area, value: f.value }))
 }
