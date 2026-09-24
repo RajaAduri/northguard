@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-24T07:44:37.782236+00:00",
+  "generated": "2026-09-24T18:49:33.735328+00:00",
   "algorithm": "sha256",
   "files": {
     ".env": "25c5b3c62bab18bd2c35ac6eb6ab8f57cfdc635e25817b8b2654ef28e186cc12",
@@ -348,7 +348,7 @@
     "manifests\\US-042.manifest.json": "a7291c38779cace61af9766aa122935fd55e1c60bbcdec3253d21cec0d51c1e5",
     "manifests\\US-043.manifest.json": "fb0abaa03f1ca7cd5c37eb221f4d9c24e39f3c98328713afbec8fba223928a15",
     "manifests\\US-044.manifest.json": "aa400655cb28b34472a92ab35452e8dcb8781fc665929850cadebfe6b6bbf9a9",
-    "manifests\\checksums.json": "58d27ac170f3e626c46796b7d15d1bf43e332b39faa3b3047bb5dbc7e693aed0",
+    "manifests\\checksums.json": "883f3460829feb972ba463a790bad296ac837ed4ec83ca299c1efdff6cbc13e1",
     "manifests\\sprint-1.manifest.json": "948f88ad1aa1998078aaf753596469d2d2f0b6cbfd8959f03cffbf8324230308",
     "manifests\\sprint-2.manifest.json": "74730878dc95617ede416e727942ba0084e83fa48e71adaa4b1eaf57f7360625",
     "manifests\\sprint-3.manifest.json": "a85a0b81fb829e60051329b9f31e47f81b979c88468775e46f880bb825603359",
@@ -425,6 +425,7 @@
     "scripts\\smoke_test.py": "a9babba3223eb58c402e8ac620b09d1c3b73e8fb065aee6c57b91cf1f72fae7b",
     "scripts\\stability_experiment.py": "49203e7c8800ec0e4c1487edd93bdd98161148f1f525516d1e842bad28c37824",
     "scripts\\verify_session.py": "e91e677c552dcae7f89137ea1181084c7777e8972a663d879f9e18f58ff374b8",
+    "SESSION-NOTES\\2026-09-24.md": "f5a59edbe336ce895697d015ee3ffea2dd432ca82baa59bf8629857aac66330a",
     "specs\\EP-01-gateway-adapter\\EPIC.md": "2614e450e84fe7bed0f275adce9c9f80cc8b427b795b88e264273c7f0f983633",
     "specs\\EP-02-policy-intake\\APP-FUNCTIONS.md": "81388037dcac361b7ddc83602e07ca07b6cd8c3fbf6a4680ba33638e0772666a",
     "specs\\EP-02-policy-intake\\EPIC.md": "35f9b9b0290235b993da83cbb6a08a7bb6fb5f4f86c08f5052b23a756a321368",
@@ -510,7 +511,7 @@
     "web\\src\\rooms\\index.ts": "2b6f54086b9bbc599e2671445ed3436137ffd6e06c8aa201ffaaa82e3bdd2c0d",
     "web\\src\\rooms\\rooms.test.ts": "275bacc0ee280f55aa10e34c833fe145599b0cd2ebb2772769263ea00872e4ae"
   },
-  "total_files": 507,
+  "total_files": 508,
   "skipped_files": 0,
   "excluded_patterns": [
     "**/node_modules/**",
