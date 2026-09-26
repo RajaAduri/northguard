@@ -59,6 +59,10 @@ describe('SF-5012 deriveComposerView', () => {
     expect(deriveComposerView('clean', verdict(0), true).areaMenuLabelKey).toBe('header.rules_only')
     expect(deriveComposerView('clean', verdict(0), true).degraded).toBe(true)
   })
+  it('a clean result under degraded coverage names the reduced basis (NG-2/NG-24)', () => {
+    expect(deriveComposerView('clean', verdict(0)).statusKey).toBe('composer.status_clean')
+    expect(deriveComposerView('clean', verdict(0), true).statusKey).toBe('composer.status_clean_degraded')
+  })
 })
 
 describe('SF-5013 inspectionDebounce', () => {

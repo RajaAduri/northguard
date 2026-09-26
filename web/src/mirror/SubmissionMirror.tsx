@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import type { InspectionVerdict, Locale } from '../types'
 import { buildMirrorModel } from './buildMirrorModel'
+import { ruleDisplayName } from './ruleDisplayName'
 import { Msg, Content } from '../i18n'
 import { color, radius, text, chip, monoLink } from '../design'
 
@@ -57,7 +58,7 @@ export function SubmissionMirror({ verdict, locale }: SubmissionMirrorProps): JS
         {model.rows.map((r, i) => (
           <li key={i} data-area={r.area} data-placeholder={r.placeholder} style={{ display: 'grid', gridTemplateColumns: '132px auto 1fr auto', gap: 10, alignItems: 'baseline' }}>
             <Content style={chip()}>{r.placeholder}</Content>
-            <Msg k={r.layerLabelKey} locale={locale} p={{ name: r.ruleId ?? '' }} style={{ ...text.monoAttribution, color: color.muted }} />
+            <Msg k={r.layerLabelKey} locale={locale} p={{ name: ruleDisplayName(r.ruleId, locale) }} style={{ ...text.monoAttribution, color: color.muted }} />
             <Content style={{ ...text.monoAttribution, color: color.muted }}>{r.area}</Content>
             <button type="button" style={monoLink}>
               <Msg k={r.reportActionKey} locale={locale} />

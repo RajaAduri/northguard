@@ -1,13 +1,15 @@
 import type { JSX } from 'react'
 import type { InspectionVerdict, Locale } from '../types'
 import { buildBlockModel } from './buildBlockModel'
-import { Msg, Content, formatMessage } from '../i18n'
+import { ruleDisplayName } from './ruleDisplayName'
+import { Msg } from '../i18n'
 import { color, radius, text, secondaryButton, monoLink } from '../design'
 
 // SF-5025 — the blocked variant of the mirror (Handoff §1.1 `blocked`). No submission is
-// offered; the panel quotes the detected spans with their layer, reassures that only
-// time/area/layer reach the ledger (not the text), and states there is NO per-prompt
-// approval (rule 7). The way out is remove-and-rephrase or report — both here.
+// offered. The body names the AREA that fired (it does not echo the detected value — for
+// credentials that would defeat the block) and states there is NO per-prompt approval
+// (rule 7). Each detected span is attributed by its layer (Regel „…“ / KI-Prüfung). The way
+// out is remove-and-rephrase or report — both here.
 export interface BlockPanelProps {
   verdict: InspectionVerdict
   locale: Locale
@@ -17,7 +19,6 @@ export interface BlockPanelProps {
 export function BlockPanel({ verdict, locale }: BlockPanelProps): JSX.Element {
   const model = buildBlockModel(verdict)
   const areas = model.areas.join(', ')
-  const spans = model.detected.map((d) => `„${d.value}“`).join(` ${formatMessage('block.body_join', locale)} `)
 
   return (
     <section
@@ -36,13 +37,12 @@ export function BlockPanel({ verdict, locale }: BlockPanelProps): JSX.Element {
         <Msg k="block.summary" locale={locale} p={{ area: areas }} style={{ ...text.monoMeta, color: color.muted }} />
       </header>
 
-      <Msg k="block.body" locale={locale} p={{ spans }} as="p" style={{ ...text.explain, color: color.ink, margin: '0 0 8px' }} />
+      <Msg k="block.body" locale={locale} p={{ area: areas }} as="p" style={{ ...text.explain, color: color.ink, margin: '0 0 8px' }} />
 
-      <ul style={{ listStyle: 'none', margin: '0 0 8px', padding: 0 }}>
+      <ul style={{ listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'grid', gap: 4 }}>
         {model.detected.map((d, i) => (
-          <li key={i} style={{ display: 'flex', gap: 8, ...text.monoAttribution, color: color.muted }}>
-            <Content style={{ color: color.red }}>„{d.value}“</Content>
-            <Msg k={d.layerLabelKey} locale={locale} p={{ name: d.ruleId ?? '' }} />
+          <li key={i} style={{ ...text.monoAttribution, color: color.muted }}>
+            <Msg k={d.layerLabelKey} locale={locale} p={{ name: ruleDisplayName(d.ruleId, locale) }} />
           </li>
         ))}
       </ul>

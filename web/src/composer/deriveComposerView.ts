@@ -19,7 +19,9 @@ export function deriveComposerView(
     case 'inspecting':
       return { ...base, statusKey: 'composer.status_inspecting', sendLabelKey: 'composer.send', sendTone: 'disabled', borderTone: 'muted', mirrorOpen: false }
     case 'clean':
-      return { ...base, statusKey: 'composer.status_clean', sendLabelKey: 'composer.send', sendTone: 'teal', borderTone: 'muted', mirrorOpen: false }
+      // NG-2/NG-24: a clean result under degraded coverage must NOT read as a full check —
+      // the status line names the reduced basis ("· nur Regeln").
+      return { ...base, statusKey: degraded ? 'composer.status_clean_degraded' : 'composer.status_clean', sendLabelKey: 'composer.send', sendTone: 'teal', borderTone: 'muted', mirrorOpen: false }
     case 'touched':
       return {
         ...base,
