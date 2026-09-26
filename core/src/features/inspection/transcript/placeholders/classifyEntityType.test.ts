@@ -13,4 +13,9 @@ describe('SF-3041 classifyEntityType', () => {
     expect(t).toBe('unbekannter-bereich')
     expect(t).not.toBe('[REDACTED]')
   })
+  it('4. (P2) an e-mail rule → the unambiguous "E-Mail-Adresse", not the ambiguous "E-Mail"', () => {
+    const t = classifyEntityType({ area: 'kundendaten', ruleId: 'RULE-EMAIL', layer: 'rule', offset: 0, length: 1 })
+    expect(t).toBe('E-Mail-Adresse')
+    expect(t).not.toBe('E-Mail')
+  })
 })

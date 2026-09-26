@@ -12,6 +12,7 @@ import { assembleVerdict } from '../core/src/features/inspection/verdict'
 import { loadRulesLayer } from '../core/src/features/inspection/rules'
 import { setLedgerPath } from '../core/src/features/ledger/append'
 import { composeWeeklyBriefing } from '../core/src/features/management/briefing'
+import { buildForwardMessages } from '../web/src/forward/buildForwardMessages'
 import type { ActivePolicy, InspectionRequest, KeyMaterial, RecurringWorkFinding, WireMessage } from '../core/lib/types'
 
 const NG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -60,11 +61,11 @@ async function readBody(req: import('node:http').IncomingMessage): Promise<any> 
 }
 
 // Forward the WIRE to the provider stand-in (local model). Only placeholders leave here.
+// The system prompt is built by buildForwardMessages: it preserves placeholders WITHOUT
+// seeding example tokens, and omits the placeholder instruction entirely on a clean wire
+// (P1 contamination fix).
 async function forwardToProvider(wire: WireMessage[]): Promise<string> {
-  const messages = [
-    { role: 'system', content: 'Du bist ein hilfreicher Assistent. Antworte auf Deutsch. Platzhalter in spitzen Klammern wie ⟨Preis⟩ oder ⟨Kundenname⟩ sind bewusst maskiert — gib sie unverändert wieder und rate ihren Inhalt nicht.' },
-    ...wire.map((m) => ({ role: m.role, content: m.content })),
-  ]
+  const messages = buildForwardMessages(wire)
   const r = await fetch(`${LLM_URL}/chat/completions`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${LLM_KEY}` },
