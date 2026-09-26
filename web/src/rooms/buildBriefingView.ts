@@ -17,6 +17,9 @@ export function buildBriefingView(inputs: BriefingInputs): BriefingView {
     people: inputs.people,
     rows,
     estimate: { low, high, approx: true, noteKey: 'briefing.estimate_note' },
+    stats: inputs.stats,
+    requests: inputs.stats.requests,
+    duplicateRequests: inputs.findings.reduce((a, f) => a + f.clusterSize, 0),
     hasPersonColumn: false,
   }
 }

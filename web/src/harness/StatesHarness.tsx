@@ -5,9 +5,8 @@ import { color, radius, text } from '../design'
 import { Composer } from '../composer/Composer'
 import { AreaMenuButton } from '../composer/AreaMenuButton'
 import { composerStateFixtures, type StateFixture } from './stateFixtures'
-import { BriefingDocument } from '../rooms/BriefingDocument'
-import { ThresholdCard } from '../rooms/ThresholdCard'
-import { briefingFixture, thresholdFixture } from '../rooms/managementFixtures'
+import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from '../rooms'
+import { briefingInputsFixture, thresholdFixture, briefingRange } from '../rooms/managementFixtures'
 
 // SF-5092 — renders every composer state (Handoff §1.1) as a captured panel. The fidelity
 // gates walk each [data-capture]; Playwright screenshots the same node. Harness chrome
@@ -83,7 +82,7 @@ export function StatesHarness({ locale = 'de' }: StatesHarnessProps): JSX.Elemen
           management · threshold
         </figcaption>
         <div data-capture="" data-screenshot="management-threshold" style={{ background: color.bgCanvas, borderRadius: radius.card, width: 720, maxWidth: '100%' }}>
-          <ThresholdCard fixture={thresholdFixture} locale={locale} />
+          <ThresholdGate model={buildThresholdModel(thresholdFixture.week, thresholdFixture.people)} locale={locale} />
         </div>
       </figure>
       <figure style={{ margin: 0 }}>
@@ -91,7 +90,7 @@ export function StatesHarness({ locale = 'de' }: StatesHarnessProps): JSX.Elemen
           management · briefing
         </figcaption>
         <div data-capture="" data-screenshot="management-briefing" style={{ background: color.bgCanvas, borderRadius: radius.card, width: 720, maxWidth: '100%' }}>
-          <BriefingDocument fixture={briefingFixture} locale={locale} />
+          <ManagementView activeTab="briefing" locale={locale} briefing={buildBriefingView(briefingInputsFixture)} range={briefingRange} />
         </div>
       </figure>
     </div>

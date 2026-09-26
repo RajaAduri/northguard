@@ -1,4 +1,4 @@
-import type { InspectionVerdict, WireMessage } from './types'
+import type { BriefingInputs, InspectionVerdict, WireMessage } from './types'
 
 // Talks to the gateway via the Vite /api proxy. The ORIGINAL prompt goes to /inspect
 // (customer-side, same trust domain); only the wire goes to /forward.
@@ -20,8 +20,8 @@ export async function forward(wire: WireMessage[]): Promise<string> {
   return ((await r.json()) as { completion: string }).completion
 }
 
-export async function briefing(): Promise<{ markdown: string; sufficient: boolean; findings: number }> {
+export async function briefing(): Promise<{ markdown: string; inputs: BriefingInputs; sufficient: boolean; findings: number }> {
   const r = await fetch('/api/briefing')
   if (!r.ok) throw new Error(`briefing ${r.status}`)
-  return (await r.json()) as { markdown: string; sufficient: boolean; findings: number }
+  return (await r.json()) as { markdown: string; inputs: BriefingInputs; sufficient: boolean; findings: number }
 }

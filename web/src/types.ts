@@ -1,6 +1,6 @@
 // E5 view types. The E1 contract types live once in core/lib/types.ts (never
 // duplicated) — re-exported here so web modules import from one place.
-import type { Verdict } from '../../core/lib/types'
+import type { Verdict, FootnoteStats } from '../../core/lib/types'
 
 export type {
   Locale,
@@ -16,6 +16,8 @@ export type {
   RehydrateResult,
   RestoredSpan,
   PlaceholderMapping,
+  BriefingInputs,
+  FootnoteStats,
 } from '../../core/lib/types'
 
 // ── Reply rehydration view (AF-503) ───────────────────────────────────────────
@@ -96,6 +98,9 @@ export interface BriefingView {
   people: number
   rows: BriefingRow[]
   estimate: { low: number; high: number; approx: true; noteKey: string }
+  stats: FootnoteStats
+  requests: number
+  duplicateRequests: number // requests that fell into a recognised repetition cluster
   hasPersonColumn: false
 }
 

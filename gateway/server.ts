@@ -119,7 +119,9 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && url.startsWith('/api/briefing')) {
       const findings = await fetchRecurringFindings()
       const { inputs, markdown } = await composeWeeklyBriefing('2000-01-01', '2999-12-31', 'KW-live', 5, findings)
-      return send(res, 200, { markdown, sufficient: inputs.sufficient, findings: inputs.findings.length })
+      // Return the structured inputs so the SPA renders the briefing DOCUMENT via
+      // buildBriefingView (not raw markdown) — one management surface (Sprint 10 F2).
+      return send(res, 200, { markdown, inputs, sufficient: inputs.sufficient, findings: inputs.findings.length })
     }
     return send(res, 404, { error: 'not found' })
   } catch (err) {

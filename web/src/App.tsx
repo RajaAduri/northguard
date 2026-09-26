@@ -7,9 +7,10 @@ import { Composer } from './composer/Composer'
 import { AreaMenuButton } from './composer/AreaMenuButton'
 import { ReplyMessage } from './reply'
 import { buildWireTranscriptView } from './provider-view'
+import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
 import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
-import type { ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, Locale } from './types'
+import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, Locale } from './types'
 
 // The governed chat surface + the management room, rendered through the real §1.1
 // components (Handoff). The chat loop: type → inspect (customer-side) → mirror (what the
@@ -214,37 +215,31 @@ function ProviderView({ wireView }: { wireView: ReturnType<typeof buildWireTrans
   )
 }
 
+// The management room (rule 15): the named, dated threshold, then the ONE document surface
+// (ManagementView) rendered from the real view-models over the gateway's structured inputs.
 function ManagementRoom({ onBack }: { onBack: () => void }) {
-  const [md, setMd] = useState('')
-  const [phase, setPhase] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
-  async function load() {
-    setPhase('loading')
+  const [entered, setEntered] = useState(false)
+  const [view, setView] = useState<BriefingView | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function enter() {
+    setEntered(true)
+    setError(null)
     try {
       const b = await briefing()
-      setMd(b.markdown)
-      setPhase('done')
-    } catch {
-      setPhase('error')
+      setView(buildBriefingView(b.inputs))
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e))
     }
   }
+
+  if (!entered) {
+    return <ThresholdGate model={buildThresholdModel('39', 5)} locale={L} onEnter={enter} />
+  }
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '44px 40px 40px' }}>
-      <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 26 }}>
-        <Msg k="mgmt.label" locale={L} style={{ ...text.capsLabel, color: color.muted }} />
-        <button type="button" onClick={onBack} style={tertiaryButton}>
-          <Msg k="threshold.back" locale={L} />
-        </button>
-      </header>
-      <Msg k="threshold.headline" locale={L} as="h1" style={{ ...text.brief, color: color.ink, margin: '0 0 16px' }} />
-      <Msg k="threshold.body" locale={L} p={{ n: 5 }} as="p" style={{ ...text.explain, color: color.muted, margin: '0 0 26px' }} />
-      {phase !== 'done' ? (
-        <button type="button" onClick={load} disabled={phase === 'loading'} style={secondaryButton}>
-          <Msg k="mgmt.nav.briefing" locale={L} />
-        </button>
-      ) : (
-        <Content as="pre" style={{ whiteSpace: 'pre-wrap', ...text.reply, color: color.ink }}>{md}</Content>
-      )}
-      {phase === 'error' ? <Msg k="briefing.duplicate_none" locale={L} as="p" style={{ ...text.explain, color: color.red }} /> : null}
-    </div>
+    <>
+      <ManagementView activeTab="briefing" locale={L} briefing={view ?? undefined} onBack={onBack} />
+      {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
+    </>
   )
 }
