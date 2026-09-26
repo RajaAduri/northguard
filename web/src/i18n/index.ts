@@ -2,5 +2,6 @@
 export { loadStringCatalogue, CatalogueParityError } from './loadStringCatalogue'
 export { resolveUiLocale } from './resolveUiLocale'
 export { formatMessage } from './formatMessage'
+export { Msg, Content } from './Msg'
 export { resolveLanguageLevel, type LanguageSource } from './languageLevels'
 export { de, en, type Catalogue } from './catalogue'
