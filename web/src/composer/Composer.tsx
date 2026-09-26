@@ -35,6 +35,7 @@ export interface ComposerProps {
   onSend?: () => void
   report?: ReportSlot
   blockValues?: PlaceholderMapping // client-side originals for an echo-class block area
+  busy?: boolean // a reply is in flight — disable send so it cannot be pressed twice
 }
 
 export function Composer({
@@ -49,6 +50,7 @@ export function Composer({
   onSend,
   report,
   blockValues,
+  busy = false,
 }: ComposerProps): JSX.Element {
   const view = deriveComposerView(state, verdict, degraded)
   const sweep = inspectionSweepParams(inspectionMs)
@@ -97,6 +99,13 @@ export function Composer({
             value={draft}
             disabled={state === 'locked'}
             onChange={(e) => onDraftChange?.(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter sends (Handoff §1.1: Senden/Enter); Shift+Enter inserts a newline.
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                onSend?.()
+              }
+            }}
             placeholder={formatMessage(placeholderKey, locale)}
             rows={3}
             style={{
@@ -177,10 +186,10 @@ export function Composer({
         <button
           type="button"
           data-testid="send-button"
-          disabled={view.sendTone === 'disabled'}
+          disabled={view.sendTone === 'disabled' || busy}
           onClick={onSend}
           style={{
-            ...sendButton(view.sendTone),
+            ...sendButton(busy ? 'disabled' : view.sendTone),
             transition: `background-color ${motion.sendButton.ms}ms ${motion.sendButton.curve}`,
           }}
         >

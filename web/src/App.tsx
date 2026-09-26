@@ -49,7 +49,10 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [reportSpan, setReportSpan] = useState<RedactionSpan | null>(null)
   const [reportDone, setReportDone] = useState<ReportDone | null>(null)
   const [notices, setNotices] = useState<string[]>([])
+  const [sendingUi, setSendingUi] = useState(false)
   const pendingSend = useRef(false)
+  const sending = useRef(false)
+  const inspectSeq = useRef(0) // invalidates a stale inspect that resolves after a newer edit
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const wireHistory: WireMessage[] = turns.flatMap((t) => [
@@ -59,6 +62,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const degraded = verdict?.coverage === 'rules-only'
 
   useEffect(() => {
+    inspectSeq.current++ // any edit invalidates an inspection already in flight
     if (!draft.trim()) {
       setState('idle')
       return
@@ -73,10 +77,12 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   }, [draft])
 
   async function runInspect() {
+    const seq = ++inspectSeq.current
     setState('inspecting')
     setError(null)
     try {
       const v = await inspect(draft, wireHistory, 'web-1', turns.length)
+      if (seq !== inspectSeq.current) return // a newer edit/inspect superseded this result
       setVerdict(v)
       const next: ComposerState = v.verdict === 'clean' ? 'clean' : v.verdict === 'redact' ? 'touched' : 'blocked'
       setState(next)
@@ -87,33 +93,47 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
         pendingSend.current = false
       }
     } catch (e) {
+      if (seq !== inspectSeq.current) return
+      pendingSend.current = false
       setError(String(e instanceof Error ? e.message : e))
       setState('typing')
     }
   }
 
   async function doSend(v: InspectionVerdict) {
+    if (sending.current) return // a send is already in flight — never double-send
+    sending.current = true
+    setSendingUi(true)
+    const originalDraft = draft
     try {
       const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
       const reply = await forward(nextWire)
-      const mapping = buildClientMapping(draft, v.spans)
+      const mapping = buildClientMapping(originalDraft, v.spans)
       const rehydrate = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
-      setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, rehydrate, mapping }])
+      setTurns((ts) => [...ts, { original: originalDraft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, rehydrate, mapping }])
       setDraft('')
       setVerdict(null)
       setState('idle')
     } catch (e) {
       setError(String(e instanceof Error ? e.message : e))
+    } finally {
+      sending.current = false
+      setSendingUi(false)
     }
   }
 
   function onSend() {
+    if (sending.current) return
     if (state === 'clean' || state === 'touched') {
       if (verdict) void doSend(verdict)
     } else if (state === 'typing' || state === 'idle') {
       pendingSend.current = true
       if (timer.current) clearTimeout(timer.current)
       void runInspect()
+    } else if (state === 'inspecting') {
+      // send pressed mid-inspection: the in-flight inspect auto-sends on a clean verdict,
+      // or stops on a finding so the person can choose "Maskiert senden".
+      pendingSend.current = true
     }
   }
 
@@ -163,6 +183,16 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
             {view === 'own' ? notices.map((id, i) => (
               <Msg key={`n${i}`} k="notice.pending" locale={L} p={{ id }} as="div" style={{ ...text.explain, color: color.muted }} />
             )) : null}
+            {view === 'own' && sendingUi ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '22px 1fr', gap: 12 }}>
+                <div aria-hidden="true" style={{ width: 22, height: 22, borderRadius: radius.chip, border: `1px solid ${color.teal}` }} />
+                <div style={{ display: 'flex', gap: 5, alignItems: 'center', height: 22 }}>
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} style={{ width: 6, height: 6, borderRadius: radius.chip, background: color.muted, animation: `ng-dot-pulse 1100ms ${i * 180}ms linear infinite` }} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <Composer
@@ -174,6 +204,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
             editable
             onDraftChange={setDraft}
             onSend={onSend}
+            busy={sendingUi}
             blockValues={verdict ? buildClientMapping(draft, verdict.spans) : undefined}
             report={{
               form: reportSpan ? buildReportForm(reportSpan, 'web-1') : null,
