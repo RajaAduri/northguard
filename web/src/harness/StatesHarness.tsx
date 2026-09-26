@@ -5,6 +5,9 @@ import { color, radius, text } from '../design'
 import { Composer } from '../composer/Composer'
 import { AreaMenuButton } from '../composer/AreaMenuButton'
 import { composerStateFixtures, type StateFixture } from './stateFixtures'
+import { BriefingDocument } from '../rooms/BriefingDocument'
+import { ThresholdCard } from '../rooms/ThresholdCard'
+import { briefingFixture, thresholdFixture } from '../rooms/managementFixtures'
 
 // SF-5092 — renders every composer state (Handoff §1.1) as a captured panel. The fidelity
 // gates walk each [data-capture]; Playwright screenshots the same node. Harness chrome
@@ -72,6 +75,25 @@ export function StatesHarness({ locale = 'de' }: StatesHarnessProps): JSX.Elemen
           <WorkspaceFrame fx={fx} locale={locale} />
         </figure>
       ))}
+
+      {/* Management room (rule 15): the document register, on the document canvas so a
+          chrome-less screenshot is immediately identifiable as the other room. */}
+      <figure style={{ margin: 0 }}>
+        <figcaption data-harness-caption="" style={{ ...text.monoMeta, color: color.muted, marginBottom: 8 }}>
+          management · threshold
+        </figcaption>
+        <div data-capture="" data-screenshot="management-threshold" style={{ background: color.bgCanvas, borderRadius: radius.card, width: 720, maxWidth: '100%' }}>
+          <ThresholdCard fixture={thresholdFixture} locale={locale} />
+        </div>
+      </figure>
+      <figure style={{ margin: 0 }}>
+        <figcaption data-harness-caption="" style={{ ...text.monoMeta, color: color.muted, marginBottom: 8 }}>
+          management · briefing
+        </figcaption>
+        <div data-capture="" data-screenshot="management-briefing" style={{ background: color.bgCanvas, borderRadius: radius.card, width: 720, maxWidth: '100%' }}>
+          <BriefingDocument fixture={briefingFixture} locale={locale} />
+        </div>
+      </figure>
     </div>
   )
 }
