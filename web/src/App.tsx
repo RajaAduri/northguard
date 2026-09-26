@@ -8,9 +8,10 @@ import { AreaMenuButton } from './composer/AreaMenuButton'
 import { ReplyMessage } from './reply'
 import { ViewToggle, selectFootnote } from './provider-view'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
+import { buildReportForm, submitReport, buildReportDone } from './report'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
 import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
-import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, Locale } from './types'
+import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, RedactionSpan, ReportForm, ReportDone, FpReportPayload, Locale } from './types'
 
 // The governed chat surface + the management room, rendered through the real §1.1
 // components (Handoff). The chat loop: type → inspect (customer-side) → mirror (what the
@@ -52,6 +53,9 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const [view, setView] = useState<'own' | 'provider'>('own')
   const [error, setError] = useState<string | null>(null)
+  const [reportSpan, setReportSpan] = useState<RedactionSpan | null>(null)
+  const [reportDone, setReportDone] = useState<ReportDone | null>(null)
+  const [notices, setNotices] = useState<string[]>([])
   const pendingSend = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -120,6 +124,26 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
     }
   }
 
+  // F1 — the false-positive report flow (AF-507). The mirror/block report links open the
+  // form in the reserved slot; submit hands a payload to the sink (→ E6 AF-604) with context
+  // withheld unless opted in, then shows report-done and a quiet in-conversation notice.
+  function onSelectReportSpan(span: RedactionSpan) {
+    setReportSpan(span)
+    setState('report')
+  }
+  async function onSubmitReport(form: ReportForm) {
+    const sink = async (_p: FpReportPayload) => ({ faId: `FA-${String(Date.now()).slice(-3)}` })
+    const { faId } = await submitReport(form, sink)
+    setReportDone(buildReportDone(faId, 1, verdict?.verdict === 'block' ? 'block' : 'redact'))
+    setNotices((n) => [...n, faId])
+    setState('report-done')
+  }
+  function onCancelReport() {
+    setReportSpan(null)
+    setReportDone(null)
+    setState(verdict?.verdict === 'block' ? 'blocked' : 'touched')
+  }
+
   const areaMenu = degraded
     ? { labelKey: 'header.rules_only', n: 0 }
     : state === 'touched' && verdict
@@ -141,9 +165,28 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
           <ViewToggle view={view} wire={wireHistory} sentCount={turns.length} locale={L} onToggle={setView} />
           <section style={{ display: 'flex', flexDirection: 'column', gap: 18, margin: '12px 0 18px' }}>
             {view === 'own' ? turns.map((t, i) => <TurnView key={i} turn={t} />) : null}
+            {view === 'own' ? notices.map((id, i) => (
+              <Msg key={`n${i}`} k="notice.pending" locale={L} p={{ id }} as="div" style={{ ...text.explain, color: color.muted }} />
+            )) : null}
           </section>
 
-          <Composer state={state} verdict={verdict} degraded={degraded} locale={L} draft={draft} editable onDraftChange={setDraft} onSend={onSend} />
+          <Composer
+            state={state}
+            verdict={verdict}
+            degraded={degraded}
+            locale={L}
+            draft={draft}
+            editable
+            onDraftChange={setDraft}
+            onSend={onSend}
+            report={{
+              form: reportSpan ? buildReportForm(reportSpan, 'web-1') : null,
+              done: reportDone,
+              onSelectSpan: onSelectReportSpan,
+              onSubmit: onSubmitReport,
+              onCancel: onCancelReport,
+            }}
+          />
           <Msg k={selectFootnote({ view, hasRestored: turns.some((t) => t.rehydrate.restoredSpans.length > 0) })} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
           {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
         </main>

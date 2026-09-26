@@ -14,7 +14,7 @@ describe('SF-5075 ReportPanel (render smoke, jsdom)', () => {
     const box = screen.getByTestId('share-context') as HTMLInputElement
     expect(box.checked).toBe(false)
     fireEvent.click(box)
-    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByTestId('report-submit'))
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ shareContext: true }))
   })
 })

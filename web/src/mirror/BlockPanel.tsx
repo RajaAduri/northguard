@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import type { InspectionVerdict, Locale } from '../types'
+import type { InspectionVerdict, Locale, RedactionSpan } from '../types'
 import { buildBlockModel } from './buildBlockModel'
 import { ruleDisplayName } from './ruleDisplayName'
 import { Msg } from '../i18n'
@@ -13,10 +13,10 @@ import { color, radius, text, secondaryButton, monoLink } from '../design'
 export interface BlockPanelProps {
   verdict: InspectionVerdict
   locale: Locale
-  onSend?: () => void
+  onReport?: (span: RedactionSpan) => void
 }
 
-export function BlockPanel({ verdict, locale }: BlockPanelProps): JSX.Element {
+export function BlockPanel({ verdict, locale, onReport }: BlockPanelProps): JSX.Element {
   const model = buildBlockModel(verdict)
   const areas = model.areas.join(', ')
 
@@ -54,7 +54,7 @@ export function BlockPanel({ verdict, locale }: BlockPanelProps): JSX.Element {
         <button type="button" style={secondaryButton}>
           <Msg k="block.remove" locale={locale} />
         </button>
-        <button type="button" style={monoLink}>
+        <button type="button" style={monoLink} onClick={() => onReport?.(verdict.spans[0]!)}>
           <Msg k="block.report" locale={locale} />
         </button>
       </div>

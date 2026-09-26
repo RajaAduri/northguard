@@ -1,11 +1,22 @@
 import type { JSX } from 'react'
-import type { ComposerState, InspectionVerdict, Locale } from '../types'
+import type { ComposerState, InspectionVerdict, Locale, RedactionSpan, ReportForm, ReportDone } from '../types'
 import { deriveComposerView } from './deriveComposerView'
 import { Msg, formatMessage } from '../i18n'
 import { color, radius, text, sendButton, secondaryButton, composerCardBorder, inspectionSweepParams } from '../design'
 import { motion } from '../design/motionTokens'
 import { SubmissionMirror } from '../mirror/SubmissionMirror'
 import { BlockPanel } from '../mirror/BlockPanel'
+import { ReportPanel } from '../report'
+
+// The report flow shares the mirror's reserved space (Handoff §1.1 `report`): the form
+// replaces the mirror content, then report-done shows the id + path forward.
+export interface ReportSlot {
+  form: ReportForm | null
+  done: ReportDone | null
+  onSelectSpan: (span: RedactionSpan) => void
+  onSubmit: (form: ReportForm) => void
+  onCancel: () => void
+}
 
 // SF-5015 — the composer card. Chrome appears in proportion to the finding (Handoff
 // rule 1): a clean/empty composer shows one quiet mono status line and reads "Senden";
@@ -22,6 +33,7 @@ export interface ComposerProps {
   inspectionMs?: number
   onDraftChange?: (v: string) => void
   onSend?: () => void
+  report?: ReportSlot
 }
 
 export function Composer({
@@ -34,6 +46,7 @@ export function Composer({
   inspectionMs = motion.inspectionSweepTarget.ms,
   onDraftChange,
   onSend,
+  report,
 }: ComposerProps): JSX.Element {
   const view = deriveComposerView(state, verdict, degraded)
   const sweep = inspectionSweepParams(inspectionMs)
@@ -113,10 +126,14 @@ export function Composer({
       >
         <div style={{ minHeight: 0, overflow: 'hidden' }}>
           {view.mirrorOpen && verdict ? (
-            state === 'blocked' ? (
-              <BlockPanel verdict={verdict} locale={locale} onSend={onSend} />
+            state === 'report' && report?.form ? (
+              <ReportPanel form={report.form} locale={locale} onSubmit={report.onSubmit} onCancel={report.onCancel} />
+            ) : state === 'report-done' && report?.done ? (
+              <ReportDonePanel done={report.done} locale={locale} onContinue={report.onCancel} />
+            ) : state === 'blocked' ? (
+              <BlockPanel verdict={verdict} locale={locale} onReport={report?.onSelectSpan} />
             ) : (
-              <SubmissionMirror verdict={verdict} locale={locale} />
+              <SubmissionMirror verdict={verdict} locale={locale} onReport={report?.onSelectSpan} />
             )
           ) : null}
         </div>
@@ -169,5 +186,19 @@ export function Composer({
         </button>
       </div>
     </div>
+  )
+}
+
+// SF-5076 — report-done: the id, the rule stays active, and the path forward (rephrase for a
+// block, continue-redacted for a redact). There is no per-prompt approval (rule 7).
+function ReportDonePanel({ done, locale, onContinue }: { done: ReportDone; locale: Locale; onContinue: () => void }): JSX.Element {
+  return (
+    <section data-testid="report-done" style={{ margin: '0 10px 10px', background: color.bgSurface, border: `1px solid ${color.touchedBorder}`, borderRadius: radius.mirror, padding: '10px 12px' }}>
+      <Msg k={done.doneKey} locale={locale} p={{ id: done.faId }} as="header" style={{ ...text.monoSubhead, color: color.teal, display: 'block', marginBottom: 6 }} />
+      <Msg k={done.ruleStaysKey} locale={locale} as="p" style={{ ...text.explain, color: color.muted, margin: '0 0 10px' }} />
+      <button type="button" style={secondaryButton} onClick={onContinue}>
+        <Msg k={done.pathForwardKey} locale={locale} />
+      </button>
+    </section>
   )
 }

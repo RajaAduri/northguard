@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import type { InspectionVerdict, Locale } from '../types'
+import type { InspectionVerdict, Locale, RedactionSpan } from '../types'
 import { buildMirrorModel } from './buildMirrorModel'
 import { ruleDisplayName } from './ruleDisplayName'
 import { Msg, Content } from '../i18n'
@@ -12,6 +12,7 @@ import { color, radius, text, chip, monoLink } from '../design'
 export interface SubmissionMirrorProps {
   verdict: InspectionVerdict
   locale: Locale
+  onReport?: (span: RedactionSpan) => void
 }
 
 // Split a wire string into text + ⟨placeholder⟩ chips. textContent is unchanged
@@ -29,7 +30,7 @@ function renderWire(wire: string): JSX.Element[] {
   )
 }
 
-export function SubmissionMirror({ verdict, locale }: SubmissionMirrorProps): JSX.Element {
+export function SubmissionMirror({ verdict, locale, onReport }: SubmissionMirrorProps): JSX.Element {
   const model = buildMirrorModel(verdict)
   const areas = model.summary.areas.join(', ')
 
@@ -60,7 +61,7 @@ export function SubmissionMirror({ verdict, locale }: SubmissionMirrorProps): JS
             <Content style={chip()}>{r.placeholder}</Content>
             <Msg k={r.layerLabelKey} locale={locale} p={{ name: ruleDisplayName(r.ruleId, locale) }} style={{ ...text.monoAttribution, color: color.muted }} />
             <Content style={{ ...text.monoAttribution, color: color.muted }}>{r.area}</Content>
-            <button type="button" style={monoLink}>
+            <button type="button" style={monoLink} onClick={() => onReport?.(verdict.spans[i]!)}>
               <Msg k={r.reportActionKey} locale={locale} />
             </button>
           </li>
