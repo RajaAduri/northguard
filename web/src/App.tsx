@@ -5,11 +5,11 @@ import { color, radius, text, secondaryButton, tertiaryButton } from './design'
 import { motion } from './design/motionTokens'
 import { Composer } from './composer/Composer'
 import { AreaMenuButton } from './composer/AreaMenuButton'
-import { SubmissionMirror } from './mirror/SubmissionMirror'
+import { ReplyMessage } from './reply'
 import { buildWireTranscriptView } from './provider-view'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
 import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
-import type { ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, Locale } from './types'
+import type { ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, Locale } from './types'
 
 // The governed chat surface + the management room, rendered through the real §1.1
 // components (Handoff). The chat loop: type → inspect (customer-side) → mirror (what the
@@ -24,8 +24,8 @@ interface Turn {
   verdict: InspectionVerdict
   wireUser: string
   providerReply: string
-  restored: string
-  blocked: boolean
+  rehydrate: RehydrateResult
+  mapping: PlaceholderMapping
 }
 
 // Client-side placeholder→original mapping (NG-14): held in the browser only, never sent.
@@ -54,12 +54,10 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const pendingSend = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const wireHistory: WireMessage[] = turns.flatMap((t) =>
-    t.blocked ? [] : [
-      { role: 'user' as const, content: t.wireUser },
-      { role: 'assistant' as const, content: t.providerReply },
-    ],
-  )
+  const wireHistory: WireMessage[] = turns.flatMap((t) => [
+    { role: 'user' as const, content: t.wireUser },
+    { role: 'assistant' as const, content: t.providerReply },
+  ])
   const degraded = verdict?.coverage === 'rules-only'
 
   useEffect(() => {
@@ -101,8 +99,8 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
       const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
       const reply = await forward(nextWire)
       const mapping = mappingFrom(draft, v)
-      const { restoredText } = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
-      setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, restored: restoredText, blocked: false }])
+      const rehydrate = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
+      setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, rehydrate, mapping }])
       setDraft('')
       setVerdict(null)
       setState('idle')
@@ -159,7 +157,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
           </section>
 
           <Composer state={state} verdict={verdict} degraded={degraded} locale={L} draft={draft} editable onDraftChange={setDraft} onSend={onSend} />
-          <Msg k={turns.some((t) => !t.blocked) ? 'footnote.restored' : 'footnote.default'} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
+          <Msg k={turns.length > 0 ? 'footnote.restored' : 'footnote.default'} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
           {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
         </main>
       </div>
@@ -197,14 +195,7 @@ function TurnView({ turn }: { turn: Turn }) {
           style={{ ...text.monoMeta, color: color.muted, marginTop: 6 }}
         />
       </div>
-      {turn.blocked ? (
-        <SubmissionMirror verdict={turn.verdict} locale={L} />
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: '22px 1fr', gap: 12 }}>
-          <div aria-hidden="true" style={{ width: 22, height: 22, borderRadius: radius.chip, border: `1px solid ${color.teal}` }} />
-          <Content style={{ ...text.reply, color: color.ink }}>{turn.restored}</Content>
-        </div>
-      )}
+      <ReplyMessage result={turn.rehydrate} locale={L} providerText={turn.providerReply} mapping={turn.mapping} />
     </div>
   )
 }
