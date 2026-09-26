@@ -4,6 +4,7 @@ import { Msg } from '../i18n'
 import { color, radius, text } from '../design'
 import { Composer } from '../composer/Composer'
 import { AreaMenuButton } from '../composer/AreaMenuButton'
+import { deriveComposerView } from '../composer/deriveComposerView'
 import { composerStateFixtures, type StateFixture } from './stateFixtures'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from '../rooms'
 import { briefingInputsFixture, thresholdFixture, briefingRange } from '../rooms/managementFixtures'
@@ -15,12 +16,9 @@ import { briefingInputsFixture, thresholdFixture, briefingRange } from '../rooms
 const DEMO_AREA_COUNT = 6
 
 function areaMenuFor(fx: StateFixture): { labelKey: string; n: number } {
-  if (fx.degraded) return { labelKey: 'header.rules_only', n: 0 }
-  if (fx.state === 'touched') {
-    const n = fx.verdict?.touchedAreas.length ?? 0
-    return { labelKey: n === 1 ? 'header.areas_touched_one' : 'header.areas_touched', n }
-  }
-  return { labelKey: 'header.areas_protected', n: DEMO_AREA_COUNT }
+  // F6 — the tested derivation, not a duplicate; only the count is context.
+  const labelKey = deriveComposerView(fx.state, fx.verdict, fx.degraded).areaMenuLabelKey
+  return { labelKey, n: labelKey === 'header.areas_protected' ? DEMO_AREA_COUNT : fx.verdict?.touchedAreas.length ?? 0 }
 }
 
 function WorkspaceFrame({ fx, locale }: { fx: StateFixture; locale: Locale }): JSX.Element {

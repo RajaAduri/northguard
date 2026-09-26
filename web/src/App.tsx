@@ -5,12 +5,12 @@ import { color, radius, text, secondaryButton, tertiaryButton } from './design'
 import { motion } from './design/motionTokens'
 import { Composer } from './composer/Composer'
 import { AreaMenuButton } from './composer/AreaMenuButton'
-import { ReplyMessage } from './reply'
+import { deriveComposerView } from './composer/deriveComposerView'
+import { ReplyMessage, buildClientMapping, stripUnmappedPlaceholders } from './reply'
 import { ViewToggle, selectFootnote } from './provider-view'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
 import { buildReportForm, submitReport, buildReportDone } from './report'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
-import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
 import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, RedactionSpan, ReportForm, ReportDone, FpReportPayload, Locale } from './types'
 
 // The governed chat surface + the management room, rendered through the real §1.1
@@ -28,13 +28,6 @@ interface Turn {
   providerReply: string
   rehydrate: RehydrateResult
   mapping: PlaceholderMapping
-}
-
-// Client-side placeholder→original mapping (NG-14): held in the browser only, never sent.
-function mappingFrom(original: string, v: InspectionVerdict): PlaceholderMapping {
-  const m: PlaceholderMapping = {}
-  for (const s of v.spans) m[s.placeholder] = original.slice(s.offset, s.offset + s.length)
-  return m
 }
 
 export function App() {
@@ -103,7 +96,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
     try {
       const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
       const reply = await forward(nextWire)
-      const mapping = mappingFrom(draft, v)
+      const mapping = buildClientMapping(draft, v.spans)
       const rehydrate = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
       setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, rehydrate, mapping }])
       setDraft('')
@@ -144,11 +137,13 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
     setState(verdict?.verdict === 'block' ? 'blocked' : 'touched')
   }
 
-  const areaMenu = degraded
-    ? { labelKey: 'header.rules_only', n: 0 }
-    : state === 'touched' && verdict
-      ? { labelKey: verdict.touchedAreas.length === 1 ? 'header.areas_touched_one' : 'header.areas_touched', n: verdict.touchedAreas.length }
-      : { labelKey: 'header.areas_protected', n: DEMO_AREA_COUNT }
+  // F6 — the area-menu label is the tested derivation (deriveComposerView), never a
+  // duplicate if/else. Only the count is app context (total protected areas vs touched).
+  const areaMenuLabelKey = deriveComposerView(state, verdict, degraded).areaMenuLabelKey
+  const areaMenu = {
+    labelKey: areaMenuLabelKey,
+    n: areaMenuLabelKey === 'header.areas_protected' ? DEMO_AREA_COUNT : verdict?.touchedAreas.length ?? 0,
+  }
 
   const title = turns[0] ? turns[0].original.replace(/⟨[^⟩]*⟩/g, '').split(/\s+/).slice(0, 6).join(' ') : null
 

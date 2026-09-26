@@ -3,4 +3,6 @@
 export { buildReplyView } from './buildReplyView'
 export { buildCopyModel } from './buildCopyModel'
 export { buildRestoreSuggestion } from './buildRestoreSuggestion'
+export { buildClientMapping } from './buildClientMapping'
+export { stripUnmappedPlaceholders } from './stripUnmappedPlaceholders'
 export { ReplyMessage, type ReplyMessageProps } from './ReplyMessage'
