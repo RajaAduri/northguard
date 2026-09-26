@@ -3,6 +3,7 @@ import type { Locale, PlaceholderMapping, RehydrateResult } from '../types'
 import { buildReplyView } from './buildReplyView'
 import { buildCopyModel } from './buildCopyModel'
 import { buildRestoreSuggestion } from './buildRestoreSuggestion'
+import { renderMarkdown } from './renderMarkdown'
 import { Msg, Content } from '../i18n'
 import { color, radius, text, chip, monoLink } from '../design'
 import { motion } from '../design/motionTokens'
@@ -19,12 +20,6 @@ export interface ReplyMessageProps {
   mapping?: PlaceholderMapping // session values, for the restore suggestion (never auto-applied)
 }
 
-function renderWithChips(s: string): JSX.Element[] {
-  return s.split(/(⟨[^⟩]*⟩)/g).filter((p) => p !== '').map((p, i) =>
-    /^⟨[^⟩]*⟩$/.test(p) ? <span key={i} style={chip()}>{p}</span> : <span key={i}>{p}</span>,
-  )
-}
-
 export function ReplyMessage({ result, locale, providerText, mapping = {} }: ReplyMessageProps): JSX.Element {
   const view = buildReplyView(result)
   const copy = buildCopyModel(result.restoredSpans)
@@ -36,6 +31,16 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
   let displayText = result.restoredText
   for (const [ph, val] of Object.entries(applied)) displayText = displayText.split(ph).join(val)
   const openNow = result.unresolved.filter((u) => !(u in applied))
+
+  // F1 — render markdown, keeping the two run-level classes distinct: ⟨…⟩ placeholders as
+  // amber chips, rehydrated values with a dotted underline (Handoff §1.2). Longest values
+  // first so a value that contains another is matched whole.
+  const restoredValues = [...result.restoredSpans.map((s) => s.original), ...Object.values(applied)].sort((a, b) => b.length - a.length)
+  const decor = {
+    restoredValues,
+    chip: (token: string, key: string) => <span key={key} style={chip()}>{token}</span>,
+    restored: (value: string, key: string) => <span key={key} style={{ textDecoration: 'underline dotted', textUnderlineOffset: 2, color: color.ink }}>{value}</span>,
+  }
 
   function onCopy() {
     try {
@@ -52,7 +57,7 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
       <div aria-hidden="true" style={{ width: 22, height: 22, borderRadius: radius.chip, border: `1px solid ${color.teal}` }} />
       <div>
         <Content data-testid="reply-text" as="div" style={{ ...text.reply, color: color.ink }}>
-          {renderWithChips(displayText)}
+          {renderMarkdown(displayText, decor)}
         </Content>
 
         {showProvider && providerText ? (
