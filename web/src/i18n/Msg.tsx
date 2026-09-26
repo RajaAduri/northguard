@@ -7,7 +7,7 @@ import { formatMessage } from './formatMessage'
 // [data-i18n-key] and asserts textContent === formatMessage(key, locale, params), so a
 // hardcoded or wrong-language string cannot pass (Handoff §3). Tenant/wire/prompt content
 // is NOT a catalogue string — it renders through <Content> and is exempt.
-type Tag = 'span' | 'div' | 'button' | 'p' | 'h1' | 'h2' | 'header' | 'strong' | 'li' | 'label' | 'small'
+type Tag = 'span' | 'div' | 'button' | 'p' | 'h1' | 'h2' | 'header' | 'strong' | 'li' | 'label' | 'small' | 'pre' | 'section' | 'article' | 'figcaption'
 
 export interface MsgProps {
   k: string

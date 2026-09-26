@@ -1,29 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { inspect, forward, briefing } from './apiClient'
-import { formatMessage } from './i18n'
-import { color } from './design'
-import { buildMirrorModel } from './mirror'
+import { Msg, Content, formatMessage } from './i18n'
+import { color, radius, text, secondaryButton, tertiaryButton } from './design'
+import { motion } from './design/motionTokens'
+import { Composer } from './composer/Composer'
+import { AreaMenuButton } from './composer/AreaMenuButton'
+import { SubmissionMirror } from './mirror/SubmissionMirror'
 import { buildWireTranscriptView } from './provider-view'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
-import type { InspectionVerdict, WireMessage, PlaceholderMapping } from './types'
+import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
+import type { ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, Locale } from './types'
 
-// The governed chat surface + the management room. The chat loop: type → inspect
-// (customer-side) → mirror (what the provider gets) → forward the WIRE → reply →
-// rehydrate LOCALLY (AF-307, mapping built in-browser, never sent) → provider view
-// shows only placeholders (NG-1).
-const L = 'de' as const
+// The governed chat surface + the management room, rendered through the real §1.1
+// components (Handoff). The chat loop: type → inspect (customer-side) → mirror (what the
+// provider gets) → forward the WIRE → reply → rehydrate LOCALLY (AF-307, mapping built
+// in-browser, never sent). Provider view shows only placeholders (NG-1). Two rooms
+// (rule 15): workspace = tool, management = document.
+const L: Locale = 'de'
+const DEMO_AREA_COUNT = 6
 
 interface Turn {
   original: string
   verdict: InspectionVerdict
   wireUser: string
-  providerReply: string // placeholder form (what came back over the wire)
-  restored: string // local rehydration (this browser only)
+  providerReply: string
+  restored: string
   blocked: boolean
 }
 
-// Build the client-side placeholder→original mapping from the original prompt + spans.
-// Held in the browser only (NG-14); it never crosses the wire.
+// Client-side placeholder→original mapping (NG-14): held in the browser only, never sent.
 function mappingFrom(original: string, v: InspectionVerdict): PlaceholderMapping {
   const m: PlaceholderMapping = {}
   for (const s of v.spans) m[s.placeholder] = original.slice(s.offset, s.offset + s.length)
@@ -33,127 +38,222 @@ function mappingFrom(original: string, v: InspectionVerdict): PlaceholderMapping
 export function App() {
   const [room, setRoom] = useState<'workspace' | 'management'>('workspace')
   return (
-    <div style={{ fontFamily: 'Inter, system-ui, sans-serif', color: color.ink, background: color.bgCanvas, minHeight: '100vh' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: `1px solid ${color.line}` }}>
-        <strong>NorthGuard</strong>
-        <button type="button" onClick={() => setRoom(room === 'workspace' ? 'management' : 'workspace')}
-          style={{ border: `1px solid ${color.line}`, background: 'transparent', color: color.ink, padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}>
-          {room === 'workspace' ? formatMessage('threshold.enter', L) : formatMessage('mgmt.to_workspace', L)}
-        </button>
-      </header>
-      {room === 'workspace' ? <Workspace /> : <Management />}
+    <div style={{ minHeight: '100vh', background: room === 'workspace' ? color.bgSurface : color.bgCanvas, color: color.ink, fontFamily: text.prompt.fontFamily }}>
+      {room === 'workspace' ? <Workspace onEnterManagement={() => setRoom('management')} /> : <ManagementRoom onBack={() => setRoom('workspace')} />}
     </div>
   )
 }
 
-function Workspace() {
+function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [draft, setDraft] = useState('')
+  const [state, setState] = useState<ComposerState>('idle')
+  const [verdict, setVerdict] = useState<InspectionVerdict | null>(null)
   const [turns, setTurns] = useState<Turn[]>([])
-  const [busy, setBusy] = useState(false)
   const [showProvider, setShowProvider] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const pendingSend = useRef(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const wireHistory: WireMessage[] = turns.flatMap((t) => t.blocked ? [] : [
-    { role: 'user' as const, content: t.wireUser },
-    { role: 'assistant' as const, content: t.providerReply },
-  ])
+  const wireHistory: WireMessage[] = turns.flatMap((t) =>
+    t.blocked ? [] : [
+      { role: 'user' as const, content: t.wireUser },
+      { role: 'assistant' as const, content: t.providerReply },
+    ],
+  )
+  const degraded = verdict?.coverage === 'rules-only'
 
-  async function onSend() {
-    if (!draft.trim() || busy) return
-    setBusy(true); setError(null)
+  useEffect(() => {
+    if (!draft.trim()) {
+      setState('idle')
+      return
+    }
+    setState('typing')
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => void runInspect(), motion.typingPause.ms)
+    return () => {
+      if (timer.current) clearTimeout(timer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft])
+
+  async function runInspect() {
+    setState('inspecting')
+    setError(null)
     try {
       const v = await inspect(draft, wireHistory, 'web-1', turns.length)
-      if (v.verdict === 'block') {
-        setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: '', restored: '', blocked: true }])
-        setDraft(''); return
+      setVerdict(v)
+      const next: ComposerState = v.verdict === 'clean' ? 'clean' : v.verdict === 'redact' ? 'touched' : 'blocked'
+      setState(next)
+      if (pendingSend.current && v.verdict === 'clean') {
+        pendingSend.current = false
+        void doSend(v)
+      } else {
+        pendingSend.current = false
       }
-      const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
-      const reply = await forward(nextWire)
-      const restored = rehydrateReply({ providerText: reply, mapping: mappingFrom(draft, v), locale: L }).restoredText
-      setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, restored, blocked: false }])
-      setDraft('')
     } catch (e) {
       setError(String(e instanceof Error ? e.message : e))
-    } finally {
-      setBusy(false)
+      setState('typing')
     }
   }
 
+  async function doSend(v: InspectionVerdict) {
+    try {
+      const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
+      const reply = await forward(nextWire)
+      const mapping = mappingFrom(draft, v)
+      const { restoredText } = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
+      setTurns((ts) => [...ts, { original: draft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, restored: restoredText, blocked: false }])
+      setDraft('')
+      setVerdict(null)
+      setState('idle')
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e))
+    }
+  }
+
+  function onSend() {
+    if (state === 'clean' || state === 'touched') {
+      if (verdict) void doSend(verdict)
+    } else if (state === 'typing' || state === 'idle') {
+      pendingSend.current = true
+      if (timer.current) clearTimeout(timer.current)
+      void runInspect()
+    }
+  }
+
+  const areaMenu = degraded
+    ? { labelKey: 'header.rules_only', n: 0 }
+    : state === 'touched' && verdict
+      ? { labelKey: verdict.touchedAreas.length === 1 ? 'header.areas_touched_one' : 'header.areas_touched', n: verdict.touchedAreas.length }
+      : { labelKey: 'header.areas_protected', n: DEMO_AREA_COUNT }
+
+  const title = turns[0] ? turns[0].original.replace(/⟨[^⟩]*⟩/g, '').split(/\s+/).slice(0, 6).join(' ') : null
   const wireView = buildWireTranscriptView(wireHistory)
 
   return (
-    <main style={{ maxWidth: 820, margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-        <label style={{ fontSize: 13, color: color.muted }}>
-          <input type="checkbox" checked={showProvider} onChange={(e) => setShowProvider(e.target.checked)} />{' '}
-          {formatMessage('header.view_provider', L)}
-        </label>
-      </div>
+    <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
+      <Sidebar onEnterManagement={onEnterManagement} />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 57, padding: '14px 28px', borderBottom: `1px solid ${color.line}` }}>
+          {title ? <Content style={{ ...text.headerTitle, color: color.ink }}>{title}</Content> : <Msg k="header.new_title" locale={L} style={{ ...text.headerTitle, color: color.ink }} />}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {turns.length > 0 ? (
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button type="button" onClick={() => setShowProvider(false)} style={{ ...secondaryButton, borderColor: showProvider ? color.line : color.teal, color: showProvider ? color.muted : color.ink }}>
+                  <Msg k="header.view_own" locale={L} />
+                </button>
+                <button type="button" onClick={() => setShowProvider(true)} style={{ ...secondaryButton, borderColor: showProvider ? color.teal : color.line, color: showProvider ? color.ink : color.muted }}>
+                  <Msg k="header.view_provider" locale={L} />
+                </button>
+              </div>
+            ) : null}
+            <AreaMenuButton labelKey={areaMenu.labelKey} n={areaMenu.n} locale={L} />
+          </div>
+        </header>
 
-      {showProvider ? (
-        <section data-testid="provider-view" style={{ border: `1px solid ${color.line}`, borderRadius: 8, padding: 16 }}>
-          <div style={{ fontSize: 12, color: color.muted, marginBottom: 8 }}>{formatMessage('footnote.provider_view', L)}</div>
-          {wireView.turns.map((t, i) => (
-            <div key={i} style={{ margin: '6px 0', color: t.role === 'user' ? color.ink : color.muted }}><b>{t.role}:</b> {t.content}</div>
-          ))}
-          {wireView.turns.length === 0 ? <em style={{ color: color.muted }}>{formatMessage('composer.status_nothing_sent', L)}</em> : null}
-        </section>
-      ) : (
-        <section>
-          {turns.map((t, i) => <TurnView key={i} turn={t} />)}
-        </section>
-      )}
+        <main style={{ flex: 1, width: '100%', maxWidth: 820, margin: '0 auto', padding: '24px 28px 0', boxSizing: 'border-box' }}>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 18 }}>
+            {showProvider
+              ? <ProviderView wireView={wireView} />
+              : turns.map((t, i) => <TurnView key={i} turn={t} />)}
+          </section>
 
-      <div style={{ marginTop: 16, borderTop: `1px solid ${color.line}`, paddingTop: 12 }}>
-        <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} placeholder="Nachricht …"
-          style={{ width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: `1px solid ${color.line}`, fontFamily: 'inherit' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-          <span style={{ fontSize: 12, color: color.muted }}>{formatMessage('footnote.default', L)}</span>
-          <button type="button" onClick={onSend} disabled={busy || !draft.trim()}
-            style={{ background: busy ? color.line : color.teal, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: busy ? 'default' : 'pointer' }}>
-            {busy ? formatMessage('composer.status_inspecting', L) : formatMessage('composer.send_redacted', L)}
-          </button>
-        </div>
-        {error ? <div style={{ color: color.red, fontSize: 13, marginTop: 6 }}>{error}</div> : null}
+          <Composer state={state} verdict={verdict} degraded={degraded} locale={L} draft={draft} editable onDraftChange={setDraft} onSend={onSend} />
+          <Msg k={turns.some((t) => !t.blocked) ? 'footnote.restored' : 'footnote.default'} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
+          {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
+        </main>
       </div>
-    </main>
+    </div>
+  )
+}
+
+function Sidebar({ onEnterManagement }: { onEnterManagement: () => void }) {
+  return (
+    <aside style={{ background: color.bgSurface, borderRight: `1px solid ${color.line}`, padding: '18px 12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ ...text.capsLabel, color: color.teal, padding: '0 6px' }}>NorthGuard</div>
+      <button type="button" style={{ ...secondaryButton, textAlign: 'left' }}>
+        <Msg k="sidebar.new_conversation" locale={L} />
+      </button>
+      <Msg k="sidebar.today" locale={L} style={{ ...text.capsLabel, color: color.muted, padding: '8px 6px 0' }} />
+      <Msg k="sidebar.history_empty" locale={L} as="p" style={{ ...text.explain, color: color.muted, margin: '0 6px' }} />
+      <div style={{ flex: 1 }} />
+      <button type="button" onClick={onEnterManagement} style={{ ...tertiaryButton, textAlign: 'left' }}>
+        <Msg k="mgmt.label" locale={L} />
+      </button>
+    </aside>
   )
 }
 
 function TurnView({ turn }: { turn: Turn }) {
-  const mirror = buildMirrorModel(turn.verdict)
   return (
-    <div style={{ margin: '14px 0', borderBottom: `1px solid ${color.line}`, paddingBottom: 14 }}>
-      <div style={{ fontSize: 13, color: color.muted }}>Sie: {turn.original}</div>
-      <div style={{ marginTop: 6, padding: 10, background: color.bgRaised, borderRadius: 8 }}>
-        <div style={{ fontSize: 12, color: color.muted }}>{formatMessage('mirror.title', L)} · {mirror.summary.count} · {mirror.summary.areas.join(', ') || '—'}</div>
-        <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 13, marginTop: 4 }}>{mirror.wireText}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: color.bgRaised, border: `1px solid ${color.line}`, borderRadius: radius.bubble, padding: '12px 16px' }}>
+        <Content style={{ ...text.message, color: color.ink }}>{turn.original}</Content>
+        <Msg
+          k={turn.verdict.spans.length ? 'msg.transmitted_redacted' : 'msg.transmitted_plain'}
+          locale={L}
+          p={{ n: turn.verdict.spans.length, areas: turn.verdict.touchedAreas.map((a) => a.area).join(', ') }}
+          as="div"
+          style={{ ...text.monoMeta, color: color.muted, marginTop: 6 }}
+        />
       </div>
-      {turn.blocked
-        ? <div style={{ marginTop: 8, color: color.red }}><b>{formatMessage('block.title', L)}</b> — {formatMessage('block.no_approval', L)}</div>
-        : <div style={{ marginTop: 8 }}><b>Antwort (lokal eingesetzt):</b><div>{turn.restored}</div></div>}
+      {turn.blocked ? (
+        <SubmissionMirror verdict={turn.verdict} locale={L} />
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '22px 1fr', gap: 12 }}>
+          <div aria-hidden="true" style={{ width: 22, height: 22, borderRadius: radius.chip, border: `1px solid ${color.teal}` }} />
+          <Content style={{ ...text.reply, color: color.ink }}>{turn.restored}</Content>
+        </div>
+      )}
     </div>
   )
 }
 
-function Management() {
-  const [md, setMd] = useState<string>('')
-  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+function ProviderView({ wireView }: { wireView: ReturnType<typeof buildWireTranscriptView> }) {
+  return (
+    <section data-testid="provider-view" style={{ background: color.bgRaised, border: `1px solid ${color.line}`, borderRadius: radius.mirror, padding: 16 }}>
+      <Msg k="footnote.provider_view" locale={L} as="p" style={{ ...text.monoAttribution, color: color.muted, margin: '0 0 10px' }} />
+      {wireView.turns.map((t, i) => (
+        <Content key={i} as="div" style={{ ...text.monoWire, color: t.role === 'user' ? color.ink : color.muted, margin: '4px 0' }}>
+          {t.content}
+        </Content>
+      ))}
+      {wireView.turns.length === 0 ? <Msg k="composer.status_nothing_sent" locale={L} style={{ ...text.monoStatus, color: color.muted }} /> : null}
+    </section>
+  )
+}
+
+function ManagementRoom({ onBack }: { onBack: () => void }) {
+  const [md, setMd] = useState('')
+  const [phase, setPhase] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   async function load() {
-    setState('loading')
-    try { const b = await briefing(); setMd(b.markdown); setState('done') } catch { setState('error') }
+    setPhase('loading')
+    try {
+      const b = await briefing()
+      setMd(b.markdown)
+      setPhase('done')
+    } catch {
+      setPhase('error')
+    }
   }
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '24px', fontFamily: 'Fraunces, Georgia, serif' }}>
-      <div style={{ fontSize: 13, color: color.muted }}>{formatMessage('threshold.body', L, { n: 5 })}</div>
-      <h2 style={{ fontFamily: 'inherit' }}>{formatMessage('mgmt.nav.briefing', L)}</h2>
-      {state !== 'done'
-        ? <button type="button" onClick={load} disabled={state === 'loading'}
-            style={{ border: `1px solid ${color.line}`, background: 'transparent', padding: '8px 14px', borderRadius: 6, cursor: 'pointer' }}>
-            {state === 'loading' ? '…' : 'Briefing laden'}
-          </button>
-        : <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{md}</pre>}
-      {state === 'error' ? <div style={{ color: color.red }}>Briefing nicht erreichbar.</div> : null}
-    </main>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '44px 40px 40px' }}>
+      <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 26 }}>
+        <Msg k="mgmt.label" locale={L} style={{ ...text.capsLabel, color: color.muted }} />
+        <button type="button" onClick={onBack} style={tertiaryButton}>
+          <Msg k="threshold.back" locale={L} />
+        </button>
+      </header>
+      <Msg k="threshold.headline" locale={L} as="h1" style={{ ...text.brief, color: color.ink, margin: '0 0 16px' }} />
+      <Msg k="threshold.body" locale={L} p={{ n: 5 }} as="p" style={{ ...text.explain, color: color.muted, margin: '0 0 26px' }} />
+      {phase !== 'done' ? (
+        <button type="button" onClick={load} disabled={phase === 'loading'} style={secondaryButton}>
+          <Msg k="mgmt.nav.briefing" locale={L} />
+        </button>
+      ) : (
+        <Content as="pre" style={{ whiteSpace: 'pre-wrap', ...text.reply, color: color.ink }}>{md}</Content>
+      )}
+      {phase === 'error' ? <Msg k="briefing.duplicate_none" locale={L} as="p" style={{ ...text.explain, color: color.red }} /> : null}
+    </div>
   )
 }

@@ -38,7 +38,7 @@ function violationsFor(root: HTMLElement): string[] {
       out.push(`${tag} non-token font-family ${el.style.fontFamily}`)
     }
     for (const m of css.matchAll(/border(?:-[a-z]+)?-radius:\s*([^;]+)/g)) {
-      for (const px of m[1].match(/\d+(?:\.\d+)?/g) ?? []) {
+      for (const px of (m[1] ?? '').match(/\d+(?:\.\d+)?/g) ?? []) {
         if (!RADII.has(Number(px))) out.push(`${tag} non-token radius ${px}px`)
       }
     }
