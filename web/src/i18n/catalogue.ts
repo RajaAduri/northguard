@@ -216,6 +216,14 @@ export const de: Catalogue = {
   'briefing.stat_redacted': 'maskiert weitergeleitet',
   'briefing.stat_blocked': 'blockiert',
   'briefing.stat_duplicate': 'Anfragen mit doppelter Arbeit',
+  // Status bar — service reachability (operator affordance).
+  'status.title': 'Dienste',
+  'status.backend': 'Backend',
+  'status.backstop': 'KI-Prüfung',
+  'status.sidecar': 'Sidecar',
+  'status.reachable': 'erreichbar',
+  'status.unreachable': 'nicht erreichbar',
+  'status.checking': 'prüfe …',
 }
 
 export const en: Catalogue = {
@@ -430,4 +438,12 @@ export const en: Catalogue = {
   'briefing.stat_redacted': 'forwarded redacted',
   'briefing.stat_blocked': 'blocked',
   'briefing.stat_duplicate': 'requests with duplicated work',
+  // Status bar — service reachability (operator affordance).
+  'status.title': 'Services',
+  'status.backend': 'Backend',
+  'status.backstop': 'AI check',
+  'status.sidecar': 'Sidecar',
+  'status.reachable': 'reachable',
+  'status.unreachable': 'unreachable',
+  'status.checking': 'checking …',
 }

@@ -79,6 +79,23 @@ async function forwardToProvider(wire: WireMessage[]): Promise<string> {
   return data.choices[0]?.message.content ?? ''
 }
 
+const BACKSTOP_HEALTH_URL = process.env.NORTHGUARD_BACKSTOP_HEALTH_URL ?? 'http://127.0.0.1:8078/health'
+const SIDECAR_HEALTH_URL = (process.env.KG_SIDECAR_URL ?? 'http://127.0.0.1:8077') + '/health'
+
+// Reachability probe for the status bar — short, never throws.
+async function ping(url: string): Promise<boolean> {
+  const ctrl = new AbortController()
+  const t = setTimeout(() => ctrl.abort(), 2500)
+  try {
+    const r = await fetch(url, { signal: ctrl.signal })
+    return r.ok
+  } catch {
+    return false
+  } finally {
+    clearTimeout(t)
+  }
+}
+
 const E7_BRIDGE_URL = process.env.NORTHGUARD_E7_BRIDGE_URL ?? 'http://127.0.0.1:8079/recurring-findings'
 // Ask the Python E7 bridge (B4) for recurring-work findings over the tenant ledger.
 // If the bridge is down, the briefing still renders (findings empty) — degrade, not fail.
@@ -101,7 +118,8 @@ const server = createServer(async (req, res) => {
     const url = req.url ?? '/'
     if (req.method === 'GET' && url === '/api/health') {
       const p = loadPolicy()
-      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL })
+      const [backstop, sidecar] = await Promise.all([ping(BACKSTOP_HEALTH_URL), ping(SIDECAR_HEALTH_URL)])
+      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL, backstop, sidecar })
     }
     if (req.method === 'POST' && url === '/api/inspect') {
       const body = await readBody(req)

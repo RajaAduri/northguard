@@ -10,6 +10,7 @@ import { ReplyMessage, buildClientMapping, stripUnmappedPlaceholders } from './r
 import { ViewToggle, selectFootnote } from './provider-view'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
 import { buildReportForm, submitReport, buildReportDone } from './report'
+import { StatusBar } from './status/StatusBar'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
 import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, RedactionSpan, ReportForm, ReportDone, FpReportPayload, Locale } from './types'
 
@@ -235,6 +236,7 @@ function Sidebar({ onEnterManagement }: { onEnterManagement: () => void }) {
       <button type="button" onClick={onEnterManagement} style={{ ...tertiaryButton, textAlign: 'left' }}>
         <Msg k="mgmt.label" locale={L} />
       </button>
+      <StatusBar locale={L} />
     </aside>
   )
 }

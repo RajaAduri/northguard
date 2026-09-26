@@ -23,6 +23,7 @@ vi.mock('./apiClient', () => ({
   inspect: vi.fn(async (draft: string) => (draft.includes('mail') ? touched : clean)),
   forward: vi.fn(async () => 'Antwort vom EU-gehosteten Endpunkt'),
   briefing: vi.fn(async () => ({ markdown: '# raw', inputs: briefingInputsFixture, sufficient: true, findings: 3 })),
+  health: vi.fn(async () => ({ ok: true, backstop: true, sidecar: true })),
 }))
 
 import { App } from './App'
