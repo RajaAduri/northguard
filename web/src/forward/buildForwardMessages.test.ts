@@ -27,6 +27,13 @@ describe('SF-5041 buildForwardMessages (P1 — forwarding system prompt)', () =>
     expect(content).not.toContain('⟨Kundenname⟩')
   })
 
+  it('F3: instructs the model to refuse fabricating a document it was not given', () => {
+    const sys = buildForwardMessages([{ role: 'user', content: 'Fasse den beigefügten Vertrag zusammen.' }])[0]!.content
+    expect(sys).toMatch(/Inhalt fehlt/i) // says the content is missing
+    expect(sys).toMatch(/[Ee]rfinde niemals/) // never invent
+    expect(sys).toMatch(/üblicherweise enthält/) // never describe what it would typically contain
+  })
+
   it('passes the wire through unchanged after the system message', () => {
     const wire: WireMessage[] = [
       { role: 'user', content: 'Frage ⟨Lieferant 1⟩' },
