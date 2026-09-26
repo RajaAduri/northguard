@@ -6,7 +6,7 @@ import { motion } from './design/motionTokens'
 import { Composer } from './composer/Composer'
 import { AreaMenuButton } from './composer/AreaMenuButton'
 import { deriveComposerView } from './composer/deriveComposerView'
-import { ReplyMessage, buildClientMapping, stripUnmappedPlaceholders } from './reply'
+import { ReplyMessage, buildClientMapping } from './reply'
 import { ViewToggle, selectFootnote } from './provider-view'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
 import { buildReportForm, submitReport, buildReportDone } from './report'
@@ -110,7 +110,9 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
       const nextWire: WireMessage[] = [...wireHistory, { role: 'user', content: v.redactedPrompt }]
       const reply = await forward(nextWire)
       const mapping = buildClientMapping(originalDraft, v.spans)
-      const rehydrate = rehydrateReply({ providerText: stripUnmappedPlaceholders(reply, mapping), mapping, locale: L })
+      // NG-25: do NOT strip the model's own ⟨…⟩ blanks — surface them, labeled, rather than
+      // hiding them. Rehydration restores NorthGuard's placeholders; the rest stay visible.
+      const rehydrate = rehydrateReply({ providerText: reply, mapping, locale: L })
       setTurns((ts) => [...ts, { original: originalDraft, verdict: v, wireUser: v.redactedPrompt, providerReply: reply, rehydrate, mapping }])
       setDraft('')
       setVerdict(null)

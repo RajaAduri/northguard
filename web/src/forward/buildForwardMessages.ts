@@ -14,15 +14,21 @@ const MISSING_DOC =
   ' deren Inhalt nicht ausdrücklich im Gespräch steht, sage in ein bis zwei Sätzen klar, dass dir' +
   ' der Inhalt fehlt, und bitte darum, ihn einzufügen. Erfinde niemals den Inhalt und beschreibe' +
   ' auch nicht, was ein solches Dokument üblicherweise enthält — das ist keine gültige Antwort.'
+// F5 / NG-25 — the model's OWN blanks (for information it was not given) must use the same
+// ⟨…⟩ vocabulary as NorthGuard's placeholders, never [square brackets], so the reply can label
+// the two classes honestly instead of the user mistaking a model gap for something to restore.
+const BLANKS =
+  ' Wenn du an einer Stelle eine Angabe offen lassen musst, die du nicht kennst, markiere sie' +
+  ' als Platzhalter in spitzen Klammern der Form ⟨…⟩ (zum Beispiel ⟨Empfängername⟩) —' +
+  ' niemals in eckigen Klammern wie [Name].'
 const PRESERVE =
-  ' Einige Angaben im Text wurden durch Platzhalter in spitzen Klammern der Form ⟨…⟩ ersetzt.' +
-  ' Gib jeden Platzhalter, der im Text vorkommt, unverändert und an derselben Stelle wieder.' +
-  ' Führe keine neuen Platzhalter ein und rate ihren Inhalt nicht.'
+  ' Vorhandene Platzhalter der Form ⟨…⟩ gibst du unverändert und an derselben Stelle wieder' +
+  ' und rätst ihren Inhalt nicht.'
 
 const PLACEHOLDER = /⟨[^⟩]*⟩/
 
 export function buildForwardMessages(wire: WireMessage[]): { role: WireMessage['role']; content: string }[] {
   const hasPlaceholders = wire.some((m) => PLACEHOLDER.test(m.content))
-  const system = BASE + MISSING_DOC + (hasPlaceholders ? PRESERVE : '')
+  const system = BASE + MISSING_DOC + BLANKS + (hasPlaceholders ? PRESERVE : '')
   return [{ role: 'system', content: system }, ...wire.map((m) => ({ role: m.role, content: m.content }))]
 }

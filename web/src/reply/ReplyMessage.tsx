@@ -4,8 +4,9 @@ import { buildReplyView } from './buildReplyView'
 import { buildCopyModel } from './buildCopyModel'
 import { buildRestoreSuggestion } from './buildRestoreSuggestion'
 import { renderMarkdown } from './renderMarkdown'
-import { Msg, Content } from '../i18n'
+import { Msg, Content, formatMessage } from '../i18n'
 import { color, radius, text, chip, monoLink } from '../design'
+import { font } from '../design/typeScale'
 import { motion } from '../design/motionTokens'
 
 // SF-5034 — the locally-restored reply (Handoff §1.2). full = every value restored; partial
@@ -31,15 +32,24 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
   let displayText = result.restoredText
   for (const [ph, val] of Object.entries(applied)) displayText = displayText.split(ph).join(val)
   const openNow = result.unresolved.filter((u) => !(u in applied))
+  // NG-25 — two classes of open ⟨…⟩: masked (in the mapping → NorthGuard removed it, a value
+  // exists to offer) vs model gap (not in the mapping → the model left it open for info it
+  // wasn't given; NorthGuard has nothing to offer and asks nothing of the user).
+  const maskedOpen = openNow.filter((u) => u in mapping)
+  const modelOpen = openNow.filter((u) => !(u in mapping))
+  const modelChip = { ...text.chip, color: color.muted, background: color.bgRaised, border: `1px dashed ${color.lineStrong}`, borderRadius: radius.chip, padding: '1px 6px' }
 
-  // F1 — render markdown, keeping the two run-level classes distinct: ⟨…⟩ placeholders as
-  // amber chips, rehydrated values with a dotted underline (Handoff §1.2). Longest values
-  // first so a value that contains another is matched whole.
+  // F1 — render markdown, keeping run-level classes distinct: masked ⟨…⟩ as amber chips,
+  // model-gap ⟨…⟩ as muted dashed chips, rehydrated values with a dotted underline (§1.2).
+  // Longest values first so a value that contains another is matched whole.
   const restoredValues = [...result.restoredSpans.map((s) => s.original), ...Object.values(applied)].sort((a, b) => b.length - a.length)
   const decor = {
     restoredValues,
-    chip: (token: string, key: string) => <span key={key} style={chip()}>{token}</span>,
-    restored: (value: string, key: string) => <span key={key} style={{ textDecoration: 'underline dotted', textUnderlineOffset: 2, color: color.ink }}>{value}</span>,
+    chip: (token: string, key: string) =>
+      token in mapping
+        ? <span key={key} style={chip()} title={formatMessage('reply.label_masked', locale)}>{token}</span>
+        : <span key={key} style={modelChip} title={formatMessage('reply.label_model', locale)}>{token}</span>,
+    restored: (value: string, key: string) => <span key={key} style={{ textDecoration: 'underline dotted', textUnderlineOffset: 2, color: color.ink, fontFamily: font.ui }}>{value}</span>,
   }
 
   function onCopy() {
@@ -68,10 +78,16 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
 
         <div data-testid="reply-footer" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6, ...text.monoMeta, color: color.muted }}>
           <Msg k={view.footerKey} locale={locale} p={{ n: view.restoredCount + view.openCount, k: view.restoredCount }} />
-          {view.openCount > 0 ? (
+          {maskedOpen.length > 0 ? (
             <>
               <span>·</span>
-              <Msg k="reply.open_placeholder" locale={locale} p={{ n: view.openCount }} />
+              <Msg k="reply.open_masked" locale={locale} p={{ n: maskedOpen.length }} style={{ color: color.amber }} />
+            </>
+          ) : null}
+          {modelOpen.length > 0 ? (
+            <>
+              <span>·</span>
+              <Msg k="reply.open_model" locale={locale} p={{ n: modelOpen.length }} style={{ color: color.muted }} />
             </>
           ) : null}
           {providerText ? (
@@ -102,11 +118,13 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
           </div>
         ) : null}
 
-        {openNow.map((ph) => {
+        {/* Masked, still open (NorthGuard's) — offer the session value with an explicit choice. */}
+        {maskedOpen.map((ph) => {
           if (ph in dismissed) return null
           const s = buildRestoreSuggestion(ph, mapping)
           return (
-            <div key={ph} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 8, background: color.amberChipBg, border: `1px solid ${color.touchedBorder}`, borderRadius: radius.info, padding: '8px 12px' }}>
+            <div key={ph} data-testid="masked-open" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 8, background: color.amberChipBg, border: `1px solid ${color.touchedBorder}`, borderRadius: radius.info, padding: '8px 12px' }}>
+              <Msg k="reply.label_masked" locale={locale} style={{ ...text.capsLabel, color: color.amber }} />
               <Content style={{ ...text.monoMeta, color: color.amber }}>
                 {ph}
                 {s.suggestion ? ` → ${s.suggestion}` : ''}
@@ -122,6 +140,14 @@ export function ReplyMessage({ result, locale, providerText, mapping = {} }: Rep
             </div>
           )
         })}
+
+        {/* Model gaps — honest attribution, no value to offer, and NO homework (NG-25). */}
+        {modelOpen.length > 0 ? (
+          <div data-testid="model-gap" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 8, background: color.bgRaised, border: `1px dashed ${color.lineStrong}`, borderRadius: radius.info, padding: '8px 12px' }}>
+            <Msg k="reply.label_model" locale={locale} style={{ ...text.capsLabel, color: color.muted }} />
+            <Msg k="reply.model_gap_note" locale={locale} style={{ ...text.explain, color: color.muted }} />
+          </div>
+        ) : null}
       </div>
     </article>
   )

@@ -3,19 +3,24 @@ import { buildForwardMessages } from './buildForwardMessages'
 import type { WireMessage } from '../types'
 
 describe('SF-5041 buildForwardMessages (P1 — forwarding system prompt)', () => {
-  it('omits the placeholder instruction entirely when nothing was masked (step 2)', () => {
+  it('a clean wire carries no PRESERVE clause (nothing to preserve)', () => {
     const wire: WireMessage[] = [{ role: 'user', content: 'Fasse die Vorteile von Wärmepumpen zusammen.' }]
     const sys = buildForwardMessages(wire)[0]!
     expect(sys.role).toBe('system')
-    expect(sys.content).not.toContain('⟨')
-    expect(sys.content).not.toMatch(/Platzhalter/i)
+    expect(sys.content).not.toMatch(/unverändert/i) // no "preserve existing placeholders" clause
   })
 
-  it('adds a preserve-only instruction when the wire carries placeholders (step 1)', () => {
+  it('adds the preserve clause when the wire carries placeholders (step 1)', () => {
     const wire: WireMessage[] = [{ role: 'user', content: 'Angebot von ⟨Lieferant 1⟩ prüfen.' }]
     const sys = buildForwardMessages(wire)[0]!
     expect(sys.content).toMatch(/Platzhalter/i)
     expect(sys.content).toMatch(/unverändert/i)
+  })
+
+  it('F5/NG-25: instructs the model to use ⟨…⟩ for its own blanks, never [square brackets]', () => {
+    const sys = buildForwardMessages([{ role: 'user', content: 'Schreib eine Antwort-Mail.' }])[0]!.content
+    expect(sys).toMatch(/spitzen Klammern/) // use angle brackets
+    expect(sys).toMatch(/eckigen Klammern/) // never square brackets
   })
 
   it('never seeds concrete example tokens the model could generalise from', () => {
