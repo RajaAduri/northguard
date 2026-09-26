@@ -1,5 +1,6 @@
 import { useState, type JSX } from 'react'
 import type { Locale, ReportForm } from '../types'
+import { ruleDisplayName } from '../mirror/ruleDisplayName'
 import { Msg, Content } from '../i18n'
 import { color, radius, text, sendButton, secondaryButton, chip } from '../design'
 
@@ -26,7 +27,7 @@ export function ReportPanel({ form, locale, onSubmit, onCancel }: ReportPanelPro
         <Msg k="report.span" locale={locale} />
         <Content style={chip()}>{form.faSpan}</Content>
         <Msg k="report.detected_by" locale={locale} />
-        <Msg k={form.detectedBy} locale={locale} p={{ name: form.ruleId ?? '' }} />
+        <Msg k={form.detectedBy} locale={locale} p={{ name: ruleDisplayName(form.ruleId, locale) }} />
         <Msg k="report.area" locale={locale} />
         <Content>{form.area}</Content>
       </div>
