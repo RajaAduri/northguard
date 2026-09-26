@@ -19,7 +19,10 @@ const NG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const TENANT_DIR = join(NG_ROOT, '.tenant')
 const PORT = Number(process.env.GATEWAY_PORT ?? 8080)
 const LLM_URL = process.env.LOCAL_LLM_URL ?? 'http://127.0.0.1:11434/v1'
-const LLM_MODEL = process.env.LOCAL_LLM_MODEL ?? 'gemma3:4b'
+// The forwarding path and the backstop have different requirements (Sprint 9 A/B): a >=7B
+// instruct model reliably preserves placeholders, a 4B does not. The backstop (a separate
+// service) can stay small; forwarding uses qwen2.5:7b-instruct by default.
+const FORWARD_MODEL = process.env.FORWARD_MODEL ?? 'qwen2.5:7b-instruct'
 const LLM_KEY = process.env.LOCAL_LLM_KEY ?? 'not-required'
 
 const DEMO_POLICY: ActivePolicy = {
@@ -69,7 +72,7 @@ async function forwardToProvider(wire: WireMessage[]): Promise<string> {
   const r = await fetch(`${LLM_URL}/chat/completions`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${LLM_KEY}` },
-    body: JSON.stringify({ model: LLM_MODEL, messages, temperature: 0.2, stream: false }),
+    body: JSON.stringify({ model: FORWARD_MODEL, messages, temperature: 0.2, stream: false }),
   })
   if (!r.ok) throw new Error(`provider ${r.status}`)
   const data = (await r.json()) as { choices: { message: { content: string } }[] }
@@ -98,7 +101,7 @@ const server = createServer(async (req, res) => {
     const url = req.url ?? '/'
     if (req.method === 'GET' && url === '/api/health') {
       const p = loadPolicy()
-      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, model: LLM_MODEL })
+      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL })
     }
     if (req.method === 'POST' && url === '/api/inspect') {
       const body = await readBody(req)
