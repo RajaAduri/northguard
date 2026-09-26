@@ -1,0 +1,75 @@
+/* SF-5066 — global design foundation. §4 tokens as CSS variables (documentation +
+   used by the html/body shell and the keyframes that inline styles cannot express).
+   Component elements take their colour/border/font/radius from the TS token modules so
+   the token-fidelity gate can assert them in jsdom; this file owns only the shell,
+   the reset, and the two animations (§2) that must live in a stylesheet. */
+:root {
+  --ng-bg-canvas: #070b14;
+  --ng-bg-surface: #0B1220;
+  --ng-bg-raised: #141d2e;
+  --ng-line: #1e2a3f;
+  --ng-line-strong: #2b3a52;
+  --ng-ink: #e8edf4;
+  --ng-muted: #8a97ab;
+  --ng-teal: #3FBFB0;
+  --ng-amber: #F5A623;
+  --ng-red: #e5657a;
+
+  --ng-font-serif: 'Fraunces', Georgia, serif;
+  --ng-font-ui: 'Inter Tight', system-ui, sans-serif;
+  --ng-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* Arbeitsfläche is a tool on the surface, not the document canvas (§4: bg.canvas is
+     document-only). */
+  background: var(--ng-bg-surface);
+  color: var(--ng-ink);
+  font-family: var(--ng-font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font-family: var(--ng-font-ui);
+}
+
+textarea,
+input {
+  font-family: var(--ng-font-ui);
+}
+
+/* §2 — the inspection sweep: a 2px teal line, width 40%, transparent→teal→transparent,
+   translateX(-100% → 260%), linear, looped; period = inspection duration. */
+@keyframes ng-inspection-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+/* §1.2 — the incoming-reply indicator: three dots pulsing, offset 180ms, period 1.1s. */
+@keyframes ng-dot-pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
