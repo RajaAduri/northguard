@@ -1,0 +1,146 @@
+[
+  {
+    "model": "gemma3:4b",
+    "design": "old",
+    "prompt": "clean_summary",
+    "has_mask": false,
+    "invented": [
+      "⟨Energiebilanz⟩",
+      "⟨Betriebskosten⟩",
+      "⟨Image⟩",
+      "⟨Energiepreisen⟩"
+    ],
+    "invented_count": 4,
+    "preserved": "0/0",
+    "reply": "Hier ist eine Zusammenfassung der Vorteile von Wärmepumpen für Gewerbekunden in drei Sätzen:\n\nWärmepumpen bieten Gewerbebetrieben erhebliche Kosteneinsparungen durch den effizienten Einsatz erneuerbarer Energien, was sich positiv auf die ⟨Energiebilanz⟩ auswirkt und die ⟨Betriebskosten⟩ reduziert.  Darüber hinaus tragen sie zur Nachhaltigkeit bei und verbessern das ⟨Image⟩ des Unternehmens, da sie den CO2-Ausstoß deutlich senken.  Schließlich ermöglichen Wärmepumpen eine flexible Anpassung an unterschiedliche Wärmebedarfsgrenzen und bieten eine zuverlässige Heizlösung, unabhängig von ⟨Energiepreisen⟩."
+  },
+  {
+    "model": "gemma3:4b",
+    "design": "old",
+    "prompt": "clean_email",
+    "has_mask": false,
+    "invented": [
+      "⟨Kundenname⟩",
+      "⟨Lieferdatum⟩",
+      "⟨Firmenname⟩",
+      "⟨Kontaktinformationen⟩"
+    ],
+    "invented_count": 4,
+    "preserved": "0/0",
+    "reply": "Betreff: Ihre Bestellung – Liefertermin\n\nSehr geehrte/r ⟨Kundenname⟩,\n\nvielen Dank für Ihre Anfrage bezüglich des Liefertermins Ihrer Bestellung.\n\nWir freuen uns, Ihnen mitteilen zu können, dass Ihre Bestellung voraussichtlich am ⟨Lieferdatum⟩ bei Ihnen eintreffen wird. \n\nSie erhalten von uns eine weitere E-Mail mit der Sendungsverfolgungsnummer, sobald die Bestellung versandt wurde.\n\nSollten Sie weitere Fragen haben, zögern Sie bitte nicht, uns zu kontaktieren.\n\nMit freundlichen Grüßen,\n\nIhr Team von ⟨Firmenname⟩\n\n⟨Kontaktinformationen⟩"
+  },
+  {
+    "model": "gemma3:4b",
+    "design": "old",
+    "prompt": "masked_two",
+    "has_mask": true,
+    "invented": [
+      "⟨Produkt/Dienstleistung⟩",
+      "⟨Kundenname⟩",
+      "⟨Ihr Unternehmen/Name⟩",
+      "⟨Produkt/Dienstleistung⟩",
+      "⟨Produkt/Dienstleistung⟩",
+      "⟨Preis⟩"
+    ],
+    "invented_count": 6,
+    "preserved": "2/2",
+    "reply": "Okay, hier ist ein Entwurf für eine E-Mail, die du an ⟨E-Mail-Adresse 1⟩ senden kannst, basierend auf den Konditionen von ⟨Lieferant 1⟩. Bitte fülle die Platzhalter mit den entsprechenden Informationen aus und passe den Text gegebenenfalls an deine spezifischen Bedürfnisse an.\n\n**Betreff:** Angebot von ⟨Lieferant 1⟩ – ⟨Produkt/Dienstleistung⟩\n\n**Sehr geehrte/r ⟨Kundenname⟩,**\n\nich hoffe, diese E-Mail findet Sie gut.\n\nIm Namen von ⟨Ihr Unternehmen/Name⟩ möchten wir Ihnen ein Angebot für ⟨Produkt/Dienstleistung⟩ von ⟨Lieferant 1⟩ unterbreiten.  Wir haben die Konditionen von ⟨Lieferant 1⟩ geprüft und sind überzeugt, dass diese für unsere Bedürfnisse geeignet sind.\n\nDie wichtigsten Konditionen sind wie folgt:\n\n*   **Produkt/Dienstleistung:** ⟨Produkt/Dienstleistung⟩\n*   **Preis:** ⟨Preis⟩ (Bitte beachten Sie, dass dies der Preis pro ⟨Einheit/St"
+  },
+  {
+    "model": "gemma3:4b",
+    "design": "new",
+    "prompt": "clean_summary",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Wärmepumpen bieten Gewerbekunden erhebliche Kosteneinsparungen durch den effizienten Einsatz erneuerbarer Energien, was sich positiv auf die Betriebskosten auswirkt.  Darüber hinaus reduzieren sie den CO2-Fußabdruck des Unternehmens und tragen zur Nachhaltigkeit bei, was zunehmend wichtig für Kunden und die Öffentlichkeit wird.  Schließlich sind Wärmepumpen wartungsarm und bieten eine langfristige Investition mit geringen laufenden Kosten."
+  },
+  {
+    "model": "gemma3:4b",
+    "design": "new",
+    "prompt": "clean_email",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Hallo [Name des Kunden],\n\nvielen Dank für Ihre Nachricht!\n\nIhre Bestellung wird voraussichtlich am [Lieferdatum] bei Ihnen eintreffen. Wir werden Sie natürlich auch noch kurz vor Versand informieren.\n\nBei Fragen stehen wir Ihnen gerne zur Verfügung.\n\nMit freundlichen Grüßen,\n\n[Ihr Name/Firmenname]\n\n---\n\nWie wäre es, wenn Sie mir noch den Namen des Kunden und das genaue Lieferdatum nennen, damit ich die E-Mail noch persönlicher gestalten kann?"
+  },
+  {
+    "model": "gemma3:4b",
+    "design": "new",
+    "prompt": "masked_two",
+    "has_mask": true,
+    "invented": [
+      "⟨Ansprechpartner 1⟩",
+      "⟨Ihr Name⟩",
+      "⟨Ihre Position⟩",
+      "⟨Ihr Unternehmen⟩",
+      "⟨Ihre Telefonnummer⟩",
+      "⟨Ihre E-Mail-Adresse⟩"
+    ],
+    "invented_count": 6,
+    "preserved": "1/2",
+    "reply": "Betreff: Anfrage zu Konditionen – ⟨Lieferant 1⟩\n\nSehr geehrte/r Herr/Frau ⟨Ansprechpartner 1⟩,\n\nich schreibe Ihnen heute, um Konditionen von ⟨Lieferant 1⟩ für [kurze Beschreibung des Produkts/der Dienstleistung] zu erfragen.\n\nWir sind an einer möglichen Zusammenarbeit interessiert und möchten gerne mehr über Ihre Angebote erfahren. Insbesondere interessieren uns folgende Punkte:\n\n*   [Punkt 1, z.B. Preis pro Stück/Stunde]\n*   [Punkt 2, z.B. Zahlungsbedingungen]\n*   [Punkt 3, z.B. Lieferzeiten]\n*   [Punkt 4, z.B. Garantiebedingungen]\n\nKönnten Sie uns bitte eine detaillierte Preisliste und gegebenenfalls ein Angebot zukommen lassen?\n\nVielen Dank für Ihre Zeit und Mühe.\n\nMit freundlichen Grüßen,\n\n⟨Ihr Name⟩\n\n⟨Ihre Position⟩\n\n⟨Ihr Unternehmen⟩\n\n⟨Ihre Telefonnummer⟩\n\n⟨Ihre E-Mail-Adresse⟩"
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "old",
+    "prompt": "clean_summary",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Wärmepumpen bieten Gewerbekunden eine umweltfreundliche und energieeffiziente Lösung für die Heizung und Kühlung ihrer Gebäude. Durch die Nutzung der natürlichen Wärme des Erdreichs, des Wassers oder der Luft können sie signifikante Energieeinsparungen erzielen, was zu längeren Betriebszeiten und reduzierten Kosten führt. Darüber hinaus fördern sie die Nachhaltigkeit und können oft zu steuerlichen Vorteilen und Förderprogrammen berechtigen."
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "old",
+    "prompt": "clean_email",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Betreff: Liefertermin\n\nSehr geehrter [Kundenname],\n\nvielen Dank für Ihre Nachricht und Ihr Verständnis. Leider haben wir noch keine genauen Informationen über den Liefertermin für Ihre Bestellung. Wir arbeiten ständig daran, und sobald wir mehr wissen, informieren wir Sie unverzüglich.\n\nSollten Sie weitere Fragen haben oder zusätzliche Informationen benötigen, zögern Sie bitte nicht, uns zu kontaktieren.\n\nVielen Dank und freundliche Grüße,\n[Ihr Name]\n[Ihre Position]"
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "old",
+    "prompt": "masked_two",
+    "has_mask": true,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "1/2",
+    "reply": "Betreff: Konditionen bei [⟨Lieferant 1⟩]\n\nSehr geehrte Damen und Herren,\n\nhiermit möchten wir uns anlegen, dass wir uns über die aktuellen Lieferbedingungen bei [⟨Lieferant 1⟩] informieren möchten. Es ist wichtig für uns, dass wir alle relevanten Aspekte dieser Bedingungen verstehen, um eine optimale Zusammenarbeit sicherzustellen.\n\nWir würden uns freuen, wenn Sie uns die folgenden Informationen zur Verfügung stellen könnten:\n\n1. **Lieferzeiten und Termine**: Wie laufen die Lieferzeiten ab, und gibt es spezielle Termine, die wir beachten müssen?\n2. **Rücknahmekonditionen**: Wie laufen die Rücknahmekonditionen ab, insbesondere in Fällen, in denen die Ware nicht zufriedenstellend ist?\n3. **Preisstruktur**: Welche Faktoren beeinflussen den Preis, und gibt es spezielle Rabatte oder Förderungen, die wir in Betracht ziehen können?\n4. **Z"
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "new",
+    "prompt": "clean_summary",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Wärmepumpen bieten Gewerbekunden eine umweltfreundliche und energieeffiziente Lösung für die Heizung und Kühlung. Sie nutzen die natürliche Wärme des Bodens, der Luft oder des Wassers, um Energie zu sparen und die Betriebskosten zu reduzieren. Darüber hinaus fördern sie den Energieverbrauch nachhaltiger und können zu einem positiven Image bei Kunden und Partnern beitragen."
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "new",
+    "prompt": "clean_email",
+    "has_mask": false,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/0",
+    "reply": "Betreff: Liefertermin\n\nSehr geehrter Herr/Madam [Nachname],\n\nvielen Dank für Ihre Nachricht und Ihr Interesse an unseren Produkten.\n\nLeider haben wir noch keine genauen Lieferdaten, da der Liefertermin noch nicht festgelegt ist. Sobald wir mehr Informationen haben, informieren wir Sie unverzüglich.\n\nWir bedanken uns für Ihre Geduld und freuen uns darauf, Ihnen bald mit weiteren Details zu antworten.\n\nFalls Sie weitere Fragen haben, stehe ich Ihnen gerne zur Verfügung.\n\nMit freundlichen Grüßen,\n\n[Ihr Name]  \n[Ihre Position]  \n[Kontaktinformationen]"
+  },
+  {
+    "model": "qwen2.5:7b-instruct",
+    "design": "new",
+    "prompt": "masked_two",
+    "has_mask": true,
+    "invented": [],
+    "invented_count": 0,
+    "preserved": "0/2",
+    "reply": "Betreff: Konditionen von Lieferant 1\n\nSehr geehrte Damen und Herren,\n\nhiermit möchte ich mich an Sie wenden, um die aktuellen Konditionen von Lieferant 1 zu besprechen. Es wäre uns sehr wichtig, die spezifischen Bedingungen für zukünftige Lieferungen zu klären.\n\nWir würden uns freuen, wenn Sie uns die wichtigsten Punkte zu einem persönlichen Gespräch vorbeibringen könnten. Bitte teilen Sie uns auch mit, wann und wie wir uns verbindlich auf Ihre Bedingungen einrichten können.\n\nVielen Dank im Voraus für Ihre Unterstützung und ich freue mich auf eine positive Zusammenarbeit.\n\nMit freundlichen Grüßen,\n\n[Ihr Name]"
+  }
+]
