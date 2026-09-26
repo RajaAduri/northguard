@@ -174,6 +174,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
             editable
             onDraftChange={setDraft}
             onSend={onSend}
+            blockValues={verdict ? buildClientMapping(draft, verdict.spans) : undefined}
             report={{
               form: reportSpan ? buildReportForm(reportSpan, 'web-1') : null,
               done: reportDone,

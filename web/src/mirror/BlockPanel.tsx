@@ -1,8 +1,8 @@
 import type { JSX } from 'react'
-import type { InspectionVerdict, Locale, RedactionSpan } from '../types'
+import type { InspectionVerdict, Locale, PlaceholderMapping, RedactionSpan } from '../types'
 import { buildBlockModel } from './buildBlockModel'
 import { ruleDisplayName } from './ruleDisplayName'
-import { Msg } from '../i18n'
+import { Msg, formatMessage } from '../i18n'
 import { color, radius, text, secondaryButton, monoLink } from '../design'
 
 // SF-5025 — the blocked variant of the mirror (Handoff §1.1 `blocked`). No submission is
@@ -13,12 +13,17 @@ import { color, radius, text, secondaryButton, monoLink } from '../design'
 export interface BlockPanelProps {
   verdict: InspectionVerdict
   locale: Locale
+  values?: PlaceholderMapping // client-side originals, for echo areas only (never sent)
   onReport?: (span: RedactionSpan) => void
 }
 
-export function BlockPanel({ verdict, locale, onReport }: BlockPanelProps): JSX.Element {
+export function BlockPanel({ verdict, locale, values, onReport }: BlockPanelProps): JSX.Element {
   const model = buildBlockModel(verdict)
   const areas = model.areas.join(', ')
+  // S10 decision: echo the detected value unless a blocking area is credential-class
+  // (echoBlockedSpans === false). The value is the user's own text, shown only here.
+  const echo = !verdict.touchedAreas.some((a) => a.mode === 'block' && a.echoBlockedSpans === false)
+  const spansText = model.detected.map((d) => `„${values?.[d.value] ?? d.value}“`).join(` ${formatMessage('block.body_join', locale)} `)
 
   return (
     <section
@@ -37,7 +42,9 @@ export function BlockPanel({ verdict, locale, onReport }: BlockPanelProps): JSX.
         <Msg k="block.summary" locale={locale} p={{ area: areas }} style={{ ...text.monoMeta, color: color.muted }} />
       </header>
 
-      <Msg k="block.body" locale={locale} p={{ area: areas }} as="p" style={{ ...text.explain, color: color.ink, margin: '0 0 8px' }} />
+      {echo
+        ? <Msg k="block.body" locale={locale} p={{ spans: spansText }} as="p" style={{ ...text.explain, color: color.ink, margin: '0 0 8px' }} />
+        : <Msg k="block.body_area" locale={locale} p={{ area: areas }} as="p" style={{ ...text.explain, color: color.ink, margin: '0 0 8px' }} />}
 
       <ul style={{ listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'grid', gap: 4 }}>
         {model.detected.map((d, i) => (

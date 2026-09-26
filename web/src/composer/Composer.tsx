@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import type { ComposerState, InspectionVerdict, Locale, RedactionSpan, ReportForm, ReportDone } from '../types'
+import type { ComposerState, InspectionVerdict, Locale, PlaceholderMapping, RedactionSpan, ReportForm, ReportDone } from '../types'
 import { deriveComposerView } from './deriveComposerView'
 import { Msg, formatMessage } from '../i18n'
 import { color, radius, text, sendButton, secondaryButton, composerCardBorder, inspectionSweepParams } from '../design'
@@ -34,6 +34,7 @@ export interface ComposerProps {
   onDraftChange?: (v: string) => void
   onSend?: () => void
   report?: ReportSlot
+  blockValues?: PlaceholderMapping // client-side originals for an echo-class block area
 }
 
 export function Composer({
@@ -47,6 +48,7 @@ export function Composer({
   onDraftChange,
   onSend,
   report,
+  blockValues,
 }: ComposerProps): JSX.Element {
   const view = deriveComposerView(state, verdict, degraded)
   const sweep = inspectionSweepParams(inspectionMs)
@@ -131,7 +133,7 @@ export function Composer({
             ) : state === 'report-done' && report?.done ? (
               <ReportDonePanel done={report.done} locale={locale} onContinue={report.onCancel} />
             ) : state === 'blocked' ? (
-              <BlockPanel verdict={verdict} locale={locale} onReport={report?.onSelectSpan} />
+              <BlockPanel verdict={verdict} locale={locale} values={blockValues} onReport={report?.onSelectSpan} />
             ) : (
               <SubmissionMirror verdict={verdict} locale={locale} onReport={report?.onSelectSpan} />
             )

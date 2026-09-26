@@ -46,9 +46,13 @@ export function assembleDecision(input: {
   coverage: Coverage
 }): VerdictDecision {
   const modeOf = new Map(input.policy.areas.map((a) => [a.id, a.mode ?? 'redact']))
+  // Sprint 10 decision: carry the per-area echo flag through so the block UI knows whether
+  // to show the detected value (default true) or only the area name (credential-class).
+  const echoOf = new Map(input.policy.areas.map((a) => [a.id, a.echoBlockedSpans ?? true]))
   const touchedAreas = resolveTouchedAreas(input.ruleHits, input.llmFindings).map((a) => ({
     ...a,
     mode: modeOf.get(a.area) ?? 'redact',
+    echoBlockedSpans: echoOf.get(a.area) ?? true,
   }))
   return {
     verdict: decideVerdictMode(touchedAreas, input.policy),

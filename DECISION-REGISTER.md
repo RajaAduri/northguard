@@ -346,3 +346,27 @@ silent self-approval is what change control exists to prevent. Therefore:
 | B5 business-event record | **NG-23** | E4 request-entry (`features`,`workTopic`); E7 single source | amends US-014/022/025 | Spec'd; ⚠ F3 |
 | B6 language | — | E5 `AF-505` + E6 strings (Schutzprofil/Review-Vorschlag/Änderungsantrag) | US-036 (amended) | Spec'd |
 | Flags | — | F1 (NG-3/guardActivation), F4 (publishActivePolicy) | US-042 build | **Flagged, unresolved** |
+
+## 10. Sprint 10 decision — per-area block-echo (2026-09-26)
+
+**Decision.** Whether a blocked prompt echoes its detected value back to the user is a
+**per-area** choice, not a global rule. The policy `Area` carries `echoBlockedSpans`
+(default **true**); credential-class areas (e.g. `zugangsdaten`) set it **false**.
+
+- **Echo true** (default, e.g. *Preise & Margen* if it blocked): the block panel shows the
+  detected value — *"Erkannt wurde „Zielmarge von 34 %“…"* — because the value is the user's
+  own text, shown only in their browser, and naming it is what makes rephrasing not
+  guesswork. This renders the **literal Handoff §3 `block.body` `{spans}` string**.
+- **Echo false** (credential-class, e.g. *Zugangsdaten*): the panel names the **area only** —
+  *"Im Bereich Zugangsdaten wurde etwas erkannt, das nicht übermittelt wird…"* — via a new
+  `block.body_area` string. Echoing a credential would defeat the block.
+
+**Scoped deviation, recorded.** `block.body_area` is a **deliberate deviation** from the
+literal §3 catalogue string, applied **only** to credential-class areas. The literal
+`{spans}` string is retained and used for every echo-true area. The flag flows
+policy `Area.echoBlockedSpans` → `AreaAttribution.echoBlockedSpans` (assembleDecision) → the
+block UI; the detected value itself is client-side only (NG-14) and never crosses the wire.
+
+| Item | New field | Changed | Where | Status |
+|------|-----------|---------|-------|--------|
+| Per-area echo | `Area.echoBlockedSpans`, `AreaAttribution.echoBlockedSpans` | assembleDecision populates it; BlockPanel branches on it; `block.body_area` added (DE/EN) | E3 verdict + E5 block panel | Applied |

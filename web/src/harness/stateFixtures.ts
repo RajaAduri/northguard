@@ -44,7 +44,7 @@ const touched: InspectionVerdict = {
 
 const blocked: InspectionVerdict = {
   verdict: 'block',
-  touchedAreas: [{ area: 'Zugangsdaten', mode: 'block', layers: ['llm'] }],
+  touchedAreas: [{ area: 'Zugangsdaten', mode: 'block', layers: ['llm'], echoBlockedSpans: false }],
   spans: [span({ offset: 19, length: 12, area: 'Zugangsdaten', layer: 'llm', placeholder: '⟨Zugangsdaten⟩' })],
   redactedPrompt: 'Nutze das Passwort ⟨Zugangsdaten⟩ für den Login.',
   displayPlaceholders: [],

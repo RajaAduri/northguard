@@ -27,6 +27,10 @@ export interface AreaAttribution {
   area: string
   mode: AreaMode
   layers: Layer[]
+  // Sprint 10 decision: whether a BLOCK panel echoes the detected value back to the user
+  // (their own text, shown only in their browser). Default true; false for credential-class
+  // areas where echoing defeats the block. Sourced from the policy Area.
+  echoBlockedSpans?: boolean
 }
 
 export interface DisplayPlaceholder {
@@ -85,6 +89,11 @@ export interface Area {
   provenance?: string
   mode?: AreaMode
   confirmed?: boolean
+  // Sprint 10 decision: when this area blocks, whether its detected value is echoed back to
+  // the user (default true — the value is their own text, shown only in their browser, and
+  // it makes rephrasing possible). Set false for credential-class areas (e.g. Zugangsdaten),
+  // where echoing would defeat the block.
+  echoBlockedSpans?: boolean
 }
 
 export interface SidecarGraph {

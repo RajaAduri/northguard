@@ -28,7 +28,7 @@ const DEMO_POLICY: ActivePolicy = {
     { id: 'preise-margen', label: 'Preise & Margen', mode: 'redact' },
     { id: 'kundendaten', label: 'Kundendaten', mode: 'redact' },
     { id: 'lieferanten-konditionen', label: 'Lieferanten & Konditionen', mode: 'redact' },
-    { id: 'zugangsdaten', label: 'Zugangsdaten', mode: 'block' },
+    { id: 'zugangsdaten', label: 'Zugangsdaten', mode: 'block', echoBlockedSpans: false }, // credential-class: never echo the value (S10 decision)
   ],
 }
 function loadPolicy(): ActivePolicy {
