@@ -127,15 +127,18 @@ export function Composer({
         )}
       </div>
 
-      {/* Reserved mirror space (rule 14): 0fr↔1fr, no layout jump. */}
+      {/* Reserved mirror space (rule 14): opens smoothly between textfield and footer with
+          no layout jump. Uses an animated max-height rather than the 0fr↔1fr grid trick —
+          in an auto-height composer the fr track collapses to 0px when it animates open
+          (the child's min-height:0 removes its content floor), which hid the result. */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateRows: view.mirrorOpen ? '1fr' : '0fr',
-          transition: `grid-template-rows ${motion.mirrorToggle.ms}ms ${motion.mirrorToggle.curve}`,
+          overflow: 'hidden',
+          maxHeight: view.mirrorOpen ? 2000 : 0,
+          transition: `max-height ${motion.mirrorToggle.ms}ms ${motion.mirrorToggle.curve}`,
         }}
       >
-        <div style={{ minHeight: 0, overflow: 'hidden' }}>
+        <div>
           {view.mirrorOpen && verdict ? (
             state === 'report' && report?.form ? (
               <ReportPanel form={report.form} locale={locale} onSubmit={report.onSubmit} onCancel={report.onCancel} />
