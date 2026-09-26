@@ -185,7 +185,23 @@ export function Composer({
           padding: '8px 18px 10px',
         }}
       >
-        <Msg k={view.statusKey} locale={locale} p={{ n: verdict?.touchedAreas.length ?? 0 }} style={{ ...text.monoStatus, color: color.muted }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* F6 — attachment is deliberately deferred (DECISION-REGISTER §11). A disabled
+              control signposts it in progress rather than reading as an oversight; pasting
+              document text already works and is inspected + masked. */}
+          <button
+            type="button"
+            data-testid="attach-button"
+            data-content=""
+            disabled
+            aria-label={formatMessage('composer.attach', locale)}
+            title={formatMessage('composer.attach_tooltip', locale)}
+            style={{ background: 'transparent', border: `1px solid ${color.line}`, borderRadius: radius.smallButton, color: color.muted, padding: '4px 8px', cursor: 'not-allowed', fontFamily: text.monoStatus.fontFamily, fontSize: 13 }}
+          >
+            📎
+          </button>
+          <Msg k={view.statusKey} locale={locale} p={{ n: verdict?.touchedAreas.length ?? 0 }} style={{ ...text.monoStatus, color: color.muted }} />
+        </div>
         <button
           type="button"
           data-testid="send-button"

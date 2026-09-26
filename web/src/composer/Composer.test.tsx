@@ -21,4 +21,10 @@ describe('SF-5015 Composer (render smoke, jsdom)', () => {
     render(<Composer state="clean" verdict={null} degraded locale="de" />)
     expect(screen.getByTestId('degraded-strip')).toBeTruthy()
   })
+  it('F6: the attachment control is present but disabled (signposted, not built)', () => {
+    render(<Composer state="idle" verdict={null} locale="de" />)
+    const attach = screen.getByTestId('attach-button') as HTMLButtonElement
+    expect(attach.disabled).toBe(true)
+    expect(attach.getAttribute('title')).toMatch(/Vorbereitung/)
+  })
 })

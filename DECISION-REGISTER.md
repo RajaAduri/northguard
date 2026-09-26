@@ -370,3 +370,18 @@ block UI; the detected value itself is client-side only (NG-14) and never crosse
 | Item | New field | Changed | Where | Status |
 |------|-----------|---------|-------|--------|
 | Per-area echo | `Area.echoBlockedSpans`, `AreaAttribution.echoBlockedSpans` | assembleDecision populates it; BlockPanel branches on it; `block.body_area` added (DE/EN) | E3 verdict + E5 block panel | Applied |
+
+## 11. Sprint 11 decision — document attachment deferred (2026-09-27)
+
+**Decision.** File attachment (PDF/DOCX) in the composer is **deliberately deferred**, not
+overlooked. Pasting document text into the composer already works end-to-end — it is
+inspected, masked and answered — so the capability exists; only the file-upload affordance is
+absent. The composer shows a **disabled** attachment control with a tooltip
+(*"Dateianhang (PDF, DOCX) — in Vorbereitung. Fügen Sie den Text vorerst direkt ein; er wird
+genauso geprüft und maskiert."* / EN equivalent) so its status reads as in-progress.
+
+**Why deferred, not a quick control.** Real attachment is a scoped feature, not a button: it
+needs text extraction (PDF/DOCX), chunking, **placeholder consistency across chunks** (the
+same entity must map to the same ⟨…⟩ across a long document — NG-10/NG-11 over multiple
+inspection calls), and context-window handling for large files. That belongs in its own story,
+after the chat surface is solid. No attachment logic was built this sprint.
