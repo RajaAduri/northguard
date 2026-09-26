@@ -6,7 +6,7 @@ import { motion } from './design/motionTokens'
 import { Composer } from './composer/Composer'
 import { AreaMenuButton } from './composer/AreaMenuButton'
 import { ReplyMessage } from './reply'
-import { buildWireTranscriptView } from './provider-view'
+import { ViewToggle, selectFootnote } from './provider-view'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from './rooms'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
 import { stripUnmappedPlaceholders } from './reply/stripUnmappedPlaceholders'
@@ -50,7 +50,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [state, setState] = useState<ComposerState>('idle')
   const [verdict, setVerdict] = useState<InspectionVerdict | null>(null)
   const [turns, setTurns] = useState<Turn[]>([])
-  const [showProvider, setShowProvider] = useState(false)
+  const [view, setView] = useState<'own' | 'provider'>('own')
   const [error, setError] = useState<string | null>(null)
   const pendingSend = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -127,7 +127,6 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
       : { labelKey: 'header.areas_protected', n: DEMO_AREA_COUNT }
 
   const title = turns[0] ? turns[0].original.replace(/⟨[^⟩]*⟩/g, '').split(/\s+/).slice(0, 6).join(' ') : null
-  const wireView = buildWireTranscriptView(wireHistory)
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
@@ -135,30 +134,17 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 57, padding: '14px 28px', borderBottom: `1px solid ${color.line}` }}>
           {title ? <Content style={{ ...text.headerTitle, color: color.ink }}>{title}</Content> : <Msg k="header.new_title" locale={L} style={{ ...text.headerTitle, color: color.ink }} />}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {turns.length > 0 ? (
-              <div style={{ display: 'flex', gap: 4 }}>
-                <button type="button" onClick={() => setShowProvider(false)} style={{ ...secondaryButton, borderColor: showProvider ? color.line : color.teal, color: showProvider ? color.muted : color.ink }}>
-                  <Msg k="header.view_own" locale={L} />
-                </button>
-                <button type="button" onClick={() => setShowProvider(true)} style={{ ...secondaryButton, borderColor: showProvider ? color.teal : color.line, color: showProvider ? color.ink : color.muted }}>
-                  <Msg k="header.view_provider" locale={L} />
-                </button>
-              </div>
-            ) : null}
-            <AreaMenuButton labelKey={areaMenu.labelKey} n={areaMenu.n} locale={L} />
-          </div>
+          <AreaMenuButton labelKey={areaMenu.labelKey} n={areaMenu.n} locale={L} />
         </header>
 
         <main style={{ flex: 1, width: '100%', maxWidth: 820, margin: '0 auto', padding: '24px 28px 0', boxSizing: 'border-box' }}>
-          <section style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 18 }}>
-            {showProvider
-              ? <ProviderView wireView={wireView} />
-              : turns.map((t, i) => <TurnView key={i} turn={t} />)}
+          <ViewToggle view={view} wire={wireHistory} sentCount={turns.length} locale={L} onToggle={setView} />
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 18, margin: '12px 0 18px' }}>
+            {view === 'own' ? turns.map((t, i) => <TurnView key={i} turn={t} />) : null}
           </section>
 
           <Composer state={state} verdict={verdict} degraded={degraded} locale={L} draft={draft} editable onDraftChange={setDraft} onSend={onSend} />
-          <Msg k={turns.length > 0 ? 'footnote.restored' : 'footnote.default'} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
+          <Msg k={selectFootnote({ view, hasRestored: turns.some((t) => t.rehydrate.restoredSpans.length > 0) })} locale={L} as="p" style={{ ...text.footnote, color: color.muted, textAlign: 'center', margin: '10px 0 24px' }} />
           {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
         </main>
       </div>
@@ -198,20 +184,6 @@ function TurnView({ turn }: { turn: Turn }) {
       </div>
       <ReplyMessage result={turn.rehydrate} locale={L} providerText={turn.providerReply} mapping={turn.mapping} />
     </div>
-  )
-}
-
-function ProviderView({ wireView }: { wireView: ReturnType<typeof buildWireTranscriptView> }) {
-  return (
-    <section data-testid="provider-view" style={{ background: color.bgRaised, border: `1px solid ${color.line}`, borderRadius: radius.mirror, padding: 16 }}>
-      <Msg k="footnote.provider_view" locale={L} as="p" style={{ ...text.monoAttribution, color: color.muted, margin: '0 0 10px' }} />
-      {wireView.turns.map((t, i) => (
-        <Content key={i} as="div" style={{ ...text.monoWire, color: t.role === 'user' ? color.ink : color.muted, margin: '4px 0' }}>
-          {t.content}
-        </Content>
-      ))}
-      {wireView.turns.length === 0 ? <Msg k="composer.status_nothing_sent" locale={L} style={{ ...text.monoStatus, color: color.muted }} /> : null}
-    </section>
   )
 }
 
