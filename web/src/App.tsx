@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { inspect, forward, briefing, report as postReport, fpQueue } from './apiClient'
+import { inspect, forward, briefing, report as postReport, fpQueue, health } from './apiClient'
 import { Msg, Content, formatMessage } from './i18n'
 import { color, radius, text, secondaryButton, tertiaryButton } from './design'
 import { motion } from './design/motionTokens'
@@ -51,6 +51,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [reportDone, setReportDone] = useState<ReportDone | null>(null)
   const [notices, setNotices] = useState<string[]>([])
   const [fpCount, setFpCount] = useState(0)
+  const [policy, setPolicy] = useState<{ name?: string; hash?: string }>({})
   const [sendingUi, setSendingUi] = useState(false)
   const pendingSend = useRef(false)
   const sending = useRef(false)
@@ -64,8 +65,13 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const degraded = verdict?.coverage === 'rules-only'
 
   useEffect(() => {
-    // F4 — seed the false-positive badge count from the ledger-backed queue.
-    void fpQueue().then((q) => setFpCount(q.count)).catch(() => {})
+    // Active policy name + hash for the header (shown at all times), and the FP badge count.
+    void health()
+      .then((h) => {
+        setPolicy({ name: h.policyName, hash: h.policyHash })
+        if (typeof h.fpOpen === 'number') setFpCount(h.fpOpen)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -188,7 +194,14 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 57, padding: '14px 28px', borderBottom: `1px solid ${color.line}` }}>
           {title ? <Content style={{ ...text.headerTitle, color: color.ink }}>{title}</Content> : <Msg k="header.new_title" locale={L} style={{ ...text.headerTitle, color: color.ink }} />}
-          <AreaMenuButton labelKey={areaMenu.labelKey} n={areaMenu.n} locale={L} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {policy.name ? (
+              <Content data-testid="policy-header" style={{ ...text.monoMeta, color: color.muted }}>
+                {policy.hash ? `${policy.name} · ${policy.hash}` : policy.name}
+              </Content>
+            ) : null}
+            <AreaMenuButton labelKey={areaMenu.labelKey} n={areaMenu.n} locale={L} />
+          </div>
         </header>
 
         <main style={{ flex: 1, width: '100%', maxWidth: 820, margin: '0 auto', padding: '24px 28px 0', boxSizing: 'border-box' }}>

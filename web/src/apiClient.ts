@@ -26,6 +26,8 @@ export interface HealthStatus {
   sidecar: boolean
   forwardModel?: string
   policyVersion?: string
+  policyName?: string // active policy name, shown in the header at all times
+  policyHash?: string // short content hash of the active policy
   areas?: number
   fpOpen?: number // open false-positive reports (for the management badge)
 }

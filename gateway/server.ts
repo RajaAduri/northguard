@@ -5,6 +5,7 @@
 // reply) and NG-1 (wire isolation) are enforced inside assembleVerdict.
 //   Run: npx vite-node gateway/server.ts
 import { createServer } from 'node:http'
+import { createHash } from 'node:crypto'
 import { readFileSync, existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
@@ -148,7 +149,12 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && url === '/api/health') {
       const p = loadPolicy()
       const [backstop, sidecar, reports] = await Promise.all([ping(BACKSTOP_HEALTH_URL), ping(SIDECAR_HEALTH_URL), readFpReports()])
-      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL, backstop, sidecar, fpOpen: reports.length })
+      const policyHash = createHash('sha256').update(JSON.stringify(p.areas) + p.policyVersion).digest('hex').slice(0, 7)
+      return send(res, 200, {
+        ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL,
+        policyName: `Schutzprofil ${p.policyVersion}`, policyHash,
+        backstop, sidecar, fpOpen: reports.length,
+      })
     }
     if (req.method === 'POST' && url === '/api/report') {
       const body = await readBody(req)
