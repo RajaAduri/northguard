@@ -11,9 +11,12 @@ import { dirname, join } from 'node:path'
 import { assembleVerdict } from '../core/src/features/inspection/verdict'
 import { loadRulesLayer } from '../core/src/features/inspection/rules'
 import { setLedgerPath } from '../core/src/features/ledger/append'
+import { writeGovernanceEvent } from '../core/src/features/ledger/governance'
+import { groupReportsByTrigger } from '../core/src/features/management/fp-queue'
+import { parseLedgerStream } from '../core/src/features/ledger/query/parseLedgerStream'
 import { composeWeeklyBriefing } from '../core/src/features/management/briefing'
 import { buildForwardMessages } from '../web/src/forward/buildForwardMessages'
-import type { ActivePolicy, InspectionRequest, KeyMaterial, RecurringWorkFinding, WireMessage } from '../core/lib/types'
+import type { ActivePolicy, FpReport, InspectionRequest, KeyMaterial, Layer, RecurringWorkFinding, WireMessage } from '../core/lib/types'
 
 const NG_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const TENANT_DIR = join(NG_ROOT, '.tenant')
@@ -44,9 +47,35 @@ function loadPolicy(): ActivePolicy {
 }
 
 const key: KeyMaterial = { secret: process.env.NG_TENANT_SECRET ?? 'tenant-demo-secret', keyEpoch: 1 }
+const LEDGER_PATH = join(TENANT_DIR, 'ledger.jsonl')
 mkdirSync(TENANT_DIR, { recursive: true })
-setLedgerPath(join(TENANT_DIR, 'ledger.jsonl'))
+setLedgerPath(LEDGER_PATH)
 loadRulesLayer(join(NG_ROOT, 'lexicons'))
+
+// F4 — read the false-positive reports back out of the ledger (they are governance events).
+// Grouped by trigger, never by reporter (NG-13); the reporter is already a pseudonym (NG-19).
+async function readFpReports(): Promise<FpReport[]> {
+  const reports: FpReport[] = []
+  try {
+    for await (const e of parseLedgerStream(LEDGER_PATH)) {
+      if (e.kind === 'governance' && e.govKind === 'fp-report') {
+        const p = (e.payload ?? {}) as { faId?: string; area?: string; layer?: Layer; ruleId?: string }
+        reports.push({
+          faId: p.faId ?? e.id,
+          area: p.area ?? '',
+          layer: p.layer ?? 'rule',
+          ...(p.ruleId ? { ruleId: p.ruleId } : {}),
+          ts: e.ts,
+          reporter: e.actorPseudonym ?? 'anon',
+          resolved: false,
+        })
+      }
+    }
+  } catch {
+    /* malformed ledger — return what parsed */
+  }
+  return reports
+}
 
 const CORS = {
   'access-control-allow-origin': '*',
@@ -118,8 +147,25 @@ const server = createServer(async (req, res) => {
     const url = req.url ?? '/'
     if (req.method === 'GET' && url === '/api/health') {
       const p = loadPolicy()
-      const [backstop, sidecar] = await Promise.all([ping(BACKSTOP_HEALTH_URL), ping(SIDECAR_HEALTH_URL)])
-      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL, backstop, sidecar })
+      const [backstop, sidecar, reports] = await Promise.all([ping(BACKSTOP_HEALTH_URL), ping(SIDECAR_HEALTH_URL), readFpReports()])
+      return send(res, 200, { ok: true, policyVersion: p.policyVersion, areas: p.areas.length, forwardModel: FORWARD_MODEL, backstop, sidecar, fpOpen: reports.length })
+    }
+    if (req.method === 'POST' && url === '/api/report') {
+      const body = await readBody(req)
+      const faId = `FA-${Date.now().toString(36).slice(-5)}`
+      const payload = {
+        faId, area: body.area ?? '', layer: (body.layer as Layer) ?? 'rule',
+        ...(body.ruleId ? { ruleId: body.ruleId } : {}),
+        conversationId: body.conversationId ?? 'web',
+        ...(body.context ? { context: body.context } : {}), // only present if the reporter opted in
+      }
+      // A report is a governance event (FR-18, NG-12): actor pseudonymised, reason mandatory.
+      await writeGovernanceEvent('fp-report', body.userId ?? 'web-user', `Fehlalarm: ${body.faSpan ?? body.area ?? 'gemeldet'}`, payload, key)
+      return send(res, 200, { faId })
+    }
+    if (req.method === 'GET' && url.startsWith('/api/fp-queue')) {
+      const reports = await readFpReports()
+      return send(res, 200, { groups: groupReportsByTrigger(reports), count: reports.length })
     }
     if (req.method === 'POST' && url === '/api/inspect') {
       const body = await readBody(req)

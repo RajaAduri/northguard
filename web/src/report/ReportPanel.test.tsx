@@ -4,7 +4,7 @@ import { ReportPanel } from './ReportPanel'
 import type { ReportForm } from '../types'
 
 afterEach(cleanup)
-const form: ReportForm = { faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', ruleId: 'RULE-PERCENT-PRICE', conversationId: 'c1', shareContext: false }
+const form: ReportForm = { faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', layer: 'rule', ruleId: 'RULE-PERCENT-PRICE', conversationId: 'c1', shareContext: false }
 
 describe('SF-5075 ReportPanel (render smoke, jsdom)', () => {
   it('renders the privacy note; share-context starts off and submit reflects the toggle', () => {

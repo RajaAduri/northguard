@@ -7,6 +7,7 @@ export function buildReportForm(span: RedactionSpan, conversationId: string): Re
     faSpan: span.placeholder,
     detectedBy: span.layer === 'rule' ? 'mirror.layer_rule' : 'mirror.layer_ai',
     area: span.area,
+    layer: span.layer,
     conversationId,
     shareContext: false, // opt-in
   }

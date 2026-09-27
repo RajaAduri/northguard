@@ -1,8 +1,17 @@
 import type { JSX } from 'react'
-import type { BriefingView, Locale, MgmtTab, ThresholdView } from '../types'
+import type { BriefingView, Locale, MgmtTab, ThresholdView, TriggerGroup } from '../types'
 import { buildManagementShell } from './buildManagementShell'
+import { FpQueueView } from './FpQueueView'
 import { Msg, Content } from '../i18n'
 import { color, radius, text, sendButton } from '../design'
+
+const NAV: { tab: MgmtTab; key: string }[] = [
+  { tab: 'briefing', key: 'mgmt.nav.briefing' },
+  { tab: 'density', key: 'mgmt.nav.density' },
+  { tab: 'false-positives', key: 'mgmt.nav.false_positives' },
+  { tab: 'ledger', key: 'mgmt.nav.ledger' },
+  { tab: 'evidence', key: 'mgmt.nav.evidence' },
+]
 
 // SF-5084 — the ONE management-room surface (Handoff rule 15): the document register — a
 // 720px Fraunces column, hairline sections, caps-mono table head, no zebra, NO person
@@ -33,14 +42,16 @@ export interface ManagementViewProps {
   activeTab: MgmtTab
   locale: Locale
   briefing?: BriefingView
+  fpGroups?: TriggerGroup[]
   range?: string
   onBack?: () => void
+  onSelectTab?: (tab: MgmtTab) => void
 }
 
 const hairlineSection = { borderTop: `1px solid ${color.line}`, paddingTop: 22, marginTop: 26 }
 const fmtHours = (low: number, high: number): string => (low === high ? `${high} h` : `${low}–${high} h`)
 
-export function ManagementView({ activeTab, locale, briefing, range, onBack }: ManagementViewProps): JSX.Element {
+export function ManagementView({ activeTab, locale, briefing, fpGroups, range, onBack, onSelectTab }: ManagementViewProps): JSX.Element {
   const shell = buildManagementShell(activeTab)
   return (
     <main
@@ -50,8 +61,10 @@ export function ManagementView({ activeTab, locale, briefing, range, onBack }: M
     >
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 26 }}>
         <nav style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          {shell.navKeys.map((k) => (
-            <Msg key={k} k={k} locale={locale} data-testid={undefined} style={{ ...text.capsLabel, color: k === `mgmt.nav.${activeTab === 'false-positives' ? 'false_positives' : activeTab}` ? color.ink : color.muted }} />
+          {NAV.map(({ tab, key }) => (
+            <button key={key} type="button" data-nav={tab} onClick={() => onSelectTab?.(tab)} style={{ background: 'transparent', border: 'none', padding: 0, cursor: onSelectTab ? 'pointer' : 'default', ...text.capsLabel, color: tab === activeTab ? color.ink : color.muted }}>
+              <Msg k={key} locale={locale} />
+            </button>
           ))}
         </nav>
         {onBack ? (
@@ -62,6 +75,7 @@ export function ManagementView({ activeTab, locale, briefing, range, onBack }: M
       </header>
 
       {activeTab === 'briefing' && briefing ? <Briefing briefing={briefing} locale={locale} range={range} /> : null}
+      {activeTab === 'false-positives' ? <FpQueueView groups={fpGroups ?? []} locale={locale} /> : null}
     </main>
   )
 }

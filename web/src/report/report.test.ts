@@ -21,7 +21,7 @@ describe('SF-5072 submitReport (bridge B8)', () => {
   it('without opt-in, only span+rule+area cross — never the context', async () => {
     let captured: FpReportPayload | null = null
     const sink = vi.fn(async (p: FpReportPayload) => { captured = p; return { faId: 'FA-1' } })
-    const form: ReportForm = { faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', ruleId: 'RULE-PERCENT-PRICE', conversationId: 'c1', shareContext: false, context: 'der ganze Prompt-Text' }
+    const form: ReportForm = { faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', layer: 'rule', ruleId: 'RULE-PERCENT-PRICE', conversationId: 'c1', shareContext: false, context: 'der ganze Prompt-Text' }
     const { faId } = await submitReport(form, sink)
     expect(faId).toBe('FA-1')
     expect(captured!.context).toBeUndefined() // context withheld
@@ -30,7 +30,7 @@ describe('SF-5072 submitReport (bridge B8)', () => {
   it('with opt-in, the context is included', async () => {
     let captured: FpReportPayload | null = null
     const sink = async (p: FpReportPayload) => { captured = p; return { faId: 'FA-2' } }
-    await submitReport({ faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', conversationId: 'c1', shareContext: true, context: 'ctx' }, sink)
+    await submitReport({ faSpan: '⟨Marge⟩', detectedBy: 'mirror.layer_rule', area: 'preise-margen', layer: 'rule', conversationId: 'c1', shareContext: true, context: 'ctx' }, sink)
     expect(captured!.context).toBe('ctx')
   })
 })

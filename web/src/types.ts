@@ -1,6 +1,6 @@
 // E5 view types. The E1 contract types live once in core/lib/types.ts (never
 // duplicated) — re-exported here so web modules import from one place.
-import type { Verdict, FootnoteStats } from '../../core/lib/types'
+import type { Verdict, FootnoteStats, Layer } from '../../core/lib/types'
 
 export type {
   Locale,
@@ -18,6 +18,7 @@ export type {
   PlaceholderMapping,
   BriefingInputs,
   FootnoteStats,
+  TriggerGroup,
 } from '../../core/lib/types'
 
 // ── Reply rehydration view (AF-503) ───────────────────────────────────────────
@@ -46,15 +47,17 @@ export interface ReportForm {
   faSpan: string // the marked placeholder/span
   detectedBy: string // layer label key
   area: string
+  layer: Layer // the triggering layer — the queue groups by trigger (layer+area+rule)
   ruleId?: string
   conversationId: string
   shareContext: boolean // OFF by default (opt-in); the rest of the prompt only crosses if true
   context?: string
 }
-// What crosses bridge B8 to E6 AF-604. Without opt-in, only span+rule+area (no context).
+// What crosses bridge B8 to E6 AF-604. Without opt-in, only span+rule+area+layer (no context).
 export interface FpReportPayload {
   faSpan: string
   area: string
+  layer: Layer
   ruleId?: string
   conversationId: string
   context?: string

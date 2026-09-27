@@ -10,6 +10,7 @@ export async function submitReport(
   const payload: FpReportPayload = {
     faSpan: form.faSpan,
     area: form.area,
+    layer: form.layer,
     conversationId: form.conversationId,
   }
   if (form.ruleId !== undefined) payload.ruleId = form.ruleId

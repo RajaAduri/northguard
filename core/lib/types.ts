@@ -404,6 +404,7 @@ export type GovKind =
   | 'unmask'
   | 'baseline'
   | 'change-request'
+  | 'fp-report' // a false-positive report — a governance event like any other (FR-18, NG-12)
 
 export type LedgerKind = 'request' | 'governance' | 'ops'
 

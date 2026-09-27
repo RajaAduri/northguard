@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { inspect, forward, briefing } from './apiClient'
+import { inspect, forward, briefing, report as postReport, fpQueue } from './apiClient'
 import { Msg, Content, formatMessage } from './i18n'
 import { color, radius, text, secondaryButton, tertiaryButton } from './design'
 import { motion } from './design/motionTokens'
@@ -12,7 +12,7 @@ import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView }
 import { buildReportForm, submitReport, buildReportDone } from './report'
 import { StatusBar } from './status/StatusBar'
 import { rehydrateReply } from '../../core/src/features/inspection/transcript/rehydrate'
-import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, RedactionSpan, ReportForm, ReportDone, FpReportPayload, Locale } from './types'
+import type { BriefingView, ComposerState, InspectionVerdict, WireMessage, PlaceholderMapping, RehydrateResult, RedactionSpan, ReportForm, ReportDone, MgmtTab, TriggerGroup, Locale } from './types'
 
 // The governed chat surface + the management room, rendered through the real §1.1
 // components (Handoff). The chat loop: type → inspect (customer-side) → mirror (what the
@@ -50,6 +50,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   const [reportSpan, setReportSpan] = useState<RedactionSpan | null>(null)
   const [reportDone, setReportDone] = useState<ReportDone | null>(null)
   const [notices, setNotices] = useState<string[]>([])
+  const [fpCount, setFpCount] = useState(0)
   const [sendingUi, setSendingUi] = useState(false)
   const pendingSend = useRef(false)
   const sending = useRef(false)
@@ -61,6 +62,11 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
     { role: 'assistant' as const, content: t.providerReply },
   ])
   const degraded = verdict?.coverage === 'rules-only'
+
+  useEffect(() => {
+    // F4 — seed the false-positive badge count from the ledger-backed queue.
+    void fpQueue().then((q) => setFpCount(q.count)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     inspectSeq.current++ // any edit invalidates an inspection already in flight
@@ -148,11 +154,17 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
     setState('report')
   }
   async function onSubmitReport(form: ReportForm) {
-    const sink = async (_p: FpReportPayload) => ({ faId: `FA-${String(Date.now()).slice(-3)}` })
-    const { faId } = await submitReport(form, sink)
-    setReportDone(buildReportDone(faId, 1, verdict?.verdict === 'block' ? 'block' : 'redact'))
-    setNotices((n) => [...n, faId])
-    setState('report-done')
+    try {
+      // The gateway writes the report as a governance ledger entry (FR-18, NG-12); submitReport
+      // withholds the prompt context unless the reporter opted in.
+      const { faId } = await submitReport(form, postReport)
+      setReportDone(buildReportDone(faId, 1, verdict?.verdict === 'block' ? 'block' : 'redact'))
+      setNotices((n) => [...n, faId])
+      setFpCount((c) => c + 1)
+      setState('report-done')
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e))
+    }
   }
   function onCancelReport() {
     setReportSpan(null)
@@ -172,7 +184,7 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: '100vh' }}>
-      <Sidebar onEnterManagement={onEnterManagement} />
+      <Sidebar onEnterManagement={onEnterManagement} fpCount={fpCount} />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minHeight: 57, padding: '14px 28px', borderBottom: `1px solid ${color.line}` }}>
           {title ? <Content style={{ ...text.headerTitle, color: color.ink }}>{title}</Content> : <Msg k="header.new_title" locale={L} style={{ ...text.headerTitle, color: color.ink }} />}
@@ -225,18 +237,23 @@ function Workspace({ onEnterManagement }: { onEnterManagement: () => void }) {
   )
 }
 
-function Sidebar({ onEnterManagement }: { onEnterManagement: () => void }) {
+function Sidebar({ onEnterManagement, fpCount }: { onEnterManagement: () => void; fpCount: number }) {
   return (
     <aside style={{ background: color.bgSurface, borderRight: `1px solid ${color.line}`, padding: '18px 12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ ...text.capsLabel, color: color.teal, padding: '0 6px' }}>NorthGuard</div>
+      <Content style={{ ...text.capsLabel, color: color.teal, padding: '0 6px' }}>NorthGuard</Content>
       <button type="button" style={{ ...secondaryButton, textAlign: 'left' }}>
         <Msg k="sidebar.new_conversation" locale={L} />
       </button>
       <Msg k="sidebar.today" locale={L} style={{ ...text.capsLabel, color: color.muted, padding: '8px 6px 0' }} />
       <Msg k="sidebar.history_empty" locale={L} as="p" style={{ ...text.explain, color: color.muted, margin: '0 6px' }} />
       <div style={{ flex: 1 }} />
-      <button type="button" onClick={onEnterManagement} style={{ ...tertiaryButton, textAlign: 'left' }}>
+      <button type="button" onClick={onEnterManagement} data-testid="mgmt-entry" style={{ ...tertiaryButton, textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <Msg k="mgmt.label" locale={L} />
+        {fpCount > 0 ? (
+          <Content data-testid="fp-badge" style={{ ...text.monoMeta, color: color.bgSurface, background: color.amber, borderRadius: radius.chip, padding: '1px 7px' }}>
+            {`${formatMessage('mgmt.nav.false_positives', L)} · ${fpCount}`}
+          </Content>
+        ) : null}
       </button>
       <StatusBar locale={L} />
     </aside>
@@ -265,7 +282,9 @@ function TurnView({ turn }: { turn: Turn }) {
 // (ManagementView) rendered from the real view-models over the gateway's structured inputs.
 function ManagementRoom({ onBack }: { onBack: () => void }) {
   const [entered, setEntered] = useState(false)
+  const [tab, setTab] = useState<MgmtTab>('briefing')
   const [view, setView] = useState<BriefingView | null>(null)
+  const [fpGroups, setFpGroups] = useState<TriggerGroup[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function enter() {
@@ -279,12 +298,19 @@ function ManagementRoom({ onBack }: { onBack: () => void }) {
     }
   }
 
+  function onSelectTab(next: MgmtTab) {
+    setTab(next)
+    if (next === 'false-positives' && fpGroups === null) {
+      void fpQueue().then((q) => setFpGroups(q.groups)).catch(() => setFpGroups([]))
+    }
+  }
+
   if (!entered) {
     return <ThresholdGate model={buildThresholdModel('39', 5)} locale={L} onEnter={enter} />
   }
   return (
     <>
-      <ManagementView activeTab="briefing" locale={L} briefing={view ?? undefined} onBack={onBack} />
+      <ManagementView activeTab={tab} locale={L} briefing={view ?? undefined} fpGroups={fpGroups ?? undefined} onBack={onBack} onSelectTab={onSelectTab} />
       {error ? <Content style={{ ...text.explain, color: color.red, display: 'block', textAlign: 'center' }}>{error}</Content> : null}
     </>
   )

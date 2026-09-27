@@ -23,7 +23,9 @@ vi.mock('./apiClient', () => ({
   inspect: vi.fn(async (draft: string) => (draft.includes('mail') ? touched : clean)),
   forward: vi.fn(async () => 'Antwort vom EU-gehosteten Endpunkt'),
   briefing: vi.fn(async () => ({ markdown: '# raw', inputs: briefingInputsFixture, sufficient: true, findings: 3 })),
-  health: vi.fn(async () => ({ ok: true, backstop: true, sidecar: true })),
+  health: vi.fn(async () => ({ ok: true, backstop: true, sidecar: true, fpOpen: 0 })),
+  report: vi.fn(async () => ({ faId: 'FA-test1' })),
+  fpQueue: vi.fn(async () => ({ groups: [], count: 0 })),
 }))
 
 import { App } from './App'
@@ -38,6 +40,10 @@ describe('SF-5099 App integration (real App, mocked gateway)', () => {
     fireEvent.click(screen.getByText('Fehlalarm melden'))
     expect(screen.getByTestId('report-panel')).toBeTruthy()
     expect(screen.getByTestId('report-privacy')).toBeTruthy()
+    // F4 — submitting writes the report (mocked gateway) and shows report-done + a badge
+    fireEvent.click(screen.getByTestId('report-submit'))
+    await waitFor(() => expect(screen.getByTestId('report-done')).toBeTruthy(), { timeout: 3000 })
+    await waitFor(() => expect(screen.getByTestId('fp-badge')).toBeTruthy(), { timeout: 3000 })
   })
 
   it('a send renders the reply footer and reveals the view toggle', async () => {
