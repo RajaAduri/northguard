@@ -1,7 +1,17 @@
 # NorthGuard — Build Session Summary (Part B)
 
-**Run:** continuous build from the amended specs, Sprints 1 → … → 8 (Integration) → 9 (visual fidelity + placeholder correctness) → 10 (reachability — act on the component-bypass audit).
-**Outcome:** **Sprints 1–10 COMPLETE.** All 30 core stories + US-031 + US-032…039 (E5) + Amendment B (US-040…044); Sprint 8 brought the system up end-to-end; Sprint 9 brought the E5 surface to the Handoff spec; Sprint 10 made every tested component reachable and added the structural gate that keeps the bypass from recurring. **350 core vitest + 84 web vitest + 59 pytest green, tsc strict clean across core + web.** See `TESTING.md` (repo root) for how to run everything + the measured figures. Commits through the Sprint-10 commits on `main`.
+**Run:** continuous build from the amended specs, Sprints 1 → … → 9 (visual fidelity) → 10 (reachability) → 11 (using-the-system findings + journey harness).
+**Outcome:** **Sprints 1–11 COMPLETE.** Sprint 10 made every tested component reachable; Sprint 11 acted on six findings from using the running system, wired the FP report to its real destinations, and added an evidence-producing journey click script. **350 core vitest + 88 web vitest + 59 pytest green, tsc strict clean across core + web.** See `TESTING.md` (repo root) for how to run everything. Commits through the Sprint-11 commits on `main`.
+
+## Sprint 11 — findings from using the system + journey harness (this run)
+- **F1 · Markdown in the reply.** `renderMarkdown` (SF-5037) renders headings/bold/lists/code as React elements (no `dangerouslySetInnerHTML`), display-only; ⟨…⟩ chips and rehydrated values stay visually distinct.
+- **F2 · No raw rule constant in the view.** ReportPanel resolves via `ruleDisplayName`; SF-5102 gate fails if any `RULE-` reaches rendered text (the shape fix).
+- **F3 · No fabricated documents.** The forwarding prompt refuses to invent content for a document/contract/email/file it wasn't given — say it's missing, ask for it.
+- **F4 · FP report wired to real destinations.** Submit writes a governance ledger entry (govKind `fp-report`, NG-12/FR-18); GET /api/fp-queue reads them back grouped by trigger (NG-13) into the management FP tab; the management entry shows a "Fehlalarme · N" badge (`fpOpen` on /api/health).
+- **F5 · NG-25 — model gaps vs masked values.** The model marks its own blanks with ⟨…⟩ (not `[…]`); the app no longer strips them; the reply labels **maskiert** (offer the session value) vs **vom Modell offen gelassen** (no homework), counts stated separately. New invariant NG-25.
+- **F6 · Attachment signposted, not built.** A disabled composer control + tooltip; deferred in DECISION-REGISTER §11.
+- **Journey + policy header.** The header shows the active **Schutzprofil v1.0 · <hash>** at all times; `web/scripts/journey.mjs` drives the six-step journey and writes `evidence/` (report.json + per-step PNGs, blockers.md on any block) — this run all six PASS; a `?mock=` run shows a red **MOCK** label in the status bar.
+- **Review screenshot:** `prototype/screenshots/reply-placeholders.png` — the reply with all three run classes; this is the one that shows F5 landed.
 
 ## Sprint 10 — Reachability (act on AUDIT-component-bypass.md) (this run)
 Principle applied: **a tested component that nothing renders is not done** — either the app mounts it or it is deleted. Findings F1–F6 from `AUDIT-component-bypass.md`, in demo-priority order:
