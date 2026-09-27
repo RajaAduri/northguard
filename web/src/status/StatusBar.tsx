@@ -34,9 +34,23 @@ export function StatusBar({ locale }: { locale: Locale }): JSX.Element {
     }
   }, [])
 
+  // A step the journey harness could not run for real is driven with ?mock=<pieces>; surface
+  // it loudly so a mocked run is never mistaken for a real one (never fail silently).
+  let mock: string | null = null
+  try {
+    mock = new URLSearchParams(window.location.search).get('mock')
+  } catch {
+    mock = null
+  }
+
   const rows: [string, Reach][] = [['status.backend', s.backend], ['status.backstop', s.backstop], ['status.sidecar', s.sidecar]]
   return (
     <div data-testid="status-bar" style={{ borderTop: `1px solid ${color.line}`, paddingTop: 10, marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {mock ? (
+        <div data-testid="mock-label" style={{ ...text.capsLabel, color: color.bgSurface, background: color.red, borderRadius: radius.smallButton, padding: '3px 8px', textAlign: 'center' }}>
+          {`MOCK · ${mock}`}
+        </div>
+      ) : null}
       <Msg k="status.title" locale={locale} style={{ ...text.capsLabel, color: color.muted }} />
       {rows.map(([k, r]) => (
         <div key={k} data-service={k} data-reach={r} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

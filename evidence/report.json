@@ -1,0 +1,54 @@
+{
+  "base": "http://127.0.0.1:5173",
+  "ranAt": "2026-09-27T11:38:57.347Z",
+  "steps": [
+    {
+      "step": "01-policy-loaded",
+      "title": "Policy loaded / identified",
+      "status": "pass",
+      "reason": "active policy identified in the header (tenant already onboarded)",
+      "screenshot": "evidence/01-policy-loaded.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    },
+    {
+      "step": "02-areas-extracted",
+      "title": "Protected areas extracted and shown",
+      "status": "pass",
+      "reason": "area menu shows the extracted protected areas (\"6 Bereiche geschützt\")",
+      "screenshot": "evidence/02-areas-extracted.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    },
+    {
+      "step": "03-confirm-schutzprofil",
+      "title": "Schutzprofil confirmed (active)",
+      "status": "pass",
+      "reason": "active, confirmed Schutzprofil in force: \"Schutzprofil v1.0 · cb0fcec\"",
+      "screenshot": "evidence/03-confirm-schutzprofil.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    },
+    {
+      "step": "04-type-senden",
+      "title": "Type prompt, press Senden",
+      "status": "pass",
+      "reason": "inspection returned; composer state = touched",
+      "screenshot": "evidence/04-type-senden.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    },
+    {
+      "step": "05-result",
+      "title": "See block / redact result",
+      "status": "pass",
+      "reason": "redact result: submission mirror is visible",
+      "screenshot": "evidence/05-result.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    },
+    {
+      "step": "06-management",
+      "title": "Open Managementsicht",
+      "status": "pass",
+      "reason": "management document opened",
+      "screenshot": "evidence/06-management.png",
+      "designRef": "prototype/NorthGuard Chat.dc.html · prototype/NorthGuard Prototyp.dc.html · prototype/NorthGuard Handoff.md"
+    }
+  ]
+}

@@ -5,7 +5,8 @@ import { color, radius, text } from '../design'
 import { Composer } from '../composer/Composer'
 import { AreaMenuButton } from '../composer/AreaMenuButton'
 import { deriveComposerView } from '../composer/deriveComposerView'
-import { composerStateFixtures, type StateFixture } from './stateFixtures'
+import { composerStateFixtures, replyFixture, type StateFixture } from './stateFixtures'
+import { ReplyMessage } from '../reply'
 import { ThresholdGate, ManagementView, buildThresholdModel, buildBriefingView } from '../rooms'
 import { briefingInputsFixture, thresholdFixture, briefingRange } from '../rooms/managementFixtures'
 
@@ -72,6 +73,17 @@ export function StatesHarness({ locale = 'de' }: StatesHarnessProps): JSX.Elemen
           <WorkspaceFrame fx={fx} locale={locale} />
         </figure>
       ))}
+
+      {/* F5/NG-25 — the reply with all three run classes: rehydrated value (dotted), masked
+          open (amber, insert/leave), and a model gap (muted, "vom Modell offen gelassen"). */}
+      <figure style={{ margin: 0 }}>
+        <figcaption data-harness-caption="" style={{ ...text.monoMeta, color: color.muted, marginBottom: 8 }}>
+          reply · masked value + model gap (NG-25)
+        </figcaption>
+        <div data-capture="" data-screenshot="reply-placeholders" style={{ background: color.bgSurface, borderRadius: radius.card, padding: '20px 28px', width: 720, maxWidth: '100%' }}>
+          <ReplyMessage result={replyFixture.result} locale={locale} providerText={replyFixture.providerText} mapping={replyFixture.mapping} />
+        </div>
+      </figure>
 
       {/* Management room (rule 15): the document register, on the document canvas so a
           chrome-less screenshot is immediately identifiable as the other room. */}

@@ -1,4 +1,4 @@
-import type { ComposerState, InspectionVerdict, RedactionSpan } from '../types'
+import type { ComposerState, InspectionVerdict, PlaceholderMapping, RedactionSpan, RehydrateResult } from '../types'
 
 // SF-5091 — deterministic fixtures for every composer state the Handoff §1.1 enumerates
 // as a distinct visual. Consumed by BOTH the fidelity gates and the Playwright screenshot
@@ -73,6 +73,21 @@ export interface StateFixture {
   verdict: InspectionVerdict | null
   degraded: boolean
   draft: string
+}
+
+// F5/NG-25 — a reply showing all three run classes at once: a rehydrated value (dotted),
+// masked-open placeholders NorthGuard removed (⟨Termin⟩, ⟨E-Mail-Adresse⟩ — in the mapping),
+// and a gap the MODEL left (⟨Empfängername⟩ — not in the mapping). This is the screenshot that
+// decides whether F5 landed. Markdown too (bold + list) to show F1.
+export const replyFixture: { result: RehydrateResult; mapping: PlaceholderMapping; providerText: string } = {
+  result: {
+    restoredText:
+      'Sehr geehrte/r ⟨Empfängername⟩,\n\nanbei die **Konditionen** für Brechtmann GmbH zum ⟨Termin⟩:\n\n- Marge: 34 %\n- Kontakt: ⟨E-Mail-Adresse⟩\n\nMit freundlichen Grüßen',
+    restoredSpans: [{ placeholder: '⟨Lieferant⟩', original: 'Brechtmann GmbH', offset: 0, length: 15 }],
+    unresolved: ['⟨Empfängername⟩', '⟨Termin⟩', '⟨E-Mail-Adresse⟩'],
+  },
+  mapping: { '⟨Termin⟩': 'nächsten Dienstag', '⟨E-Mail-Adresse⟩': 'anna.berger@nordwerk.de' },
+  providerText: 'Sehr geehrte/r ⟨Empfängername⟩, anbei die Konditionen für ⟨Lieferant⟩ zum ⟨Termin⟩: Marge ⟨Marge⟩, Kontakt ⟨E-Mail-Adresse⟩.',
 }
 
 export const composerStateFixtures: StateFixture[] = [
